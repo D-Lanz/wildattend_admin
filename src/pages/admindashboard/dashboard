@@ -1,0 +1,15 @@
+import "./loginpage.css"
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase";
+
+
+const AdminDashboard = () => {
+  return(
+    <div>
+
+    </div>
+  )
+}
+
+export default AdminDashboard
