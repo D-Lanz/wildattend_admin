@@ -1,8 +1,10 @@
 import "./loginpage.css"
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
+import { AuthContext } from "../../context/AuthContext";
+import { type } from "@testing-library/user-event/dist/type";
 
 
 const LoginPage = () => {
@@ -12,15 +14,18 @@ const LoginPage = () => {
 
   const navigate = useNavigate()
 
+  const {dispatch} = useContext(AuthContext)
+
   const handleLogin = (e) => {
     e.preventDefault();
 
     signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
-      // Signed up 
+      // Signed in 
       const user = userCredential.user;
-      console.log(user)
+      dispatch({type:"LOGIN", payload:user})
       navigate("/")
+      console.log(user)
       // ...
     })
     .catch((error) => {

@@ -1,26 +1,43 @@
-import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import React, { Children, useContext } from 'react';
+import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
+
+import AdminDashboard from './pages/admin_dashboard/dashboard';
+import { AuthContext } from './context/AuthContext';
 import Login from './pages/login/loginpage';
+import List from './pages/list/list';
+import New from './pages/new/new';
+import Single from './pages/single/single';
 
 function App() {
+
+  const {currentUser} = useContext(AuthContext)
+
+  const RequireAuth = ({ children }) => {
+    return currentUser ? children : <Navigate to="/login" />;
+  };
+
+  console.log(currentUser)
+
   return (
     <div className="App">
-      <header className="App-header">
-        <nav>
-          <ul>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            {/* Add more navigation links as needed */}
-          </ul>
-        </nav>
-      </header>
-      <main>
+      <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          {/* Add more routes as needed */}
+          <Route path="/">
+            <Route index element={<AdminDashboard />} />
+            <Route path="login" element={<Login />} />
+            <Route path="users">
+              <Route index element={<List />} />
+              <Route path=":userId" element={<Single />} />
+              <Route path="new" element={<New />} />
+            </Route>
+            <Route path="courses">
+              <Route index element={<List />} />
+              <Route path=":courseId" element={<Single />} />
+              <Route path="new" element={<New />} />
+            </Route>
+          </Route>
         </Routes>
-      </main>
+      </BrowserRouter>
     </div>
   );
 }

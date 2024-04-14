@@ -1,13 +1,22 @@
-import "./loginpage.css"
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
-
+import Navbar from "../../components/navbar/Navbar"
+import Sidebar from "../../components/sidebar/Sidebar"
+import Widget from "../../components/widget/widget"
+import "./dashboard.css"
 
 const AdminDashboard = () => {
   return(
-    <div>
-      <h1>Welcome Admin!</h1>
+    <div className="home">
+        <Sidebar/>
+        <div className="homeContainer">
+          <Navbar/>
+          <div className="widgets">
+            <Widget/>
+            <Widget/>
+            <Widget/>
+            <Widget/>
+            <Widget/>
+          </div>
+        </div>
     </div>
   )
 }
