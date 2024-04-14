@@ -23,7 +23,14 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/">
-            <Route index element={<AdminDashboard />} />
+            <Route
+                index
+                element={
+                  <RequireAuth>
+                    <AdminDashboard />
+                  </RequireAuth>
+                }
+            />
             <Route path="login" element={<Login />} />
             <Route path="users">
               <Route index element={<List />} />
