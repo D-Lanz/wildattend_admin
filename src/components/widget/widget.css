@@ -1,7 +1,7 @@
 .widget{
   display: flex;
   justify-content: space-around;
-  flex: 1;
+  flex: 2;
   padding: 10px;
   background-color: maroon;
   color: gold;
@@ -30,6 +30,16 @@
 }
 
 .linkw{
+  width: max-content;
   font-size: 12px;
   border-bottom: 1px solid gold;
+}
+
+.iconw{
+  font-size: 18px;
+  padding: 5px;
+  background-color: gold;
+  color: maroon;
+  border-radius: 5px;
+  align-self: flex-end;
 }

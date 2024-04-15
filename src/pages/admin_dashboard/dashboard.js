@@ -10,15 +10,13 @@ const AdminDashboard = () => {
         <div className="homeContainer">
           <Navbar/>
           <div className="widgets">
-            <Widget/>
-            <Widget/>
-            <Widget/>
+            <Widget type="user"/>
+            <Widget type="student"/>
+            <Widget type="faculty"/>
           </div>
-          <br/>
           <div className="widgets">
-            <Widget/>
-            <Widget/>
-            <Widget/>
+            <Widget type="course"/>
+            <Widget type="accesspt"/>
           </div>
         </div>
     </div>
