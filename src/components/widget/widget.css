@@ -1,0 +1,35 @@
+.widget{
+  display: flex;
+  justify-content: space-around;
+  flex: 1;
+  padding: 10px;
+  background-color: maroon;
+  color: gold;
+  border-radius: 10px;
+  height: 100px;
+  width: 10px;
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+}
+
+.leftw,.rightw{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.wtitle{
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.counter{
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.linkw{
+  font-size: 12px;
+  border-bottom: 1px solid gold;
+}

@@ -13,6 +13,10 @@ const AdminDashboard = () => {
             <Widget/>
             <Widget/>
             <Widget/>
+          </div>
+          <br/>
+          <div className="widgets">
+            <Widget/>
             <Widget/>
             <Widget/>
           </div>
