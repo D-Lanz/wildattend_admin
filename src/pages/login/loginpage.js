@@ -25,6 +25,7 @@ const LoginPage = () => {
       const user = userCredential.user;
       dispatch({type:"LOGIN", payload:user})
       navigate("/")
+      console.log("Logged In Succesfully!")
       console.log(user)
       // ...
     })
