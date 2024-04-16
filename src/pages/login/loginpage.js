@@ -39,7 +39,6 @@ const LoginPage = () => {
 
   return(
     <div>
-      <h1>Login</h1>
       <div className="login">
         <form onSubmit={handleLogin}>
           <input type="email" placeholder="email" onChange={e=>setEmail(e.target.value)}/>
