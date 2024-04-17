@@ -1,0 +1,40 @@
+.new {
+  display: flex;
+  width: 100%;
+}
+
+.newContainer{
+  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  flex: 6;
+}
+
+.topn, .bottomn{
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  background-color: white;
+  padding: 10px;
+  margin: 20px;
+  display: flex;
+}
+
+.titleb{
+  color: maroon;
+  font-size: 20px;
+}
+
+.leftn{
+  flex: 1;
+  text-align: center;
+}
+
+.rightn{
+  flex: 2;
+}
+
+.newImg{
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: contain;
+}
