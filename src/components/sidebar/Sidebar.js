@@ -31,7 +31,7 @@ const Sidebar = () => {
           </li>
           <li>
             <ClassIcon className="icon"/>
-            <span>Manage Courses</span>
+            <span>Manage Classes</span>
           </li>
 
           <p className="title">ASSESSMENTS</p>
