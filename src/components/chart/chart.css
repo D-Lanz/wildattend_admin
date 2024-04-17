@@ -1,0 +1,13 @@
+.chart{
+  flex: 4;
+  padding: 10px;
+  color: maroon;
+}
+
+.titlec{
+  margin-bottom: 20px;
+}
+
+.chartGrid{
+  stroke: maroon;
+}

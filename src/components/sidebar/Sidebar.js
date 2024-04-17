@@ -5,8 +5,8 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ClassIcon from '@mui/icons-material/Class';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import LogoutIcon from '@mui/icons-material/Logout';
-
 
 const Sidebar = () => {
 
@@ -45,6 +45,10 @@ const Sidebar = () => {
           </li>
 
           <p className="title">USER</p>
+          <li>
+            <ContactEmergencyIcon className="icon"/>
+            <span>My Profile</span>
+          </li>
           <li>
             <LogoutIcon className="icon"/>
             <span>Logout</span>
