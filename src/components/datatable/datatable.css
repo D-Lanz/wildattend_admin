@@ -42,3 +42,23 @@
   color: gold;
   cursor: pointer;
 }
+
+.datatableTitle{
+  width: 100%;
+  font-size: 24;
+  color: maroon;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.linkdt{
+  text-decoration: none;
+  color: maroon;
+  border: 1px solid maroon;
+  border-radius: 5px;
+  font-weight: 400;
+  padding: 5px;
+  cursor: pointer;
+}

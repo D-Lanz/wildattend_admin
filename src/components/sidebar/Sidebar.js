@@ -7,48 +7,60 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import LogoutIcon from '@mui/icons-material/Logout';
+import {Link} from "react-router-dom"
 
 const Sidebar = () => {
 
   return (
     <div className="sidebar">
       <div className="top">
-        <ManageAccountsIcon/>
-        <span className="logo">Admin</span>
+        <Link to="/" style={{ textDecoration:"none" }}>
+          <span className="logo">Admin</span>
+        </Link>
       </div>
       <hr/>
       <div className="center">
         <ul>
           <p className="title">MAIN</p>
-          <li>
-            <DashboardIcon className="icon"/>
-            <span>Dashboard</span>
-          </li>
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <DashboardIcon className="icon"/>
+              <span>Dashboard</span>
+            </li>
+          </Link>
           <p className="title">LISTS</p>
-          <li>
-            <PeopleAltIcon className="icon"/>
-            <span>Manage Users</span>
-          </li>
-          <li>
-            <ClassIcon className="icon"/>
-            <span>Manage Classes</span>
-          </li>
-
+          <Link to="/users" style={{ textDecoration:"none" }}>
+            <li>
+              <PeopleAltIcon className="icon"/>
+              <span>Manage Users</span>
+            </li>
+          </Link>
+          <Link to="/classes" style={{ textDecoration:"none" }}>
+            <li>
+              <ClassIcon className="icon"/>
+              <span>Manage Classes</span>
+            </li>
+          </Link>
           <p className="title">ASSESSMENTS</p>
-          <li>
-            <ReceiptLongIcon className="icon"/>
-            <span>Attendance Records</span>
-          </li>
-          <li>
-            <AssessmentIcon className="icon"/>
-            <span>Generate Reports</span>
-          </li>
-
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <ReceiptLongIcon className="icon"/>
+              <span>Attendance Records</span>
+            </li>
+          </Link>
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <AssessmentIcon className="icon"/>
+              <span>Generate Reports</span>
+            </li>
+          </Link>
           <p className="title">USER</p>
-          <li>
-            <ContactEmergencyIcon className="icon"/>
-            <span>My Profile</span>
-          </li>
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <ContactEmergencyIcon className="icon"/>
+              <span>My Profile</span>
+            </li>
+          </Link>
           <li>
             <LogoutIcon className="icon"/>
             <span>Logout</span>
