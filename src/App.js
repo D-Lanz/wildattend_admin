@@ -34,14 +34,38 @@ function App() {
                 }
             />
             <Route path="users">
-              <Route index element={<List />} />
-              <Route path=":userId" element={<Single />} />
-              <Route path="new" element={<New inputs={userInputs} title="Add New User"/>} />
+              <Route index element={
+                <RequireAuth>
+                  <List />
+                </RequireAuth>
+                } />
+              <Route path=":userId" element={
+                <RequireAuth>
+                  <Single />
+                </RequireAuth>
+              } />
+              <Route path="new" element={
+                <RequireAuth>
+                  <New inputs={userInputs} title="Add New User"/>
+                </RequireAuth>
+              } />
             </Route>
             <Route path="classes">
-              <Route index element={<List />} />
-              <Route path=":classId" element={<Single />} />
-              <Route path="new" element={<New inputs={classInputs} title="Add New Class"/>} />
+              <Route index element={
+                <RequireAuth>
+                  <List />
+                </RequireAuth>
+              } />
+              <Route path=":classId" element={
+                <RequireAuth>
+                  <Single />
+                </RequireAuth>
+                } />
+              <Route path="new" element={
+                <RequireAuth>
+                  <New inputs={classInputs} title="Add New Class"/>
+                </RequireAuth>
+                } />
             </Route>
           </Route>
         </Routes>
