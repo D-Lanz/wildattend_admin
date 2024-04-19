@@ -67,7 +67,6 @@ const New = ({inputs, title}) => {
   }
 
   
-
   const handleAdd = async (e) => {
     e.preventDefault()
     try{
