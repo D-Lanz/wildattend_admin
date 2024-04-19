@@ -88,3 +88,8 @@
   cursor: pointer;
   margin-top: 10px;
 }
+
+.buttonn:disabled{
+  background-color: rgba(128, 0, 0, 0.315);
+  cursor: not-allowed;
+}
