@@ -6,31 +6,34 @@ import { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable = ({title}) => {
+const Datatable = ({title, entity, tableTitle}) => {
 
   const [data, setData] = useState([]);
 
   useEffect(()=>{
-    const fetchData = async () => {
-      let list = []
-      try{
-        const querySnapshot = await getDocs(collection(db, "users"));
-        querySnapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data()})
-        });
-        setData(list)
-        console.log(list)
-      } catch(err) {
-        console.log(err)
-      }
+    //LISTEN (REALTIME)
+    console.log(entity); // Inspect the value of entity
+    const unsub = onSnapshot(collection(db, entity), (snapShot) => {
+      let list = [];
+      snapShot.docs.forEach((doc)=>{
+        list.push({id:doc.id, ...doc.data()});
+      }); 
+      setData(list);
+    },(error)=>{
+      console.log(error);
+    });
+    return () => {
+      unsub();
     };
-    fetchData()
   },[]);
 
-  console.log(data)
-
-  const hadnleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+  const handleDelete = async(id) => {
+    try{
+      await deleteDoc(doc(db, {entity}, id));
+    }catch(err){
+      setData(data.filter((item) => item.id !== id));
+      console.log(err)
+    }
   }
 
   const actionColumn = [
@@ -40,10 +43,15 @@ const Datatable = ({title}) => {
       renderCell:(params) => {
         return(
           <div className="cellAction">
-            <Link to="/users/test" style={{ textDecoration:"none" }}>
+            <Link to={`/${entity}/test`} style={{ textDecoration:"none" }}>
               <div className="viewButton">View</div>
             </Link>
-            <div className="deleteButton">Remove</div>
+            <div
+              className="deleteButton"
+              onClick={() => handleDelete(params.row.id)}
+            >
+              Delete
+            </div>
           </div>
         );
   }} ];
@@ -52,8 +60,8 @@ const Datatable = ({title}) => {
     <div className="datatable">
       <div className="titlec">{title}</div>
       <div className="datatableTitle">
-        Add New User
-        <Link to="/users/new" style={{ textDecoration:"none" }} className="linkdt">
+        {tableTitle}
+        <Link to={`/${entity}/new`} style={{ textDecoration: "none" }} className="linkdt">
           Add New
         </Link>
       </div>

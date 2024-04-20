@@ -36,7 +36,7 @@ function App() {
             <Route path="users">
               <Route index element={
                 <RequireAuth>
-                  <List />
+                  <List title="List of Users" entity="users" tableTitle="Add New User"/>
                 </RequireAuth>
                 } />
               <Route path=":userId" element={
@@ -53,7 +53,7 @@ function App() {
             <Route path="classes">
               <Route index element={
                 <RequireAuth>
-                  <List />
+                  <List title="List of Classes" entity="classes" tableTitle="Add New Class"/>
                 </RequireAuth>
               } />
               <Route path=":classId" element={
