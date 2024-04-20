@@ -61,7 +61,8 @@ const Single = () => {
           </div>
 
           <div className="bottom">
-            <Datatable title="Classes Attended"/>
+            {/* <Datatable title="Classes Attended"/> */}
+            <p>Classes Attended table</p>
           </div>
         </div>
     </div>

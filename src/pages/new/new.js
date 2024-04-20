@@ -9,7 +9,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
-const New = ({inputs, title}) => {
+const New = ({inputs, title, entityType}) => {
   const [file,setFile] = useState("");
   const [data,setData] = useState({});
   const [perc,setPerc] = useState(null);
@@ -23,14 +23,8 @@ const New = ({inputs, title}) => {
       const storageRef = ref(storage, file.name);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
-      // Register three observers:
-      // 1. 'state_changed' observer, called any time the state changes
-      // 2. Error observer, called on failure
-      // 3. Completion observer, called on successful completion
       uploadTask.on('state_changed', 
         (snapshot) => {
-          // Observe state change events such as progress, pause, and resume
-          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log('Upload is ' + progress + '% done');
           setPerc(progress);
@@ -41,17 +35,14 @@ const New = ({inputs, title}) => {
             case 'running':
               console.log('Upload is running');
               break;
-              default:
-                break;
+            default:
+              break;
           }
         }, 
         (error) => {
-          // Handle unsuccessful uploads
           console.log(error)
         }, 
         () => {
-          // Handle successful uploads on complete
-          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setData((prev)=>({...prev, img:downloadURL}))
           });
@@ -64,33 +55,41 @@ const New = ({inputs, title}) => {
   const handleInput = (e) => {
     const id = e.target.id;
     const value = e.target.value;
- 
     setData({...data, [id]: value})
   }
 
-  
   const handleAdd = async (e) => {
     e.preventDefault()
     try{
-      const res = await createUserWithEmailAndPassword (
-        auth,
-        data.email,
-        data.password
-      );
-      await setDoc(doc(db, "users", res.user.uid), {
-        ...data,
-        timeStamp: serverTimestamp()
-      });
+      // Add logic to differentiate between user and class
+      let collectionName = entityType === "user" ? "users" : "classes";
+      // Only proceed if entityType is "user" to avoid authentication
+      if (entityType === "user") {
+        const res = await createUserWithEmailAndPassword (
+          auth,
+          data.email,
+          data.password
+        );
+        await setDoc(doc(db, collectionName, res.user.uid), {
+          ...data,
+          timeStamp: serverTimestamp()
+        });
+      } else {
+        await addDoc(collection(db, collectionName), {
+          ...data,
+          timeStamp: serverTimestamp()
+        });
+      }
       navigate(-1)
-    }catch(err){
+    } catch(err){
       console.log(err)
     }
   }
 
   return(
     <div className="new">
-        <Sidebar/>
-        <div className="newContainer">
+      <Sidebar/>
+      <div className="newContainer">
         <Navbar/>
         <div className="topn">
           <h2 className="titlen">{title}</h2>
@@ -107,29 +106,31 @@ const New = ({inputs, title}) => {
           <div className="rightn">
             <form className="formn" onSubmit={handleAdd}>
               <div className="formInput">
-                <label className="labeln" for="imgUpload" htmlFor="file">
+                <label className="labeln" htmlFor="file">
                   Image: <DriveFolderUploadIcon className="iconn"/>
                 </label>
                 <input className="inputn" onChange={e=>setFile(e.target.files[0])} type="file" id="file" style={{display:"none"}}/>
               </div>
 
               {inputs.map((input)=>(
-              <div className="formInput" key={input.id}>
-                <label className="labeln" for="idNum">{input.label}</label>
-                <input className="inputn"
-                  id={input.id}
-                  type={input.type}
-                  placeholder={input.placeholder}
-                  pattern={input.pattern}
-                  onChange={handleInput}
-                  required/>
-              </div>
+                <div className="formInput" key={input.id}>
+                  <label className="labeln" htmlFor={input.id}>{input.label}</label>
+                  <input
+                    className="inputn"
+                    id={input.id}
+                    type={input.type}
+                    placeholder={input.placeholder}
+                    pattern={input.pattern}
+                    onChange={handleInput}
+                    required
+                  />
+                </div>
               ))}
               <button disabled={perc !== null && perc < 100} className="buttonn" type="submit">Submit</button>
             </form>
           </div>
         </div>
-        </div>
+      </div>
     </div>
   )
 }

@@ -1,12 +1,12 @@
 import "./datatable.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { userColumns, userRows } from "../../datatablesource";
+import { userColumns, classColumns } from "../../datatablesource";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable = ({title, entity, tableTitle}) => {
+const Datatable = ({title, entity, tableTitle, entityColumns}) => {
 
   const [data, setData] = useState([]);
 
@@ -27,14 +27,16 @@ const Datatable = ({title, entity, tableTitle}) => {
     };
   },[]);
 
-  const handleDelete = async(id) => {
-    try{
-      await deleteDoc(doc(db, {entity}, id));
-    }catch(err){
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, entity, id)); // Change {entity} to entity
+      console.log("Delete successful");
+    } catch (err) {
       setData(data.filter((item) => item.id !== id));
-      console.log(err)
+      console.log(err);
     }
   }
+  
 
   const actionColumn = [
     { field: "action",
@@ -67,7 +69,7 @@ const Datatable = ({title, entity, tableTitle}) => {
       </div>
       <DataGrid
         rows={data}
-        columns={userColumns.concat(actionColumn)}
+        columns={[...entityColumns, ...actionColumn]}
         initialState={{
           pagination: {
             paginationModel: { page: 0, pageSize: 8 },

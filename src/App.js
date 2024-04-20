@@ -8,6 +8,7 @@ import List from './pages/list/list';
 import New from './pages/new/new';
 import Single from './pages/single/single';
 import { userInputs, classInputs } from './formSource';
+import { classColumns, userColumns } from './datatablesource';
 
 function App() {
 
@@ -36,7 +37,11 @@ function App() {
             <Route path="users">
               <Route index element={
                 <RequireAuth>
-                  <List title="List of Users" entity="users" tableTitle="Add New User"/>
+                  <List
+                    title="List of Users"
+                    entity="users"
+                    tableTitle="Add New User"
+                    entityColumns={userColumns}/>
                 </RequireAuth>
                 } />
               <Route path=":userId" element={
@@ -46,14 +51,18 @@ function App() {
               } />
               <Route path="new" element={
                 <RequireAuth>
-                  <New inputs={userInputs} title="Add New User"/>
+                  <New inputs={userInputs} title="Add New User" entityType="user" />
                 </RequireAuth>
               } />
             </Route>
             <Route path="classes">
               <Route index element={
                 <RequireAuth>
-                  <List title="List of Classes" entity="classes" tableTitle="Add New Class"/>
+                  <List
+                    title="List of Classes"
+                    entity="classes"
+                    tableTitle="Add New Class"
+                    entityColumns={classColumns}/>
                 </RequireAuth>
               } />
               <Route path=":classId" element={
@@ -63,7 +72,7 @@ function App() {
                 } />
               <Route path="new" element={
                 <RequireAuth>
-                  <New inputs={classInputs} title="Add New Class"/>
+                  <New inputs={classInputs} title="Add New Class" entityType="class" />
                 </RequireAuth>
                 } />
             </Route>
