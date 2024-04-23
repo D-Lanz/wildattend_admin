@@ -76,6 +76,27 @@ function App() {
                 </RequireAuth>
                 } />
             </Route>
+            <Route path="rooms">
+              <Route index element={
+                <RequireAuth>
+                  <List
+                    title="List of Rooms"
+                    entity="rooms"
+                    tableTitle="Add New Room"
+                    entityColumns={classColumns}/>
+                </RequireAuth>
+              } />
+              <Route path=":classId" element={
+                <RequireAuth>
+                  <Single />
+                </RequireAuth>
+                } />
+              <Route path="new" element={
+                <RequireAuth>
+                  <New inputs={classInputs} title="Add New Room" entityType="room" />
+                </RequireAuth>
+                } />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

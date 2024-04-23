@@ -70,7 +70,8 @@ const New = ({inputs, title, entityType}) => {
           data.email,
           data.password
         );
-        await setDoc(doc(db, collectionName, res.user.uid), {
+        //await setDoc(doc(db, collectionName, res.user.uid), {
+        await setDoc(doc(db, collectionName, data.idNum), {
           ...data,
           timeStamp: serverTimestamp()
         });

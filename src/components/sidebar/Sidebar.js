@@ -7,6 +7,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import LogoutIcon from '@mui/icons-material/Logout';
+import RoomIcon from '@mui/icons-material/Room';
+import RouterIcon from '@mui/icons-material/Router';
 import {Link} from "react-router-dom"
 
 const Sidebar = () => {
@@ -39,6 +41,18 @@ const Sidebar = () => {
             <li>
               <ClassIcon className="icon"/>
               <span>Manage Classes</span>
+            </li>
+          </Link><p className="title">MANAGE</p>
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <RoomIcon className="icon"/>
+              <span>Manage Rooms</span>
+            </li>
+          </Link>
+          <Link to="/" style={{ textDecoration:"none" }}>
+            <li>
+              <RouterIcon className="icon"/>
+              <span>Manage Access Points</span>
             </li>
           </Link>
           <p className="title">ASSESSMENTS</p>
