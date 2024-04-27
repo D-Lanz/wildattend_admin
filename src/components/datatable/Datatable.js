@@ -1,14 +1,15 @@
 import "./datatable.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { userColumns, classColumns } from "../../datatablesource";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const Datatable = ({title, entity, tableTitle, entityColumns}) => {
-
+  const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(()=>{
     //LISTEN (REALTIME)
@@ -36,6 +37,13 @@ const Datatable = ({title, entity, tableTitle, entityColumns}) => {
       console.log(err);
     }
   }
+
+  const handleView = (id, rowData) => {
+    // Set the selected row data
+    setSelectedRow(rowData);
+    // Navigate to the appropriate URL
+    navigate(`/${entity}/${id}`);
+  };
   
 
   const actionColumn = [
@@ -45,9 +53,10 @@ const Datatable = ({title, entity, tableTitle, entityColumns}) => {
       renderCell:(params) => {
         return(
           <div className="cellAction">
-            <Link to={`/${entity}/test`} style={{ textDecoration:"none" }}>
-              <div className="viewButton">View</div>
-            </Link>
+              <div
+                className="viewButton"
+                onClick={() => handleView(params.row.id)}
+              >View</div>
             <div
               className="deleteButton"
               onClick={() => handleDelete(params.row.id)}

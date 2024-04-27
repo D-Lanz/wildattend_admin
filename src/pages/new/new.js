@@ -59,19 +59,33 @@ const New = ({inputs, title, entityType}) => {
   }
 
   const handleAdd = async (e) => {
-    e.preventDefault()
-    try{
+    e.preventDefault();
+    try {
       // Add logic to differentiate between user and class
-      let collectionName = entityType === "user" ? "users" : "classes";
-      // Only proceed if entityType is "user" to avoid authentication
+      let collectionName, documentName;
+  
+      switch(entityType) {
+        case "user":
+          collectionName = "users";
+          documentName = data.idNum;
+          break;
+        case "class":
+          collectionName = "classes";
+          // Construct the ID using classCode, section, schoolYear, and semester
+          documentName = `${data.classCode}${data.classSec}-${data.schoolYear}${data.semester}`;
+          break;
+        default:
+          throw new Error("Invalid entityType");
+      }
+  
       if (entityType === "user") {
         const res = await createUserWithEmailAndPassword (
           auth,
           data.email,
           data.password
         );
-        //await setDoc(doc(db, collectionName, res.user.uid), {
-        await setDoc(doc(db, collectionName, data.idNum), {
+        
+        await setDoc(doc(db, collectionName, documentName), {
           ...data,
           timeStamp: serverTimestamp()
         });
@@ -81,12 +95,14 @@ const New = ({inputs, title, entityType}) => {
           timeStamp: serverTimestamp()
         });
       }
-      navigate(-1)
-    } catch(err){
-      console.log(err)
+      console.log("ID:", documentName);
+      
+      navigate(-1);
+    } catch(err) {
+      console.log(err);
     }
   }
-
+  
   return(
     <div className="new">
       <Sidebar/>

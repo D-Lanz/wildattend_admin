@@ -1,6 +1,5 @@
 import React, { Children, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
-
 import AdminDashboard from './pages/admin_dashboard/dashboard';
 import { AuthContext } from './context/AuthContext';
 import Login from './pages/login/loginpage';
@@ -46,7 +45,10 @@ function App() {
                 } />
               <Route path=":userId" element={
                 <RequireAuth>
-                  <Single />
+                  <Single
+                    entityColumns={userColumns}
+                    entity="users"
+                  />
                 </RequireAuth>
               } />
               <Route path="new" element={
@@ -67,7 +69,10 @@ function App() {
               } />
               <Route path=":classId" element={
                 <RequireAuth>
-                  <Single />
+                  <Single
+                    entityColumns={classColumns}
+                    entity="classes"
+                  />
                 </RequireAuth>
                 } />
               <Route path="new" element={
