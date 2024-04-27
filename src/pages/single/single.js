@@ -8,7 +8,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
-const Single = ({ entityColumns, entity }) => {
+const Single = ({ entitySingle, entity }) => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const location = useLocation();
@@ -43,9 +43,14 @@ const Single = ({ entityColumns, entity }) => {
     fetchData();
   }, [id, entity]);
 
-  // Debugging
-  console.log("Data:", data);
-  
+  // Determine the title based on the entity
+  let title;
+  if (entity === 'users') {
+    title = `${data?.lastName || ''}, ${data?.firstName || ''}`;
+  } else if (entity === 'classes') {
+    title = data?.classDesc || '';
+  }
+
   return (
     <div className="single">
       <Sidebar />
@@ -56,22 +61,27 @@ const Single = ({ entityColumns, entity }) => {
             <div className="editButtons">Edit Account</div>
             <h1 className="titles">Information</h1>
             <div className="items">
-              <img
-                src="https://img.game8.co/3619988/99ba4ee9abf0e4a88d54da22b63455ee.png/show"
-                className="itemImgs"
-              />
+              {data && data.img ? (
+                <img src={data.img} className="itemImgs" alt="Item" />
+              ) : (
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"
+                  className="itemImgs"
+                  alt="Placeholder"
+                />
+              )}
               <div className="detailss">
-                {entityColumns.map((column) => (
-                  <div className="detailItems" key={column.field}>
-                    <span className="itemKeys">{column.headerName}:</span>
+                <h1 className="itemTitles">{title}</h1>
+                {entitySingle.map((dataS) => (
+                  <div className="detailItems" key={dataS.field}>
+                    <span className="itemKeys">{dataS.headerName}:</span>
                     <span className="itemValues">
-                      {data && data[column.field]} {/* Fix here */}
+                      {data && data[dataS.field]}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-            {/* <div className="deleteButtons">Delete Account</div> */}
           </div>
           <div className="rights">
             <form>

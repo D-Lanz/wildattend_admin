@@ -10,7 +10,10 @@ import { auth, db, storage } from "../../firebase"
 import { Link } from 'react-router-dom';
 
 const Widget = ({ type }) => {
-  const [amount, setAmount] = useState(0); // State to store the user count
+  const [userAmount, setUserAmount] = useState(0);
+  const [classAmount, setClassAmount] = useState(0);
+
+  let nullAmount = 0;
   let data;
 
   // Fetch user count from Firestore
@@ -27,14 +30,26 @@ const Widget = ({ type }) => {
         }
       });
       
-      setAmount(count);
+      setUserAmount(count);
     } catch (error) {
       console.error("Error fetching count:", error);
     }
   };
 
+  // Fetch class count from Firestore
+  const fetchClassCount = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "classes"));
+      setClassAmount(snapshot.size);
+    } catch (error) {
+      console.error("Error fetching class count:", error);
+    }
+  };
+  
+
   useEffect(() => {
     fetchUserCount();
+    fetchClassCount();
   }, []); // Run once on component mount
 
   switch(type){
@@ -44,6 +59,7 @@ const Widget = ({ type }) => {
         linkph:"See all users",
         link: "users",
         icon:(<PeopleAltIcon className="iconw"/>),
+        amount: userAmount,
       };
       break;
     case "student":
@@ -51,6 +67,7 @@ const Widget = ({ type }) => {
         title:"STUDENTS",
         linkph:"See all students",
         icon:(<SchoolIcon className="iconw"/>),
+        amount: userAmount,
       };
       break;
     case "faculty":
@@ -58,6 +75,7 @@ const Widget = ({ type }) => {
         title:"FACULTY",
         linkph:"See all faculty members",
         icon:(<SquareFootIcon className="iconw"/>),
+        amount: userAmount,
       };
       break;
     case "course":
@@ -66,6 +84,7 @@ const Widget = ({ type }) => {
         linkph:"See all classes",
         link: "classes",
         icon:(<ClassIcon className="iconw"/>),
+        amount: classAmount,
       };
       break;
     case "accesspt":
@@ -74,6 +93,7 @@ const Widget = ({ type }) => {
         linkph:"See all access points",
         link: "accesspts",
         icon:(<RssFeedIcon className="iconw"/>),
+        amount: nullAmount,
     };
     break;
     default:
@@ -84,7 +104,7 @@ const Widget = ({ type }) => {
     <div className="widget">
       <div className="leftw">
         <span className="wtitle">{data.title}</span>
-        <span className="counter">{amount}</span>
+        <span className="counter">{data.amount}</span>
         <Link to={data.link}>
           <span className="linkw">{data.linkph}</span>
         </Link>

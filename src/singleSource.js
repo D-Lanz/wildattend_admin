@@ -1,34 +1,23 @@
+
+export const userSingleT = [
+  {field: 'lastName', headerName: 'Last Name'},
+  {field: 'firstName', headerName: 'First Name'},
+];
 export const userSingle = [
-  { field: 'idNum', headerName: 'ID Number', width: 130, },
-    {
-      field: 'user', headerName: 'User', width: 230, renderCell:(params)=>{
-        return(
-          <div className="cellWithImg">
-            <img className="cellImg" src={params.row.img} alt="avatar"/>
-            {params.row.lastName}, {params.row.firstName}
-          </div>
-        );
-    },
-  },
-  { field: 'email', headerName: 'School Email', width: 230, },
-  { field: 'role', headerName: 'Role', width: 130, },
+  { field: 'idNum', headerName: 'ID Number'},
+  { field: 'email', headerName: 'School Email'},
+  { field: 'department', headerName: 'Department'},
+  { field: 'role', headerName: 'Role'},
 ];
 
+export const classSingleT = [
+  {field: 'classDesc', headerName: 'Class Desc.'}
+];
 export const classSingle = [
-  { field: 'classCode', headerName: 'ClassCode', width: 100, },
-  {
-    field: 'class', headerName: 'Class', width: 230, renderCell:(params)=>{
-      return(
-        <div className="cellWithImg">
-          <img className="cellImg" src={params.row.img} alt="avatar"/>
-          {params.row.classDesc}
-        </div>
-      );
-    },
-  },
-  { field: 'classSec', headerName: 'Section', width: 100, },
-  { field: 'instructor', headerName: 'Instructor', width: 150, },
-  { field: 'classRoom', headerName: 'Classroom', width: 100, },
-  { field: 'semester', headerName: 'Semester', width: 100, },
-  { field: 'schoolYear', headerName: 'School Year', width: 100, },
+  { field: 'classCode', headerName: 'ClassCode'},
+  { field: 'classSec', headerName: 'Section'},
+  { field: 'instructor', headerName: 'Instructor'},
+  { field: 'classRoom', headerName: 'Classroom'},
+  { field: 'semester', headerName: 'Semester'},
+  { field: 'schoolYear', headerName: 'School Year'},
 ];

@@ -8,6 +8,7 @@ import New from './pages/new/new';
 import Single from './pages/single/single';
 import { userInputs, classInputs } from './formSource';
 import { classColumns, userColumns } from './datatablesource';
+import { classSingle, userSingle } from './singleSource';
 
 function App() {
 
@@ -46,7 +47,7 @@ function App() {
               <Route path=":id" element={
                 <RequireAuth>
                   <Single
-                    entityColumns={userColumns}
+                    entitySingle={userSingle}
                     entity="users"
                   />
                 </RequireAuth>
@@ -70,7 +71,7 @@ function App() {
               <Route path=":id" element={
                 <RequireAuth>
                   <Single
-                    entityColumns={classColumns}
+                    entitySingle={classSingle}
                     entity="classes"
                   />
                 </RequireAuth>
