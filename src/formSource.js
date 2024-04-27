@@ -33,8 +33,8 @@ export const userInputs = [
   {
     id: "role",
     label:"Role",
-    type:"text",
-    placeholder: "eg. Student, Faculty, etc.",
+    type:"dropdown", // Change the type to "dropdown"
+    options: ["Student", "Faculty", "Admin"], // Add options for the dropdown
   },
   {
     id: "password",
@@ -78,8 +78,8 @@ export const classInputs= [
   {
     id: "classType",
     label:"Type of Class",
-    type:"text",
-    placeholder: "eg. Lecture, Lab, etc.",
+    type:"dropdown", // Change the type to "dropdown"
+    options: ["Lecture", "Lab", "Online"], // Add options for the dropdown
   },
   {
     id: "days",
@@ -109,7 +109,7 @@ export const classInputs= [
   {
     id: "semester",
     label:"Semester",
-    type:"text",
-    placeholder: "eg. First, Second, etc.",
+    type:"dropdown", // Change the type to "dropdown"
+    options: ["First", "Second", "Midyear"], // Add options for the dropdown
   },
 ]

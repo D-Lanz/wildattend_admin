@@ -4,7 +4,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
 import Datatable from "../../components/datatable/Datatable";
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
@@ -58,7 +58,7 @@ const Single = ({ entitySingle, entity }) => {
         <Navbar />
         <div className="tops">
           <div className="lefts">
-            <div className="editButtons">Edit Account</div>
+          <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
             <h1 className="titles">Information</h1>
             <div className="items">
               {data && data.img ? (

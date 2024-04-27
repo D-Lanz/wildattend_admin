@@ -5,7 +5,7 @@ import Datatable from "../../components/datatable/Datatable";
 
 
 const List = ({title, entity, tableTitle, entityColumns}) => {
-  console.log(entityColumns);
+  // console.log(entityColumns);
   return(
     <div className="list">
         <Sidebar/>

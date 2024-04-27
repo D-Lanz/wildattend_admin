@@ -83,7 +83,7 @@ const Datatable = ({title, entity, tableTitle, entityColumns}) => {
             paginationModel: { page: 0, pageSize: 8 },
           },
         }}
-        pageSizeOptions={[10, 10]}
+        pageSizeOptions={[8, 10]}
         checkboxSelection
       />
     </div>

@@ -6,6 +6,8 @@ import Login from './pages/login/loginpage';
 import List from './pages/list/list';
 import New from './pages/new/new';
 import Single from './pages/single/single';
+import Edit from './pages/edit/edit';
+
 import { userInputs, classInputs } from './formSource';
 import { classColumns, userColumns } from './datatablesource';
 import { classSingle, userSingle } from './singleSource';
@@ -44,14 +46,25 @@ function App() {
                     entityColumns={userColumns}/>
                 </RequireAuth>
                 } />
-              <Route path=":id" element={
-                <RequireAuth>
-                  <Single
-                    entitySingle={userSingle}
-                    entity="users"
-                  />
-                </RequireAuth>
-              } />
+              <Route
+                path=":id"
+                element={
+                  <RequireAuth>
+                    <Single
+                      entitySingle={userSingle}
+                      entity="users"
+                    />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path=":id/edit"
+                element={
+                  <RequireAuth>
+                    <Edit inputs={userInputs} title="Edit User" entityType="user"/>
+                  </RequireAuth>
+                }
+              />
               <Route path="new" element={
                 <RequireAuth>
                   <New inputs={userInputs} title="Add New User" entityType="user" />
@@ -76,6 +89,14 @@ function App() {
                   />
                 </RequireAuth>
                 } />
+              <Route
+                path=":id/edit"
+                element={
+                  <RequireAuth>
+                    <Edit inputs={classInputs} title="Edit Class" entityType="class"/>
+                  </RequireAuth>
+                }
+              />
               <Route path="new" element={
                 <RequireAuth>
                   <New inputs={classInputs} title="Add New Class" entityType="class" />

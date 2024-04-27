@@ -129,18 +129,31 @@ const New = ({inputs, title, entityType}) => {
                 <input className="inputn" onChange={e=>setFile(e.target.files[0])} type="file" id="file" style={{display:"none"}}/>
               </div>
 
-              {inputs.map((input)=>(
+              {inputs.map((input) => (
                 <div className="formInput" key={input.id}>
                   <label className="labeln" htmlFor={input.id}>{input.label}</label>
-                  <input
-                    className="inputn"
-                    id={input.id}
-                    type={input.type}
-                    placeholder={input.placeholder}
-                    pattern={input.pattern}
-                    onChange={handleInput}
-                    required
-                  />
+                  {input.type === "dropdown" ? ( // Check if input type is dropdown
+                    <select
+                      className="inputn"
+                      id={input.id}
+                      onChange={handleInput}
+                      required
+                    >
+                      {input.options.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  ) : ( // Render input field for other types
+                    <input
+                      className="inputn"
+                      id={input.id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      pattern={input.pattern}
+                      onChange={handleInput}
+                      required
+                    />
+                  )}
                 </div>
               ))}
               <button disabled={perc !== null && perc < 100} className="buttonn" type="submit">Submit</button>
