@@ -39,11 +39,10 @@ const Datatable = ({title, entity, tableTitle, entityColumns}) => {
   }
 
   const handleView = (id, rowData) => {
-    // Set the selected row data
-    setSelectedRow(rowData);
-    // Navigate to the appropriate URL
-    navigate(`/${entity}/${id}`);
+    // Navigate to the appropriate URL with both id and rowData
+    navigate(`/${entity}/${id}`, { state: { rowData } });
   };
+  
   
 
   const actionColumn = [

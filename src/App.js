@@ -43,7 +43,7 @@ function App() {
                     entityColumns={userColumns}/>
                 </RequireAuth>
                 } />
-              <Route path=":userId" element={
+              <Route path=":id" element={
                 <RequireAuth>
                   <Single
                     entityColumns={userColumns}
@@ -67,7 +67,7 @@ function App() {
                     entityColumns={classColumns}/>
                 </RequireAuth>
               } />
-              <Route path=":classId" element={
+              <Route path=":id" element={
                 <RequireAuth>
                   <Single
                     entityColumns={classColumns}

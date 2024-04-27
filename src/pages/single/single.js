@@ -4,41 +4,32 @@ import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
 import Datatable from "../../components/datatable/Datatable";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
-
 const Single = ({ entityColumns, entity }) => {
-  const { id } = useParams(); // Access the ID parameter from the URL
+  const { id } = useParams();
   const [data, setData] = useState(null);
+  const location = useLocation();
+  const { rowData } = location.state || {};
+
+  console.log("ID: ", id)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         let fetchedData = null;
-        if (entity) { // Add a conditional check for entity
-          switch (entity) {
-            case "users":
-              const userDocRef = doc(db, 'users', idNum);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                fetchedData = userDocSnap.data();
-              }
-              break;
-            case "classes":
-              const classDocRef = doc(db, 'classes', id);
-              const classDocSnap = await getDoc(classDocRef);
-              if (classDocSnap.exists()) {
-                fetchedData = classDocSnap.data();
-              }
-              break;
-            // Add cases for other collections as needed
-            default:
-              console.log("Unknown entity:", entity);
+        if (entity && id) {
+          const docRef = doc(db, entity, id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            fetchedData = docSnap.data();
           }
         }
-  
+
+        console.log("Fetched data:", fetchedData);
+
         if (fetchedData) {
           setData(fetchedData);
         } else {
@@ -48,17 +39,13 @@ const Single = ({ entityColumns, entity }) => {
         console.error('Error fetching document:', error);
       }
     };
-  
+
     fetchData();
-  }, [id, entity]); // Make sure to include entity in the dependency array
+  }, [id, entity]);
+
+  // Debugging
+  console.log("Data:", data);
   
-
-  console.log("entityColumns:", entityColumns); // Add this debug statement
-  console.log("entity:", entity); // Add this debug statement
-  console.log("id:", id); // Add this debug statement
-  console.log("data:", data); // Add this debug statement
-
-
   return (
     <div className="single">
       <Sidebar />
@@ -78,7 +65,7 @@ const Single = ({ entityColumns, entity }) => {
                   <div className="detailItems" key={column.field}>
                     <span className="itemKeys">{column.headerName}:</span>
                     <span className="itemValues">
-                      {data}
+                      {data && data[column.field]} {/* Fix here */}
                     </span>
                   </div>
                 ))}
