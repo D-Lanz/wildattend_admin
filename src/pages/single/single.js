@@ -2,13 +2,13 @@ import "./single.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
-import Datatable from "../../components/datatable/Datatable";
+import Datatable2 from "../../components/datatable2/Datatable2";
 import { useEffect, useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
-const Single = ({ entitySingle, entity }) => {
+const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns }) => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const location = useLocation();
@@ -84,29 +84,17 @@ const Single = ({ entitySingle, entity }) => {
             </div>
           </div>
           <div className="rights">
-            <form>
-              <label htmlFor="courses">Course:</label>
-              <select id="courses" name="courses">
-                <option value="CSIT111">CSIT111</option>
-                <option value="CSIT222">CSIT222</option>
-                <option value="CSIT333">CSIT333</option>
-                <option value="CSIT444">CSIT444</option>
-              </select>
-              <label htmlFor="status">Status:</label>
-              <select id="status" name="courses">
-                <option value="Present">Present</option>
-                <option value="Late">Late</option>
-                <option value="Absent">Absent</option>
-              </select>
-              <input type="submit" />
-            </form>
             <Chart aspect={3 / 1} title="Attendance" />
           </div>
         </div>
 
         <div className="bottom">
           {/* <Datatable title="Classes Attended"/> */}
-          <p>Classes Attended table</p>
+          <Datatable2
+            title={title}
+            entity={entityTable}
+            tableTitle={tableTitle}
+            entityColumns={entityColumns}/>
         </div>
       </div>
     </div>

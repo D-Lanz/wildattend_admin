@@ -38,7 +38,6 @@ const Edit = ({inputs, title, entityType }) => {
     fetchData();
   }, [id, entityType]);
 
-
   const handleInput = (e) => {
     const id = e.target.id;
     const value = e.target.value;
@@ -47,33 +46,31 @@ const Edit = ({inputs, title, entityType }) => {
     console.log(data)
   };
 
-
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       // Add logic to differentiate between user and class
-      let collectionName, documentName;
-
+      let collectionName, documentId;
+  
       switch (entityType) {
         case "user":
           collectionName = "users";
-          documentName = data.idNum;
+          documentId = id; // Use the existing user ID
           break;
         case "class":
           collectionName = "classes";
-          // Construct the ID using classCode, section, schoolYear, and semester
-          documentName = `${data.classCode}${data.classSec}-${data.schoolYear}${data.semester}`;
+          documentId = id; // Use the existing class ID
           break;
         default:
           throw new Error("Invalid entityType");
       }
-
+  
       // Upload file if available
       if (file) {
         const name = new Date().getTime() + file.name;
         const storageRef = ref(storage, name);
         const uploadTask = uploadBytesResumable(storageRef, file);
-
+  
         uploadTask.on('state_changed', 
           (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -100,19 +97,20 @@ const Edit = ({inputs, title, entityType }) => {
           }
         );
       }
-
-      // Update document in Firestore
-      await setDoc(doc(db, collectionName, documentName), {
+  
+      // Update document in Firestore using the existing document ID
+      await setDoc(doc(db, collectionName, documentId), {
         ...data,
         timeStamp: serverTimestamp()
       });
-
-      console.log("ID:", documentName);
+  
+      console.log("ID:", documentId);
       navigate(-1); // Navigate back after successful update
     } catch (err) {
       console.log(err);
     }
   };
+  
   
   return(
     <div className="edit">

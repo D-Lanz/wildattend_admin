@@ -61,9 +61,8 @@ const New = ({inputs, title, entityType}) => {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      // Add logic to differentiate between user and class
       let collectionName, documentName;
-  
+    
       switch(entityType) {
         case "user":
           collectionName = "users";
@@ -73,11 +72,12 @@ const New = ({inputs, title, entityType}) => {
           collectionName = "classes";
           // Construct the ID using classCode, section, schoolYear, and semester
           documentName = `${data.classCode}${data.classSec}-${data.schoolYear}${data.semester}`;
+          console.log("Constructed Document Name:", documentName); // Debugging statement
           break;
         default:
           throw new Error("Invalid entityType");
       }
-  
+    
       if (entityType === "user") {
         const res = await createUserWithEmailAndPassword (
           auth,
@@ -87,12 +87,17 @@ const New = ({inputs, title, entityType}) => {
         
         await setDoc(doc(db, collectionName, documentName), {
           ...data,
-          timeStamp: serverTimestamp()
+          timeStamp: serverTimestamp(),
+          classes: {}, // Initialize classes map for the user
+          attendanceRecords: {} // Initialize attendanceRecords map for the user
         });
+        
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
-          timeStamp: serverTimestamp()
+          instructor: null, // Initialize instructor reference as null
+          studentsEnrolled: {}, // Initialize studentsEnrolled map for the class
+          attendanceRecords: {} // Initialize attendanceRecords map for the class
         });
       }
       console.log("ID:", documentName);
@@ -102,6 +107,7 @@ const New = ({inputs, title, entityType}) => {
       console.log(err);
     }
   }
+  
   
   return(
     <div className="new">
@@ -156,6 +162,7 @@ const New = ({inputs, title, entityType}) => {
                   )}
                 </div>
               ))}
+              
               <button disabled={perc !== null && perc < 100} className="buttonn" type="submit">Submit</button>
             </form>
           </div>

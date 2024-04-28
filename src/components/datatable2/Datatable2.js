@@ -1,15 +1,13 @@
-import "./datatable.css";
+import "./datatable2.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { userColumns, classColumns } from "../../datatablesource";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable = ({entity, tableTitle, entityColumns}) => {
+const Datatable2 = ({entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(()=>{
     //LISTEN (REALTIME)
@@ -28,13 +26,14 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
     };
   },[]);
 
-  const handleDelete = async (id) => {
+  // WILL REMOVE 
+  // IF "CLASSES", IT WILL REMOVE STUDENTS, NOT DELETE
+  // IF "USERS", IT WILL REMOVE CLASSES ENROLLED,
+  const handleRemove = async (id) => {
     try {
-      await deleteDoc(doc(db, entity, id)); // Change {entity} to entity
-      console.log("Delete successful");
+      
     } catch (err) {
-      setData(data.filter((item) => item.id !== id));
-      console.log(err);
+      
     }
   }
 
@@ -42,8 +41,6 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
     // Navigate to the appropriate URL with both id and rowData
     navigate(`/${entity}/${id}`, { state: { rowData } });
   };
-  
-  
 
   const actionColumn = [
     { field: "action",
@@ -57,21 +54,21 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
                 onClick={() => handleView(params.row.id)}
               >View</div>
             <div
-              className="deleteButton"
-              onClick={() => handleDelete(params.row.id)}
+              className="removeButton"
+              onClick={() => handleRemove(params.row.id)}
             >
-              Delete
+              Remove
             </div>
           </div>
         );
   }} ];
 
   return(
-    <div className="datatable">
-      <div className="datatableTitle">
+    <div className="datatable2">
+      <div className="datatable2Title">
         {tableTitle}
-        <Link to={`/${entity}/new`} style={{ textDecoration: "none" }} className="linkdt">
-          Add New
+        <Link to={`/${entity}/select`} style={{ textDecoration: "none" }} className="linkdt">
+          Assign
         </Link>
       </div>
       <DataGrid
@@ -79,14 +76,14 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
         columns={[...entityColumns, ...actionColumn]}
         initialState={{
           pagination: {
-            paginationModel: { page: 0, pageSize: 8 },
+            paginationModel: { page: 0, pageSize: 5 },
           },
         }}
-        pageSizeOptions={[8, 10]}
+        pageSizeOptions={[5, 10]}
         checkboxSelection
       />
     </div>
   )
 }
 
-export default Datatable;
+export default Datatable2;

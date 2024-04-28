@@ -63,15 +63,15 @@ export const classInputs= [
     type:"text",
     placeholder: "eg. F0/G0",
   },
-  {
-    id: "instructor",
-    label:"Instructor",
-    type:"text",
-    placeholder: "eg. Firstname Lastname",
-  },
+  // {
+  //   id: "instructor",
+  //   label:"Instructor",
+  //   type:"text",
+  //   placeholder: "eg. Firstname Lastname",
+  // },
   {
     id: "classRoom",
-    label:"classRoom",
+    label:"Classroom",
     type:"text",
     placeholder: "eg. GLE, NGE, etc.",
   },
@@ -79,14 +79,14 @@ export const classInputs= [
     id: "classType",
     label:"Type of Class",
     type:"dropdown", // Change the type to "dropdown"
-    options: ["Lecture", "Lab", "Online"], // Add options for the dropdown
+    options: ["Lecture", "Lab"], // Add options for the dropdown
   },
-  {
-    id: "days",
-    label:"Day/s of the Week",
-    type:"Text",
-    placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
-  },
+   {
+     id: "days",
+     label:"Day/s of the Week",
+     type:"text",
+     placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
+   },
   {
     id: "startTime",
     label:"Start Time",
@@ -104,7 +104,7 @@ export const classInputs= [
     label:"School Year",
     type:"text",
     placeholder: "eg.2324, etc.",
-    pattern:"0000",
+    pattern: "[0-9]{4}",
   },
   {
     id: "semester",

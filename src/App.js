@@ -13,7 +13,6 @@ import { classColumns, userColumns } from './datatablesource';
 import { classSingle, userSingle } from './singleSource';
 
 function App() {
-
   const {currentUser} = useContext(AuthContext)
 
   const RequireAuth = ({ children }) => {
@@ -28,38 +27,27 @@ function App() {
         <Routes>
           <Route path="/">
             <Route path="login" element={<Login />} />
-            <Route
-                index
-                element={
+            <Route index element={
                   <RequireAuth>
                     <AdminDashboard />
                   </RequireAuth>
-                }
+              }
             />
             <Route path="users">
               <Route index element={
                 <RequireAuth>
-                  <List
-                    title="List of Users"
-                    entity="users"
-                    tableTitle="Add New User"
-                    entityColumns={userColumns}/>
+                  <List entity="users" tableTitle="List of Users" entityColumns={userColumns}/>
                 </RequireAuth>
                 } />
-              <Route
-                path=":id"
-                element={
+              <Route path=":id" element={
                   <RequireAuth>
-                    <Single
-                      entitySingle={userSingle}
-                      entity="users"
-                    />
+                    <Single entitySingle={userSingle} entity="users"
+                      // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
+                      entityTable="classes" tableTitle="Assign to a Class" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />
-              <Route
-                path=":id/edit"
-                element={
+              <Route path=":id/edit" element={
                   <RequireAuth>
                     <Edit inputs={userInputs} title="Edit User" entityType="user"/>
                   </RequireAuth>
@@ -74,24 +62,18 @@ function App() {
             <Route path="classes">
               <Route index element={
                 <RequireAuth>
-                  <List
-                    title="List of Classes"
-                    entity="classes"
-                    tableTitle="Add New Class"
-                    entityColumns={classColumns}/>
+                  <List entity="classes" tableTitle="List of Classs" entityColumns={classColumns}/>
                 </RequireAuth>
               } />
               <Route path=":id" element={
                 <RequireAuth>
-                  <Single
-                    entitySingle={classSingle}
-                    entity="classes"
+                  <Single entitySingle={classSingle} entity="classes"
+                    // INSIDE CLASSES, THEIR DATA TABLE SHOWS THEIR LIST OF USERS INVOLVED
+                    entityTable="users" tableTitle="List of Students Enrolled" entityColumns={userColumns}
                   />
                 </RequireAuth>
                 } />
-              <Route
-                path=":id/edit"
-                element={
+              <Route path=":id/edit" element={
                   <RequireAuth>
                     <Edit inputs={classInputs} title="Edit Class" entityType="class"/>
                   </RequireAuth>
@@ -106,11 +88,7 @@ function App() {
             <Route path="rooms">
               <Route index element={
                 <RequireAuth>
-                  <List
-                    title="List of Rooms"
-                    entity="rooms"
-                    tableTitle="Add New Room"
-                    entityColumns={classColumns}/>
+                  <List title="List of Rooms" entity="rooms" tableTitle="Add New Room" entityColumns={classColumns}/>
                 </RequireAuth>
               } />
               <Route path=":classId" element={

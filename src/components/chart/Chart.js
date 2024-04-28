@@ -12,6 +12,24 @@ const Chart = ({aspect, title}) => {
   return (
     <div className="chart">
       <div className="titlec">{title}</div>
+      <form>
+        <label htmlFor="courses">Course:</label>
+        <select id="courses" name="courses">
+          <option value="CSIT111">CSIT111</option>
+          <option value="CSIT222">CSIT222</option>
+          <option value="CSIT333">CSIT333</option>
+          <option value="CSIT444">CSIT444</option>
+        </select>
+        <label htmlFor="status">Status:</label>
+        <select id="status" name="courses">
+          <option value="Present">Present</option>
+          <option value="Late">Late</option>
+          <option value="Absent">Absent</option>
+        </select>
+        <input type="submit" />
+      </form>
+
+
       <ResponsiveContainer width="100%" aspect={aspect}>
         <AreaChart width={730} height={250} data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
