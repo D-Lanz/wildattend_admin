@@ -3,22 +3,16 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
 import Datatable2 from "../../components/datatable2/Datatable2";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect, useState } from "react";
-import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
-const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign }) => {
+const Connect = ({ entitySingle, entity, entityTable, tableTitle, entityColumns }) => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const location = useLocation();
   const { rowData } = location.state || {};
-  const navigate = useNavigate();
-
-  const handleBack = () => {
-    navigate(-1); // Navigate back to the last page
-  };
 
   console.log("ID: ", id)
 
@@ -58,13 +52,12 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
   }
 
   return (
-    <div className="single">
+    <div className="connect">
       <Sidebar />
-      <div className="singleContainer">
+      <div className="singleconnectContainer">
         <Navbar />
         <div className="tops">
           <div className="lefts">
-          <ArrowBackIcon onClick={handleBack} className="backButton" />
           <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
             <h1 className="titles">Information</h1>
             <div className="items">
@@ -101,10 +94,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             title={title}
             entity={entityTable}
             tableTitle={tableTitle}
-            entityColumns={entityColumns}
-            id={id}
-            entityAssign={entityAssign}
-          />
+            entityColumns={entityColumns}/>
         </div>
       </div>
     </div>

@@ -1,17 +1,24 @@
 import "./selectList.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import Datatable from "../../components/datatable/Datatable";
+import DatatableSelect from "../../components/datatableSelect/DatatableSelect";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from "react-router-dom";
 
+const SelectList = ({title, entity, tableTitle, entityColumns}) => {
+  const navigate = useNavigate();
 
-const List = ({title, entity, tableTitle, entityColumns}) => {
-  // console.log(entityColumns);
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the last page
+  };
+
   return(
-    <div className="list">
+    <div className="selectlist">
         <Sidebar/>
-        <div className="listContainer">
+        <div className="selectlistContainer">
           <Navbar/>
-          <Datatable 
+          <ArrowBackIcon onClick={handleBack} className="backButton" />
+          <DatatableSelect 
             title={title}
             entity={entity}
             tableTitle={tableTitle}
@@ -22,4 +29,4 @@ const List = ({title, entity, tableTitle, entityColumns}) => {
   )
 }
 
-export default List;
+export default SelectList;

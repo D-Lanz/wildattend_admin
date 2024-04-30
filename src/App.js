@@ -11,6 +11,7 @@ import Edit from './pages/edit/edit';
 import { userInputs, classInputs } from './formSource';
 import { classColumns, userColumns } from './datatablesource';
 import { classSingle, userSingle } from './singleSource';
+import SelectList from './pages/selectList/selectList';
 
 function App() {
   const {currentUser} = useContext(AuthContext)
@@ -26,53 +27,89 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/">
+
+            {/* route for login */}
             <Route path="login" element={<Login />} />
+
+            {/* route for admin dashboard(index) */}
             <Route index element={
                   <RequireAuth>
                     <AdminDashboard />
                   </RequireAuth>
               }
             />
+
+
+
+            {/* route for "users" entity*/}
             <Route path="users">
+              {/* route for list of "users"*/}
               <Route index element={
                 <RequireAuth>
                   <List entity="users" tableTitle="List of Users" entityColumns={userColumns}/>
                 </RequireAuth>
-                } />
+                }
+              />
+
+              {/* route for reading single user page*/}
               <Route path=":id" element={
                   <RequireAuth>
                     <Single entitySingle={userSingle} entity="users"
                       // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
-                      entityTable="classes" tableTitle="Assign to a Class" entityColumns={classColumns}/>
+                      entityAssign="users" entityTable="classes" tableTitle="Assign to a Class" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />
+
+              {/* route for editing user info */}
               <Route path=":id/edit" element={
                   <RequireAuth>
                     <Edit inputs={userInputs} title="Edit User" entityType="user"/>
                   </RequireAuth>
                 }
               />
+
+              {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
+              <Route path=":id/select" element={
+                  <RequireAuth>
+                    <SelectList entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
+                  </RequireAuth>
+                }
+              />
+
+              {/* Adding a new user */}
               <Route path="new" element={
                 <RequireAuth>
                   <New inputs={userInputs} title="Add New User" entityType="user" />
                 </RequireAuth>
-              } />
+                }
+              />
             </Route>
+
+
+            {/* route for "classes" entity*/}
             <Route path="classes">
+              
+               {/* route for list of "classes"*/}
               <Route index element={
-                <RequireAuth>
-                  <List entity="classes" tableTitle="List of Classs" entityColumns={classColumns}/>
-                </RequireAuth>
-              } />
+                  <RequireAuth>
+                    <List entity="classes" tableTitle="List of Classs" entityColumns={classColumns}/>
+                  </RequireAuth>
+                }
+              />
+
+              {/* route for viewing a single class*/}
               <Route path=":id" element={
                 <RequireAuth>
                   <Single entitySingle={classSingle} entity="classes"
                     // INSIDE CLASSES, THEIR DATA TABLE SHOWS THEIR LIST OF USERS INVOLVED
-                    entityTable="users" tableTitle="List of Students Enrolled" entityColumns={userColumns}
+                    entityTable="users" entityAssign="classes" tableTitle="List of Students Enrolled" entityColumns={userColumns} 
                   />
                 </RequireAuth>
-                } />
+                }
+              />
+
+              {/* route for editing class entity*/}
               <Route path=":id/edit" element={
                   <RequireAuth>
                     <Edit inputs={classInputs} title="Edit Class" entityType="class"/>

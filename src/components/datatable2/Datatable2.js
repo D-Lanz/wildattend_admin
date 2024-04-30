@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable2 = ({entity, tableTitle, entityColumns}) => {
+const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
 
@@ -37,9 +37,8 @@ const Datatable2 = ({entity, tableTitle, entityColumns}) => {
     }
   }
 
-  const handleView = (id, rowData) => {
-    // Navigate to the appropriate URL with both id and rowData
-    navigate(`/${entity}/${id}`, { state: { rowData } });
+  const handleAssign = (id) => {
+    
   };
 
   const actionColumn = [
@@ -67,7 +66,8 @@ const Datatable2 = ({entity, tableTitle, entityColumns}) => {
     <div className="datatable2">
       <div className="datatable2Title">
         {tableTitle}
-        <Link to={`/${entity}/select`} style={{ textDecoration: "none" }} className="linkdt">
+        {/* MODIFY THIS ASSIGN BUTTON */}
+        <Link to={`/${entityAssign}/${id}/select`} style={{ textDecoration: "none" }} className="linkdt">
           Assign
         </Link>
       </div>

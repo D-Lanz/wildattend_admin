@@ -2,15 +2,22 @@ import "./list.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import Datatable from "../../components/datatable/Datatable";
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from "react-router-dom";
 
 const List = ({title, entity, tableTitle, entityColumns}) => {
-  // console.log(entityColumns);
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the last page
+  };
+
   return(
     <div className="list">
         <Sidebar/>
         <div className="listContainer">
           <Navbar/>
+          <ArrowBackIcon onClick={handleBack} className="backButton" />
           <Datatable 
             title={title}
             entity={entity}

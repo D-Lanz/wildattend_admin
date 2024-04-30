@@ -1,10 +1,10 @@
-.single{
+.connect{
   display: flex;
   width: 100%;
   min-height: 100vh;
 }
 
-.singleContainer{
+.connectContainer{
   background: linear-gradient(to bottom, #FFFFFF, #CEA108);
   flex: 6;
   height: 100%;
@@ -97,10 +97,4 @@
   font-size: 16px;
   color: rgba(128, 0, 0, 0.445);
   margin-bottom: 20px;
-}
-
-.backButton{
-  color: maroon;
-  font-size: 100px;
-  cursor: pointer;
 }

@@ -1,8 +1,9 @@
 import "./new.css"
-import { useEffect, useState } from "react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore"; 
 import { auth, db, storage } from "../../firebase"
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -88,16 +89,16 @@ const New = ({inputs, title, entityType}) => {
         await setDoc(doc(db, collectionName, documentName), {
           ...data,
           timeStamp: serverTimestamp(),
-          classes: {}, // Initialize classes map for the user
-          attendanceRecords: {} // Initialize attendanceRecords map for the user
+          classes: [], // Initialize classes array for the user
+          attendanceRecords: [], // Initialize attendanceRecords array for the user
         });
         
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
           instructor: null, // Initialize instructor reference as null
-          studentsEnrolled: {}, // Initialize studentsEnrolled map for the class
-          attendanceRecords: {} // Initialize attendanceRecords map for the class
+          studentsEnrolled: [], // Initialize studentsEnrolled array for the class
+          attendanceRecords: [], // Initialize attendanceRecords array for the class
         });
       }
       console.log("ID:", documentName);
@@ -108,6 +109,9 @@ const New = ({inputs, title, entityType}) => {
     }
   }
   
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the last page
+  };
   
   return(
     <div className="new">
@@ -115,6 +119,7 @@ const New = ({inputs, title, entityType}) => {
       <div className="newContainer">
         <Navbar/>
         <div className="topn">
+          <ArrowBackIcon onClick={handleBack} className="backButton" />
           <h2 className="titlen">{title}</h2>
         </div>
         <div className="bottomn">
