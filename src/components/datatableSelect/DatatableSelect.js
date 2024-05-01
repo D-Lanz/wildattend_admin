@@ -79,8 +79,10 @@ const DatatableSelect = ({ entity, tableTitle, entityColumns, id, entityAssign }
         checkboxSelection
         onSelectionModelChange={(newSelection) => {
           setSelectedRowIds(newSelection.selectionModel); // Track the selected row ids
+          console.log("Selected Row Ids:", newSelection.selectionModel); // Log selected row ids
         }}
       />
+
     </div>
   );
 };
