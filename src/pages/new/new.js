@@ -1,98 +1,94 @@
-import "./new.css"
+import "./new.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useEffect, useState } from "react";
-import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore"; 
-import { auth, db, storage } from "../../firebase"
+import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db, storage } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
-const New = ({inputs, title, entityType}) => {
-  const [file,setFile] = useState("");
-  const [data,setData] = useState({});
-  const [perc,setPerc] = useState(null);
-  const navigate = useNavigate()
+const New = ({ inputs, title, entityType }) => {
+  const [file, setFile] = useState("");
+  const [data, setData] = useState({});
+  const [perc, setPerc] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect(()=>{
+  useEffect(() => {
     const uploadFile = () => {
-      const name = new Date().getTime() + file.name
-      console.log(name)
+      const name = new Date().getTime() + file.name;
+      console.log(name);
 
       const storageRef = ref(storage, file.name);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
-      uploadTask.on('state_changed', 
+      uploadTask.on(
+        "state_changed",
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
+          console.log("Upload is " + progress + "% done");
           setPerc(progress);
           switch (snapshot.state) {
-            case 'paused':
-              console.log('Upload is paused');
+            case "paused":
+              console.log("Upload is paused");
               break;
-            case 'running':
-              console.log('Upload is running');
+            case "running":
+              console.log("Upload is running");
               break;
             default:
               break;
           }
-        }, 
+        },
         (error) => {
-          console.log(error)
-        }, 
+          console.log(error);
+        },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setData((prev)=>({...prev, img:downloadURL}))
+            setData((prev) => ({ ...prev, img: downloadURL }));
           });
         }
       );
     };
     file && uploadFile();
-  },[file]);
+  }, [file]);
 
   const handleInput = (e) => {
     const id = e.target.id;
     const value = e.target.value;
-    setData({...data, [id]: value})
-  }
+    setData({ ...data, [id]: value });
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      let collectionName, documentName;
-    
-      switch(entityType) {
+      let collectionName;
+
+      switch (entityType) {
         case "user":
           collectionName = "users";
-          documentName = data.idNum;
           break;
         case "class":
           collectionName = "classes";
-          // Construct the ID using classCode, section, schoolYear, and semester
-          documentName = `${data.classCode}${data.classSec}-${data.schoolYear}${data.semester}`;
-          console.log("Constructed Document Name:", documentName); // Debugging statement
           break;
         default:
           throw new Error("Invalid entityType");
       }
-    
+
       if (entityType === "user") {
-        const res = await createUserWithEmailAndPassword (
+        const res = await createUserWithEmailAndPassword(
           auth,
           data.email,
           data.password
         );
-        
-        await setDoc(doc(db, collectionName, documentName), {
+
+        await setDoc(doc(db, collectionName, res.user.uid), {
           ...data,
           timeStamp: serverTimestamp(),
           classes: [], // Initialize classes array for the user
           attendanceRecords: [], // Initialize attendanceRecords array for the user
         });
-        
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
@@ -101,23 +97,22 @@ const New = ({inputs, title, entityType}) => {
           attendanceRecords: [], // Initialize attendanceRecords array for the class
         });
       }
-      console.log("ID:", documentName);
-      
+
       navigate(-1);
-    } catch(err) {
+    } catch (err) {
       console.log(err);
     }
-  }
-  
+  };
+
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
-  
-  return(
+
+  return (
     <div className="new">
-      <Sidebar/>
+      <Sidebar />
       <div className="newContainer">
-        <Navbar/>
+        <Navbar />
         <div className="topn">
           <ArrowBackIcon onClick={handleBack} className="backButton" />
           <h2 className="titlen">{title}</h2>
@@ -125,9 +120,11 @@ const New = ({inputs, title, entityType}) => {
         <div className="bottomn">
           <div className="leftn">
             <img
-              src={ 
-                file ? URL.createObjectURL(file)
-                : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"}
+              src={
+                file
+                  ? URL.createObjectURL(file)
+                  : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"
+              }
               className="newImg"
             />
           </div>
@@ -135,15 +132,24 @@ const New = ({inputs, title, entityType}) => {
             <form className="formn" onSubmit={handleAdd}>
               <div className="formInput">
                 <label className="labeln" htmlFor="file">
-                  Image: <DriveFolderUploadIcon className="iconn"/>
+                  Image: <DriveFolderUploadIcon className="iconn" />
                 </label>
-                <input className="inputn" onChange={e=>setFile(e.target.files[0])} type="file" id="file" style={{display:"none"}}/>
+                <input
+                  className="inputn"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  type="file"
+                  id="file"
+                  style={{ display: "none" }}
+                />
               </div>
 
               {inputs.map((input) => (
                 <div className="formInput" key={input.id}>
-                  <label className="labeln" htmlFor={input.id}>{input.label}</label>
-                  {input.type === "dropdown" ? ( // Check if input type is dropdown
+                  <label className="labeln" htmlFor={input.id}>
+                    {input.label}
+                  </label>
+                  {input.type === "dropdown" ? (
+                    // Check if input type is dropdown
                     <select
                       className="inputn"
                       id={input.id}
@@ -151,10 +157,13 @@ const New = ({inputs, title, entityType}) => {
                       required
                     >
                       {input.options.map((option) => (
-                        <option key={option} value={option}>{option}</option>
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
                       ))}
                     </select>
-                  ) : ( // Render input field for other types
+                  ) : (
+                    // Render input field for other types
                     <input
                       className="inputn"
                       id={input.id}
@@ -167,14 +176,20 @@ const New = ({inputs, title, entityType}) => {
                   )}
                 </div>
               ))}
-              
-              <button disabled={perc !== null && perc < 100} className="buttonn" type="submit">Submit</button>
+
+              <button
+                disabled={perc !== null && perc < 100}
+                className="buttonn"
+                type="submit"
+              >
+                Submit
+              </button>
             </form>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default New;
