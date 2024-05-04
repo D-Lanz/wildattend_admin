@@ -86,15 +86,15 @@ const New = ({ inputs, title, entityType }) => {
         await setDoc(doc(db, collectionName, res.user.uid), {
           ...data,
           timeStamp: serverTimestamp(),
-          classes: [], // Initialize classes array for the user
-          attendanceRecords: [], // Initialize attendanceRecords array for the user
+          // classes: [], // Initialize classes array for the user
+          // attendanceRecords: [], // Initialize attendanceRecords array for the user
         });
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
           instructor: null, // Initialize instructor reference as null
-          studentsEnrolled: [], // Initialize studentsEnrolled array for the class
-          attendanceRecords: [], // Initialize attendanceRecords array for the class
+          // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
+          // attendanceRecords: [], // Initialize attendanceRecords array for the class
         });
       }
 

@@ -1,11 +1,11 @@
-import "./datatable2.css";
+import "./datatablerecord.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entityConnect}) => {
+const DatatableRecord = ({entity, tableTitle, entityColumns, id}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
@@ -96,40 +96,10 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
   fetchData();
 }, [id, location.pathname]);
 
-
-  // WILL REMOVE 
-  // IF "CLASSES", IT WILL REMOVE STUDENTS, NOT DELETE
-  // IF "USERS", IT WILL REMOVE CLASSES ENROLLED,
-  const handleRemove = async (id) => {
-    try {
-      
-    } catch (err) {
-      
-    }
-  }
-
-  const handleAssign = (id) => {
-    
+  const handleView = (id, rowData) => {
+    // Navigate to the appropriate URL with both id and rowData
+    // navigate(`/${entityConnect}/${id}`, { state: { rowData } });
   };
-
-  const handleView = async (id) => {
-    try {
-      // Query the "userClasses" collection for the provided ID
-      const userClassRef = doc(db, "userClasses", id);
-      const userClassDocSnap = await getDoc(userClassRef);
-      if (userClassDocSnap.exists()) {
-        // Navigate to the appropriate URL with the "userClasses" document ID
-        navigate(`/userClasses/${id}`, { state: { rowData: userClassDocSnap.data() } });
-      } else {
-        console.error(`Document with ID ${id} does not exist in the "userClasses" collection`);
-      }
-    } catch (error) {
-      console.error("Error fetching user class document:", error);
-    }
-  };
-  
-  
-  
 
   const actionColumn = [
     { field: "action",
@@ -138,24 +108,18 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
       renderCell:(params) => {
         return(
           <div className="cellAction">
-            <div className="viewButton" onClick={() => handleView(params.row.id)}>
-              View
-            </div>
-            <div className="removeButton" onClick={() => handleRemove(params.row.id)}>
-              Remove
-            </div>
+              <div
+                className="viewButton"
+                onClick={() => handleView(params.row.id)}
+              >View</div>
           </div>
         );
   }} ];
 
   return(
-    <div className="datatable2">
-      <div className="datatable2Title">
+    <div className="datatablerecord">
+      <div className="datatablerecordTitle">
         {tableTitle}
-        {/* MODIFY THIS ASSIGN BUTTON */}
-        <Link to={`/${entityAssign}/${id}/select`} style={{ textDecoration: "none" }} className="linkdt">
-          Assign
-        </Link>
       </div>
       <DataGrid
         rows={data}
@@ -172,4 +136,4 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
   )
 }
 
-export default Datatable2;
+export default DatatableRecord;

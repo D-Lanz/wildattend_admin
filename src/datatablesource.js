@@ -32,3 +32,9 @@ export const classColumns = [
   { field: 'semester', headerName: 'Semester', width: 100, },
   { field: 'schoolYear', headerName: 'School Year', width: 100, },
 ];
+
+export const userClassColumns = [
+  { field: 'status', headerName: 'Status', width: 100, },
+  { field: 'timeIn', headerName: 'Time In', width: 200, },
+  { field: 'timeOut', headerName: 'Time Out', width: 200, },
+];

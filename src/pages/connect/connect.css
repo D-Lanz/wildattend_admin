@@ -16,7 +16,7 @@
   gap: 20px;
 }
 
-.lefts{
+.lefts, .rights{
   flex: 1;
   padding: 20px;
   -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
@@ -25,15 +25,6 @@
   border-radius: 10px;
   position: relative;
   background-color: #FFFFFF;
-}
-
-.rights{
-  flex: 2;
-  background-color: white;
-  border-radius: 10px;
-  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
-  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
-  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
 }
 
 .items{

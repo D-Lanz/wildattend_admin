@@ -9,12 +9,13 @@ import New from './pages/new/new';
 import Single from './pages/single/single';
 import Edit from './pages/edit/edit';
 import SelectList from './pages/selectList/selectList';
+import Connect from './pages/connect/connect';
 
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs } from './formSource';
 
 // FOR LIST.JS
-import { classColumns, userColumns } from './datatablesource';
+import { classColumns, userColumns, userClassColumns } from './datatablesource';
 
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle } from './singleSource';
@@ -27,7 +28,7 @@ function App() {
     return currentUser ? children : <Navigate to="/login" />;
   };
 
-  console.log(currentUser)
+  // console.log(currentUser)
 
   return (
     <div className="App">
@@ -45,8 +46,7 @@ function App() {
                   </RequireAuth>
               }
             />
-
-
+            
 
             {/* route for "users" entity*/}
             <Route path="users">
@@ -129,6 +129,23 @@ function App() {
                 </RequireAuth>
                 } />
             </Route>
+
+
+            {/* route for "userClasses" entity*/}
+            <Route path="userClasses">
+              
+              {/* route for viewing a single class*/}
+              <Route path=":id" element={
+                <RequireAuth>
+                  <Connect userColumns={userSingle} classColumns={classSingle}/>
+                </RequireAuth>
+                }
+              />
+
+            </Route>
+
+
+            {/* route for "rooms" entity*/}
             <Route path="rooms">
               <Route index element={
                 <RequireAuth>
