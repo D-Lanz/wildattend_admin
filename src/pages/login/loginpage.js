@@ -6,7 +6,6 @@ import { auth } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
 import { type } from "@testing-library/user-event/dist/type";
 
-
 const LoginPage = () => {
   const [error, setError] = useState(false);
   const [email, setEmail] = useState("");

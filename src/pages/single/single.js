@@ -9,11 +9,13 @@ import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import { getDoc, doc } from "firebase/firestore"; // Import getDoc and doc from Firestore
 import { db } from "../../firebase"; // Import db from firebase
 
-const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign }) => {
+const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign, entityConnect }) => {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  
   const location = useLocation();
   const { rowData } = location.state || {};
+  
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -104,6 +106,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             entityColumns={entityColumns}
             id={id}
             entityAssign={entityAssign}
+            entityConnect={entityConnect}
           />
         </div>
       </div>

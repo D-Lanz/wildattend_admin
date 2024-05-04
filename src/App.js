@@ -1,17 +1,24 @@
 import React, { Children, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
-import AdminDashboard from './pages/admin_dashboard/dashboard';
 import { AuthContext } from './context/AuthContext';
+
+import AdminDashboard from './pages/admin_dashboard/dashboard';
 import Login from './pages/login/loginpage';
 import List from './pages/list/list';
 import New from './pages/new/new';
 import Single from './pages/single/single';
 import Edit from './pages/edit/edit';
-
-import { userInputs, classInputs } from './formSource';
-import { classColumns, userColumns } from './datatablesource';
-import { classSingle, userSingle } from './singleSource';
 import SelectList from './pages/selectList/selectList';
+
+// FOR INPUTS IN NEW.JS & EDIT.JS
+import { userInputs, classInputs } from './formSource';
+
+// FOR LIST.JS
+import { classColumns, userColumns } from './datatablesource';
+
+// FOR SINGLE.JS DETAILS
+import { classSingle, userSingle } from './singleSource';
+
 
 function App() {
   const {currentUser} = useContext(AuthContext)
@@ -56,7 +63,7 @@ function App() {
                   <RequireAuth>
                     <Single entitySingle={userSingle} entity="users"
                       // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
-                      entityAssign="users" entityTable="classes" tableTitle="Assign to a Class" entityColumns={classColumns}/>
+                      entityAssign="users" entityTable="classes" entityConnect="userClasses" tableTitle="Assign to a Class" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />

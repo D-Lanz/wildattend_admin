@@ -1,76 +1,101 @@
 import "./datatable2.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, doc, getDoc, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
+const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entityConnect}) => {
   const navigate = useNavigate(); // Access to the navigate function
+  const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
   
   console.log(entity)
 
   useEffect(() => {
-    const entityRef = doc(db, entityAssign, id); // Assuming "entity" is your collection name
-    const unsub = onSnapshot(entityRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const entityData = docSnapshot.data();
-        if (entityAssign === "users") {
-          const classRefs = entityData.classes;
-          if (classRefs && classRefs.length > 0) {
-            Promise.all(classRefs.map(classRef => getDoc(classRef)))
-              .then(classSnapshots => {
-                const classesData = classSnapshots.map(classSnapshot => ({
-                  id: classSnapshot.id,
-                  ...classSnapshot.data()
-                }));
-                setData(classesData);
-              })
-              .catch(error => {
-                console.error("Error fetching classes:", error);
-                setData([]);
-              });
-          } else {
-            console.warn("User has no classes.");
-            setData([]);
-          }
-        } else if (entityAssign === "classes") {
-          const studentRefs = entityData.studentsEnrolled;
-          if (studentRefs && studentRefs.length > 0) {
-            Promise.all(studentRefs.map(studentRef => getDoc(studentRef)))
-              .then(studentSnapshots => {
-                const studentsData = studentSnapshots.map(studentSnapshot => ({
-                  id: studentSnapshot.id,
-                  ...studentSnapshot.data()
-                }));
-                setData(studentsData);
-              })
-              .catch(error => {
-                console.error("Error fetching students:", error);
-                setData([]);
-              });
-          } else {
-            console.warn("Class has no enrolled students.");
-            setData([]);
-          }
-        }
+    const fetchData = async () => {
+      let queryField, queryValue;
+      if (location.pathname.startsWith("/users/")) {
+        queryField = "userID";
+        queryValue = id;
+      } else if (location.pathname.startsWith("/classes/")) {
+        queryField = "classID";
+        queryValue = id;
       } else {
-        console.error(`${entityAssign} document does not exist`);
+        console.error("Invalid URL path:", location.pathname);
+        return;
+      }
+    
+      try {
+        if (queryField === "classID") {
+          // Fetch users based on classID
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where(queryField, "==", queryValue));
+          const querySnapshot = await getDocs(q);
+          const fetchedData = [];
+    
+          for (const docSnap of querySnapshot.docs) {
+            const userClassData = docSnap.data();
+            const userID = userClassData.userID;
+    
+            // Fetch user data from "users" collection based on userID
+            const userDocRef = doc(db, "users", userID);
+            const userDocSnapshot = await getDoc(userDocRef);
+    
+            if (userDocSnapshot.exists()) {
+              const userData = userDocSnapshot.data();
+              const rowData = {
+                id: userID,
+                ...userData // Add other fields as needed
+              };
+              fetchedData.push(rowData);
+            } else {
+              console.error(`Document with ID ${userID} does not exist`);
+            }
+          }
+    
+          setData(fetchedData);
+          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
+        } else {
+          // Fetch classes based on classID
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where(queryField, "==", queryValue));
+          const querySnapshot = await getDocs(q);
+          const fetchedData = [];
+    
+          for (const docSnap of querySnapshot.docs) {
+            const userClassData = docSnap.data();
+            const classID = userClassData.classID;
+    
+            // Fetch class data from "classes" collection based on classID
+            const classDocRef = doc(db, "classes", classID);
+            const classDocSnapshot = await getDoc(classDocRef);
+    
+            if (classDocSnapshot.exists()) {
+              const classData = classDocSnapshot.data();
+              const rowData = {
+                id: classID,
+                ...classData // Add other fields as needed
+              };
+              fetchedData.push(rowData);
+            } else {
+              console.error(`Document with ID ${classID} does not exist`);
+            }
+          }
+    
+          setData(fetchedData);
+          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
         setData([]);
       }
-    }, (error) => {
-      console.error(`Error fetching ${entityAssign} document:`, error);
-      setData([]);
-    });
-  
-    return () => {
-      unsub();
     };
-  }, [id, entity]);
-  
-  
-  
+    
+
+  fetchData();
+}, [id, location.pathname]);
+
 
   // WILL REMOVE 
   // IF "CLASSES", IT WILL REMOVE STUDENTS, NOT DELETE
@@ -85,6 +110,11 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
 
   const handleAssign = (id) => {
     
+  };
+
+  const handleView = (id, rowData) => {
+    // Navigate to the appropriate URL with both id and rowData
+    navigate(`/${entityConnect}/${id}`, { state: { rowData } });
   };
 
 

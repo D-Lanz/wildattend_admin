@@ -7,7 +7,7 @@
 .singleContainer{
   background: linear-gradient(to bottom, #FFFFFF, #CEA108);
   flex: 6;
-  height: 100%;
+  /* height: 150%; */
 }
 
 .tops{
