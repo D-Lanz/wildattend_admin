@@ -7,6 +7,7 @@ import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Edit = ({inputs, title, entityType }) => {
   const navigate = useNavigate();
@@ -111,6 +112,9 @@ const Edit = ({inputs, title, entityType }) => {
     }
   };
   
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the last page
+  };
   
   return(
     <div className="edit">
@@ -118,6 +122,7 @@ const Edit = ({inputs, title, entityType }) => {
       <div className="editContainer">
         <Navbar/>
         <div className="topn">
+          <ArrowBackIcon onClick={handleBack} className="backButton" />
           <h2 className="titlen">{title}</h2>
         </div>
         <div className="bottomn">
@@ -166,6 +171,8 @@ const Edit = ({inputs, title, entityType }) => {
                       onChange={handleInput}
                       required
                       value={data[input.id] || ''}
+                      // Add disabled attribute for email and password fields
+                      disabled={input.id === "email" || input.id === "password" || input.id === "idNum"}
                     />
                   )}
                 </div>

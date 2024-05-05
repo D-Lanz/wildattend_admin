@@ -166,7 +166,7 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
           },
         }}
         pageSizeOptions={[5, 10]}
-        checkboxSelection
+        // checkboxSelection
       />
     </div>
   )
