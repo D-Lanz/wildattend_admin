@@ -112,25 +112,44 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
     
   };
 
-  const handleView = async (id) => {
+  const handleView = async (params) => {
     try {
-      // Query the "userClasses" collection for the provided ID
-      const userClassRef = doc(db, "userClasses", id);
-      const userClassDocSnap = await getDoc(userClassRef);
-      if (userClassDocSnap.exists()) {
-        // Navigate to the appropriate URL with the "userClasses" document ID
-        navigate(`/userClasses/${id}`, { state: { rowData: userClassDocSnap.data() } });
+      let userID, classID, targetField;
+      if (location.pathname.startsWith("/users/")) {
+        userID = id; // Assuming id is userID
+        classID = params.row.id; // Assuming params.row.id is classID
+        targetField = "classID";
+      } else if (location.pathname.startsWith("/classes/")) {
+        classID = id; // Assuming id is classID
+        userID = params.row.id; // Assuming params.row.id is userID
+        targetField = "userID";
       } else {
-        console.error(`Document with ID ${id} does not exist in the "userClasses" collection`);
+        console.error("Invalid URL path:", location.pathname);
+        return;
+      }
+  
+      // Check if userID and classID are defined
+      if (!userID || !classID) {
+        console.error("User ID or class ID is undefined");
+        return;
+      }
+  
+      // Query the "userClasses" collection for the provided userID and classID
+      const userClassQuery = query(collection(db, "userClasses"), where("userID", "==", userID), where("classID", "==", classID));
+      const userClassSnapshot = await getDocs(userClassQuery);
+  
+      if (!userClassSnapshot.empty) {
+        // If documents are found, navigate to the first one found
+        const userClassDocSnap = userClassSnapshot.docs[0];
+        navigate(`/userClasses/${userClassDocSnap.id}`, { state: { rowData: { id: params.row[targetField] } } });
+      } else {
+        console.error(`No userClass document found with userID ${userID} and classID ${classID}`);
       }
     } catch (error) {
-      console.error("Error fetching user class document:", error);
+      console.error("Error fetching user class documents:", error);
     }
   };
   
-  
-  
-
   const actionColumn = [
     { field: "action",
       headerName: "Action",
@@ -138,7 +157,7 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
       renderCell:(params) => {
         return(
           <div className="cellAction">
-            <div className="viewButton" onClick={() => handleView(params.row.id)}>
+            <div className="viewButton" onClick={() => handleView(params)}>
               View
             </div>
             <div className="removeButton" onClick={() => handleRemove(params.row.id)}>
