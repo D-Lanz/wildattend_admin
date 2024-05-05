@@ -8,7 +8,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 
-const Connect = ({ userColumns, classColumns }) => {
+const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableTitle }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -112,6 +112,11 @@ const Connect = ({ userColumns, classColumns }) => {
 
         <div className="bottom">
           {/* Place your datatable components here */}
+          {/* <Datatable title="Classes Attended"/> */}
+          <DatatableRecord
+            entity={entityTable}
+            tableTitle={tableTitle}
+            entityColumns={entityColumns}/>
         </div>
       </div>
     </div>

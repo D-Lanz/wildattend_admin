@@ -137,7 +137,7 @@ function App() {
               {/* route for viewing a single class*/}
               <Route path=":id" element={
                 <RequireAuth>
-                  <Connect userColumns={userSingle} classColumns={classSingle}/>
+                  <Connect userColumns={userSingle} classColumns={classSingle} entityColumns={userClassColumns} entityTable="attendRecord" tableTitle="Attendance"/>
                 </RequireAuth>
                 }
               />

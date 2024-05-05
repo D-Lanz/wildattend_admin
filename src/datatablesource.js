@@ -35,6 +35,6 @@ export const classColumns = [
 
 export const userClassColumns = [
   { field: 'status', headerName: 'Status', width: 100, },
-  { field: 'timeIn', headerName: 'Time In', width: 200, },
-  { field: 'timeOut', headerName: 'Time Out', width: 200, },
+  { field: 'timeIn', headerName: 'Time In', width: 420, },
+  { field: 'timeOut', headerName: 'Time Out', width: 420, },
 ];

@@ -5,96 +5,37 @@ import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const DatatableRecord = ({entity, tableTitle, entityColumns, id}) => {
+const DatatableRecord = ({ entity, tableTitle, entityColumns, id }) => {
   const navigate = useNavigate(); // Access to the navigate function
   const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
-  
-  console.log(entity)
 
   useEffect(() => {
     const fetchData = async () => {
-      let queryField, queryValue;
-      if (location.pathname.startsWith("/users/")) {
-        queryField = "userID";
-        queryValue = id;
-      } else if (location.pathname.startsWith("/classes/")) {
-        queryField = "classID";
-        queryValue = id;
-      } else {
-        console.error("Invalid URL path:", location.pathname);
-        return;
-      }
-    
-      try {
-        if (queryField === "classID") {
-          // Fetch users based on classID
-          const userClassesRef = collection(db, "userClasses");
-          const q = query(userClassesRef, where(queryField, "==", queryValue));
-          const querySnapshot = await getDocs(q);
-          const fetchedData = [];
-    
-          for (const docSnap of querySnapshot.docs) {
-            const userClassData = docSnap.data();
-            const userID = userClassData.userID;
-    
-            // Fetch user data from "users" collection based on userID
-            const userDocRef = doc(db, "users", userID);
-            const userDocSnapshot = await getDoc(userDocRef);
-    
-            if (userDocSnapshot.exists()) {
-              const userData = userDocSnapshot.data();
-              const rowData = {
-                id: userID,
-                ...userData // Add other fields as needed
-              };
-              fetchedData.push(rowData);
-            } else {
-              console.error(`Document with ID ${userID} does not exist`);
-            }
-          }
-    
-          setData(fetchedData);
-          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
+      // Fetch data from Firestore
+      const userClassesRef = doc(db, "userClasses", id);
+      const userClassesDoc = await getDoc(userClassesRef);
+      if (userClassesDoc.exists()) {
+        const attendanceIds = userClassesDoc.data().attendance;
+        if (attendanceIds && attendanceIds.length > 0) {
+          const attendancePromises = attendanceIds.map(async (attendanceId) => {
+            const attendanceDocRef = doc(db, "attendRecords", attendanceId);
+            const attendanceDocSnap = await getDoc(attendanceDocRef);
+            return attendanceDocSnap.data();
+          });
+          const attendanceData = await Promise.all(attendancePromises);
+          setData(attendanceData);
         } else {
-          // Fetch classes based on classID
-          const userClassesRef = collection(db, "userClasses");
-          const q = query(userClassesRef, where(queryField, "==", queryValue));
-          const querySnapshot = await getDocs(q);
-          const fetchedData = [];
-    
-          for (const docSnap of querySnapshot.docs) {
-            const userClassData = docSnap.data();
-            const classID = userClassData.classID;
-    
-            // Fetch class data from "classes" collection based on classID
-            const classDocRef = doc(db, "classes", classID);
-            const classDocSnapshot = await getDoc(classDocRef);
-    
-            if (classDocSnapshot.exists()) {
-              const classData = classDocSnapshot.data();
-              const rowData = {
-                id: classID,
-                ...classData // Add other fields as needed
-              };
-              fetchedData.push(rowData);
-            } else {
-              console.error(`Document with ID ${classID} does not exist`);
-            }
-          }
-    
-          setData(fetchedData);
-          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
+          console.log("Attendance data is empty!");
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setData([]);
+      } else {
+        console.log("No such document!");
       }
     };
-    
-
-  fetchData();
-}, [id, location.pathname]);
+  
+    fetchData();
+  }, [id]);
+  
 
   const handleView = (id, rowData) => {
     // Navigate to the appropriate URL with both id and rowData
@@ -102,38 +43,33 @@ const DatatableRecord = ({entity, tableTitle, entityColumns, id}) => {
   };
 
   const actionColumn = [
-    { field: "action",
+    {
+      field: "action",
       headerName: "Action",
       width: 200,
-      renderCell:(params) => {
-        return(
+      renderCell: (params) => {
+        return (
           <div className="cellAction">
-              <div
-                className="viewButton"
-                onClick={() => handleView(params.row.id)}
-              >View</div>
+            <div className="viewButton" onClick={() => handleView(params.row.id)}>
+              View
+            </div>
           </div>
         );
-  }} ];
+      },
+    },
+  ];
 
-  return(
+  return (
     <div className="datatablerecord">
-      <div className="datatablerecordTitle">
-        {tableTitle}
-      </div>
+      <div className="datatablerecordTitle">{tableTitle}</div>
       <DataGrid
         rows={data}
         columns={[...entityColumns, ...actionColumn]}
-        initialState={{
-          pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
-          },
-        }}
-        pageSizeOptions={[5, 10]}
+        pageSize={5}
         checkboxSelection
       />
     </div>
-  )
-}
+  );
+};
 
 export default DatatableRecord;
