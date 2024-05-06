@@ -123,6 +123,15 @@ function App() {
                   </RequireAuth>
                 }
               />
+
+              {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
+              <Route path=":id/select" element={
+                  <RequireAuth>
+                    <SelectList entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
+                  </RequireAuth>
+                }
+              />
+
               <Route path="new" element={
                 <RequireAuth>
                   <New inputs={classInputs} title="Add New Class" entityType="class" />
