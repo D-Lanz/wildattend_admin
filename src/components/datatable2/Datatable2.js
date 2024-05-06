@@ -2,7 +2,7 @@ import "./datatable2.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entityConnect}) => {
@@ -96,22 +96,52 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
   fetchData();
 }, [id, location.pathname]);
 
-
-  // WILL REMOVE 
-  // IF "CLASSES", IT WILL REMOVE STUDENTS, NOT DELETE
-  // IF "USERS", IT WILL REMOVE CLASSES ENROLLED,
-  const handleRemove = async (id) => {
+  // once the "Remove" button is deleted, it will delete the "userClasses" document
+  const handleRemove = async (params) => {
     try {
-      
-    } catch (err) {
-      
+      let userID, classID, targetField;
+      if (location.pathname.startsWith("/users/")) {
+        userID = id; // Assuming id is userID
+        classID = params.row.id; // Assuming params.row.id is classID
+        targetField = "classID";
+      } else if (location.pathname.startsWith("/classes/")) {
+        classID = id; // Assuming id is classID
+        userID = params.row.id; // Assuming params.row.id is userID
+        targetField = "userID";
+      } else {
+        console.error("Invalid URL path:", location.pathname);
+        return;
+      }
+  
+      // Check if userID and classID are defined
+      if (!userID || !classID) {
+        console.error("User ID or class ID is undefined");
+        return;
+      }
+  
+      // Query the "userClasses" collection for the provided userID and classID
+      const userClassQuery = query(collection(db, "userClasses"), where("userID", "==", userID), where("classID", "==", classID));
+      const userClassSnapshot = await getDocs(userClassQuery);
+  
+      if (!userClassSnapshot.empty) {
+        // If documents are found, delete the first one found
+        const userClassDocSnap = userClassSnapshot.docs[0];
+        await deleteDoc(doc(db, "userClasses", userClassDocSnap.id));
+        console.log("UserClass document deleted successfully!");
+      } else {
+        console.error(`No userClass document found with userID ${userID} and classID ${classID}`);
+      }
+    } catch (error) {
+      console.error("Error removing user class document:", error);
     }
-  }
+  };
+  
 
   const handleAssign = (id) => {
     
   };
 
+  // AYG HILABTI
   const handleView = async (params) => {
     try {
       let userID, classID, targetField;
@@ -160,7 +190,7 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign, entity
             <div className="viewButton" onClick={() => handleView(params)}>
               View
             </div>
-            <div className="removeButton" onClick={() => handleRemove(params.row.id)}>
+            <div className="removeButton" onClick={() => handleRemove(params)}>
               Remove
             </div>
           </div>

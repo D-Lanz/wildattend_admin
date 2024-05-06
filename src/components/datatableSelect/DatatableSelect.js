@@ -2,7 +2,7 @@ import "./datatableSelect.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const DatatableSelect = ({ entity, tableTitle, entityColumns, id, entityAssign }) => {
@@ -27,60 +27,95 @@ const DatatableSelect = ({ entity, tableTitle, entityColumns, id, entityAssign }
     };
   }, []);
 
-  const handleAdd = async () => {
+  const handleAdd = async (params) => {
     try {
-      if (selectedRowIds.length === 0) {
-        console.log("Please select a row");
+      let userID, classID, targetField;
+  
+      // Extract the entity ID from the URL
+      const parts = location.pathname.split("/");
+      const entityId = parts[parts.length - 2]; // Get the second last part of the URL
+  
+      if (location.pathname.startsWith("/users/")) {
+        userID = entityId; // Assuming the second last part of the URL is userID
+        classID = params.row.id; // Assuming params.row.id is classID
+        targetField = "classID";
+      } else if (location.pathname.startsWith("/classes/")) {
+        classID = entityId; // Assuming the second last part of the URL is classID
+        userID = params.row.id; // Assuming params.row.id is userID
+        targetField = "userID";
+      } else {
+        console.error("Invalid URL path:", location.pathname);
         return;
       }
   
-      const userRef = doc(db, 'users', id); // Assuming 'id' is the ID of the current user
-      const classesToAdd = selectedRowIds.map(rowId => {
-        const selectedRow = data.find(row => row.id === rowId);
-        return { id: selectedRow.id, ...selectedRow };
+      // Check if userID and classID are defined
+      if (!userID || !classID) {
+        console.error("User ID or class ID is undefined");
+        return;
+      }
+
+      // Log the classID and userID
+      console.log("Class ID:", classID);
+      console.log("User ID:", userID);
+
+  
+      // Get the current timestamp for enrollDate
+      const enrollDate = new Date();
+  
+      // Add a new document to the "userClasses" collection
+      const userClassRef = await addDoc(collection(db, "userClasses"), {
+        classID: classID,
+        userID: userID,
+        enrollDate: enrollDate,
+        attendance: [] // Add an empty array called "attendance"
       });
   
-      // Update the user document to add the selected classes to the classes array
-      await updateDoc(userRef, {
-        classes: [...entityAssign, ...classesToAdd]
-      });
+      console.log("New userClass document added with ID: ", userClassRef.id);
   
-      // Retrieve the updated user document to confirm the update
-      const userDoc = await doc(db, 'users', id).get();
-      const updatedClasses = userDoc.data().classes;
-      console.log("Updated classes array:", updatedClasses);
-      
-      console.log("Classes added to user's classes array:", classesToAdd);
+      // Navigate to the newly created userClass document
+      navigate(`/userClasses/${userClassRef.id}`, { state: { rowData: { id: params.row[targetField] } } });
     } catch (error) {
-      console.error("Error adding classes to user's classes array:", error);
+      console.error("Error adding user class document:", error);
     }
   };
   
-  
+  const actionColumn = [
+    { field: "action",
+      headerName: "Action",
+      width: 200,
+      renderCell:(params) => {
+        return(
+          <div className="cellAction">
+            <div className="viewButton" onClick={() => handleAdd(params)}>
+              Add
+            </div>
+          </div>
+        );
+  }} ];
 
   return (
     <div className="datatableSelect">
       <div className="datatableSelectTitle">
         {tableTitle}
         {/* ADD BUTTON */}
-        <button
+        {/* <button
           style={{ textDecoration: "none", cursor: "pointer" }}
           className="linkdt"
           onClick={handleAdd}
           disabled={selectedRowIds.length === 0} // Disable button if no row is selected
         >
           Add
-        </button>
+        </button> */}
       </div>
       <DataGrid
         rows={data}
-        columns={entityColumns}
+        columns={[...entityColumns, ...actionColumn]}
         pageSize={5}
-        checkboxSelection
-        onSelectionModelChange={(newSelection) => {
-          setSelectedRowIds(newSelection.selectionModel); // Track the selected row ids
-          console.log("Selected Row Ids:", newSelection.selectionModel); // Log selected row ids
-        }}
+        // checkboxSelection
+        // onSelectionModelChange={(newSelection) => {
+        //   setSelectedRowIds(newSelection.selectionModel); // Track the selected row ids
+        //   console.log("Selected Row Ids:", newSelection.selectionModel); // Log selected row ids
+        // }}
       />
 
     </div>
