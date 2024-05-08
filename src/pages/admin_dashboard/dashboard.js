@@ -15,7 +15,8 @@ const AdminDashboard = () => {
             <Widget type="faculty"/>
           </div>
           <div className="widgets">
-            <Widget type="course"/>
+            <Widget type="class"/>
+            <Widget type="room"/>
             <Widget type="accesspt"/>
           </div>
         </div>

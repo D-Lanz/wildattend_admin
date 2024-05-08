@@ -59,7 +59,7 @@ const Sidebar = () => {
               <span>Manage Classes</span>
             </li>
           </Link><p className="title">MANAGE</p>
-          <Link to="/" style={{ textDecoration:"none" }}>
+          <Link to="/rooms" style={{ textDecoration:"none" }}>
             <li>
               <RoomIcon className="icon"/>
               <span>Manage Rooms</span>

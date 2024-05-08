@@ -1,15 +1,15 @@
 import "./datatable.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { userColumns, classColumns } from "../../datatablesource";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
+import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
+import { deleteUser } from "firebase/auth";
+import { auth, db } from "../../firebase";
+
 
 const Datatable = ({entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(()=>{
     //LISTEN (REALTIME)
@@ -28,9 +28,58 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
     };
   },[]);
 
+  // const handleDelete = async (id) => {
+  //   try {
+  //     await deleteDoc(doc(db, entity, id)); // Change {entity} to entity
+  //     console.log("Delete successful");
+  //   } catch (err) {
+  //     setData(data.filter((item) => item.id !== id));
+  //     console.log(err);
+  //   }
+  // }
+
   const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, entity, id)); // Change {entity} to entity
+      // Fetch user or class data to determine the type of entity and corresponding field name
+      const entityDocRef = doc(db, entity, id);
+      const entityDocSnapshot = await getDoc(entityDocRef);
+      const entityData = entityDocSnapshot.data();
+      
+      // Determine the field name based on the entity type (users or classes)
+      let queryField;
+      if (entity === "users") {
+        queryField = "userID";
+      } else if (entity === "classes") {
+        queryField = "classID";
+      } else {
+        console.error("Invalid entity type:", entity);
+        return;
+      }
+      
+      // Fetch associated userClasses documents
+      const userClassesRef = collection(db, "userClasses");
+      const q = query(userClassesRef, where(queryField, "==", id));
+      const querySnapshot = await getDocs(q);
+    
+      // Delete each associated userClasses document
+      const deletePromises = [];
+      querySnapshot.forEach((doc) => {
+        //const userClassDocRef = doc(db, "userClasses", doc.id); // Change `doc(db, ...)` to `doc(userClassesRef, ...)`
+        const userClassDocRef = doc(db, "userClasses", doc.id);
+        deletePromises.push(deleteDoc(userClassDocRef));
+      });
+      
+      // Wait for all delete operations to complete
+      await Promise.all(deletePromises);
+    
+      // Delete the user or class document
+      await deleteDoc(entityDocRef);
+    
+      // If entity is users, also delete the user account from Firebase Authentication
+      if (entity === "users") {
+        await deleteUser(auth, entityData.userId);
+      }
+    
       console.log("Delete successful");
     } catch (err) {
       setData(data.filter((item) => item.id !== id));

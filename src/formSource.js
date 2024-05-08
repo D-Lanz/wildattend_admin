@@ -113,3 +113,66 @@ export const classInputs= [
     options: ["First", "Second", "Midyear"], // Add options for the dropdown
   },
 ]
+
+export const roomInputs = [
+  {
+    id: "roomNum",
+    label:"Room Number",
+    type:"text",
+    placeholder: "eg. 101, 102, 103, etc.",
+    pattern: "[0-9]{3}",
+  },
+  {
+    id: "building",
+    label:"Building",
+    type:"text",
+    placeholder: "eg. NGE, GLE, etc.",
+  },
+  {
+    id: "capacity",
+    label:"Capacity",
+    type:"number",
+    min: "1",
+    max: "70",
+  },
+  {
+    id: "length",
+    label:"Length",
+    type:"number",
+    min: "1",
+    max: "1000",
+  },
+  {
+    id: "width",
+    label:"Width",
+    type:"number",
+    min: "1",
+    max: "1000",
+  },
+  {
+    id: "height",
+    label:"Height",
+    type:"number",
+    min: "1",
+    max: "1000",
+  },
+  {
+    id: "location",
+    label:"Location",
+    type:"text",
+    placeholder: "Geopoint",
+  },
+  {
+    id: "powerSource",
+    label:"Power Source",
+    type:"text",
+    placeholder: "Power Source",
+  },
+  {
+    id: "occupancyStatus",
+    label:"Occupancy Status",
+    placeholder: "Active/Inactive",
+    type:"dropdown", 
+    options: ["Inactive", "Active"],
+  },
+]

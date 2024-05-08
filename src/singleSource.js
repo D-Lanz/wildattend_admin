@@ -21,3 +21,13 @@ export const classSingle = [
   { field: 'semester', headerName: 'Semester'},
   { field: 'schoolYear', headerName: 'School Year'},
 ];
+
+export const roomSingleT = [
+  {field: 'building', headerName: 'Building'},
+  {field: 'roomNum', headerName: 'Room No.'},
+];
+export const roomSingle = [
+  { field: 'capacity', headerName: 'Capacity'},
+  { field: 'location', headerName: 'Location'},
+  { field: 'occupancyStatus', headerName: 'Status'},
+];

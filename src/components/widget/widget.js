@@ -4,6 +4,8 @@ import SchoolIcon from '@mui/icons-material/School';
 import SquareFootIcon from '@mui/icons-material/SquareFoot';
 import ClassIcon from '@mui/icons-material/Class';
 import RssFeedIcon from '@mui/icons-material/RssFeed';
+import RoomIcon from '@mui/icons-material/Room';
+
 import { useEffect, useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase"
@@ -12,6 +14,7 @@ import { Link } from 'react-router-dom';
 const Widget = ({ type }) => {
   const [userAmount, setUserAmount] = useState(0);
   const [classAmount, setClassAmount] = useState(0);
+  const [roomAmount, setRoomAmount] = useState(0);
 
   let nullAmount = 0;
   let data;
@@ -45,9 +48,20 @@ const Widget = ({ type }) => {
       console.error("Error fetching class count:", error);
     }
   };
+
+  // Fetch room count from Firestore
+  const fetchRoomCount = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "rooms"));
+      setRoomAmount(snapshot.size);
+    } catch (error) {
+      console.error("Error fetching class count:", error);
+    }
+  };
   
 
   useEffect(() => {
+    fetchRoomCount();
     fetchUserCount();
     fetchClassCount();
   }, []); // Run once on component mount
@@ -78,7 +92,7 @@ const Widget = ({ type }) => {
         amount: userAmount,
       };
       break;
-    case "course":
+    case "class":
       data={
         title:"CLASSES",
         linkph:"See all classes",
@@ -86,6 +100,15 @@ const Widget = ({ type }) => {
         icon:(<ClassIcon className="iconw"/>),
         amount: classAmount,
       };
+      break;
+    case "room":
+      data={
+        title:"ROOMS",
+        linkph:"See all rooms",
+        link: "rooms",
+        icon:(<RoomIcon className="iconw"/>),
+        amount: roomAmount,
+    };
       break;
     case "accesspt":
       data={

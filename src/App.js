@@ -12,13 +12,13 @@ import SelectList from './pages/selectList/selectList';
 import Connect from './pages/connect/connect';
 
 // FOR INPUTS IN NEW.JS & EDIT.JS
-import { userInputs, classInputs } from './formSource';
+import { userInputs, classInputs, roomInputs } from './formSource';
 
 // FOR LIST.JS
-import { classColumns, userColumns, userClassColumns } from './datatablesource';
+import { classColumns, userColumns, userClassColumns, roomColumns } from './datatablesource';
 
 // FOR SINGLE.JS DETAILS
-import { classSingle, userSingle } from './singleSource';
+import { classSingle, userSingle, roomSingle } from './singleSource';
 
 
 function App() {
@@ -158,17 +158,19 @@ function App() {
             <Route path="rooms">
               <Route index element={
                 <RequireAuth>
-                  <List title="List of Rooms" entity="rooms" tableTitle="Add New Room" entityColumns={classColumns}/>
+                  <List title="List of Rooms" entity="rooms" tableTitle="Add New Room" entityColumns={roomColumns}/>
                 </RequireAuth>
               } />
-              <Route path=":classId" element={
+              <Route path=":roomId" element={
                 <RequireAuth>
-                  <Single />
+                  <Single entitySingle={roomSingle} entity="rooms"
+                      // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
+                      entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Assign to a Class" entityColumns={classColumns}/>
                 </RequireAuth>
                 } />
               <Route path="new" element={
                 <RequireAuth>
-                  <New inputs={classInputs} title="Add New Room" entityType="room" />
+                  <New inputs={roomInputs} title="Add New Room" entityType="room" />
                 </RequireAuth>
                 } />
             </Route>

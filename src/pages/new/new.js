@@ -72,6 +72,9 @@ const New = ({ inputs, title, entityType }) => {
         case "class":
           collectionName = "classes";
           break;
+        case "room":
+          collectionName = "rooms";
+          break;
         default:
           throw new Error("Invalid entityType");
       }
