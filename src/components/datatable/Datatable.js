@@ -51,6 +51,10 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
         queryField = "userID";
       } else if (entity === "classes") {
         queryField = "classID";
+      } else if (entity === "rooms") {
+        queryField = "roomID";
+      } else if (entity === "accessPoints") {
+        queryField = "accessPointID";
       } else {
         console.error("Invalid entity type:", entity);
         return;

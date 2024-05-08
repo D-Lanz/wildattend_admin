@@ -59,6 +59,8 @@ const Single2 = ({ entitySingle, entity, entityTable, tableTitle, entityColumns,
     title = data?.classDesc || '';
   } else if (entity === 'rooms') {
     title = `${data?.building || ''}${data?.roomNum || ''}`;
+  } else if (entity === 'accessPoints') {
+    title = data?.macAddress || '';
   }
 
   return (

@@ -17,15 +17,13 @@ import Edit2 from './pages/edit2/edit2';
 import Single2 from './pages/single2/single2';
 
 // FOR INPUTS IN NEW.JS & EDIT.JS
-import { userInputs, classInputs, roomInputs } from './formSource';
+import { userInputs, classInputs, roomInputs, accessPointInputs } from './formSource';
 
 // FOR LIST.JS
-import { classColumns, userColumns, userClassColumns, roomColumns } from './datatablesource';
+import { classColumns, userColumns, userClassColumns, roomColumns, accessPointColumns } from './datatablesource';
 
 // FOR SINGLE.JS DETAILS
-import { classSingle, userSingle, roomSingle } from './singleSource';
-
-
+import { classSingle, userSingle, roomSingle, accessPointSingle } from './singleSource';
 
 
 function App() {
@@ -42,10 +40,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/">
-
             {/* route for login */}
             <Route path="login" element={<Login />} />
-
             {/* route for admin dashboard(index) */}
             <Route index element={
                   <RequireAuth>
@@ -53,7 +49,7 @@ function App() {
                   </RequireAuth>
               }
             />
-            
+
 
             {/* route for "users" entity*/}
             <Route path="users">
@@ -104,7 +100,7 @@ function App() {
             {/* route for "classes" entity*/}
             <Route path="classes">
               
-               {/* route for list of "classes"*/}
+              {/* route for list of "classes"*/}
               <Route index element={
                   <RequireAuth>
                     <List entity="classes" tableTitle="List of Classs" entityColumns={classColumns}/>
@@ -194,6 +190,44 @@ function App() {
                 </RequireAuth>
                 } />
             </Route>
+
+
+            {/* route for "accessPoints" entity*/}
+            <Route path="accessPoints">
+
+              {/* VIEW LIST OF ROOMS DATATABLE */}
+              <Route index element={
+                <RequireAuth>
+                  <List title="List of Access Points" entity="accessPoints" tableTitle="Add New Access Point" entityColumns={accessPointColumns}/>
+                </RequireAuth>
+              } />
+
+              {/* VIEW SINGLE ROOM */}
+              <Route path=":id" element={
+                <RequireAuth>
+                  <Single2 entitySingle={accessPointSingle} entity="accessPoints"
+                      // INSIDE ACCESS POINTS, THEIR DATA TABLE SHOWS THEIR ROOMS INVOLVED
+                      entityAssign="accessPoints" entityTable="rooms" entityConnect="roomAccessPoints" tableTitle="Assign to a Room" entityColumns={roomColumns}/>
+                </RequireAuth>
+                } />
+
+              {/* route for editing room entity*/}
+              <Route path=":id/edit" element={
+                  <RequireAuth>
+                    <Edit2 inputs={accessPointInputs} title="Edit Access Point" entityType="accessPoint"/>
+                  </RequireAuth>
+                }
+              />
+
+              <Route path="new" element={
+                <RequireAuth>
+                  <New2 inputs={accessPointInputs} title="Add New Access Point" entityType="accessPoint" />
+                </RequireAuth>
+                } />
+            </Route>
+
+
+
           </Route>
         </Routes>
       </BrowserRouter>

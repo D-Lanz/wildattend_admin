@@ -15,6 +15,7 @@ const Widget = ({ type }) => {
   const [userAmount, setUserAmount] = useState(0);
   const [classAmount, setClassAmount] = useState(0);
   const [roomAmount, setRoomAmount] = useState(0);
+  const [accessPtAmount, setAccessPtAmount] = useState(0);
 
   let nullAmount = 0;
   let data;
@@ -55,7 +56,17 @@ const Widget = ({ type }) => {
       const snapshot = await getDocs(collection(db, "rooms"));
       setRoomAmount(snapshot.size);
     } catch (error) {
-      console.error("Error fetching class count:", error);
+      console.error("Error fetching room count:", error);
+    }
+  };
+
+  // Fetch accessPoint count from Firestore
+  const fetchAccessPtCount = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "accessPoints"));
+      setAccessPtAmount(snapshot.size);
+    } catch (error) {
+      console.error("Error fetching access point count:", error);
     }
   };
   
@@ -64,6 +75,7 @@ const Widget = ({ type }) => {
     fetchRoomCount();
     fetchUserCount();
     fetchClassCount();
+    fetchAccessPtCount();
   }, []); // Run once on component mount
 
   switch(type){
@@ -112,11 +124,11 @@ const Widget = ({ type }) => {
       break;
     case "accesspt":
       data={
-        title:"ACCESSPOINTS",
+        title:"ACCESS POINTS",
         linkph:"See all access points",
-        link: "accesspts",
+        link: "accessPoints",
         icon:(<RssFeedIcon className="iconw"/>),
-        amount: nullAmount,
+        amount: accessPtAmount,
     };
     break;
     default:

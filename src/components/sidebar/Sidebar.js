@@ -65,7 +65,7 @@ const Sidebar = () => {
               <span>Manage Rooms</span>
             </li>
           </Link>
-          <Link to="/" style={{ textDecoration:"none" }}>
+          <Link to="/accessPoints" style={{ textDecoration:"none" }}>
             <li>
               <RouterIcon className="icon"/>
               <span>Manage Access Points</span>

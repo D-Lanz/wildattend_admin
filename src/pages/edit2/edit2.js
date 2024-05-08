@@ -15,13 +15,30 @@ const Edit2 = ({inputs, title, entityType }) => {
   console.log(id);
 
   useEffect(() => {
-    // Fetch data based on the ID when the component mounts
     const fetchData = async () => {
       try {
-        // Your logic to fetch data based on the ID
-        // For example:
-        const docRef = doc(db, entityType === "user" ? "users" : entityType === "class" ? "classes" : "rooms", id);
+        let collectionName;
+  
+        switch (entityType) {
+          case "user":
+            collectionName = "users";
+            break;
+          case "class":
+            collectionName = "classes";
+            break;
+          case "room":
+            collectionName = "rooms";
+            break;
+          case "accessPoint":
+            collectionName = "accessPoints";
+            break;
+          default:
+            throw new Error("Invalid entityType");
+        }
+  
+        const docRef = doc(db, collectionName, id);
         const docSnap = await getDoc(docRef);
+  
         if (docSnap.exists()) {
           setData(docSnap.data());
         } else {
@@ -31,9 +48,10 @@ const Edit2 = ({inputs, title, entityType }) => {
         console.error('Error fetching document: ', error);
       }
     };
-
+  
     fetchData();
   }, [id, entityType]);
+  
 
   const handleInput = (e) => {
     const id = e.target.id;
@@ -63,6 +81,10 @@ const Edit2 = ({inputs, title, entityType }) => {
           break;
         case "room":
           collectionName = "rooms";
+          documentId = id;
+          break;
+        case "accessPoint":
+          collectionName = "accessPoints";
           documentId = id;
           break;
         default:

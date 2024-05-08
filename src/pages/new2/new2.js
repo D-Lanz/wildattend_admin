@@ -33,6 +33,9 @@ const New2 = ({ inputs, title, entityType }) => {
         case "room":
           collectionName = "rooms";
           break;
+        case "accessPoint":
+          collectionName = "accessPoints";
+          break;
         default:
           throw new Error("Invalid entityType");
       }

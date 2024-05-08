@@ -177,7 +177,7 @@ export const roomInputs = [
   },
 ]
 
-export const accessPtInputs = [
+export const accessPointInputs = [
   {
     id: "location",
     label:"Location",
@@ -192,48 +192,14 @@ export const accessPtInputs = [
     max: "70",
   },
   {
-    id: "building",
-    label:"Building",
+    id: "macAddress",
+    label:"MAC Address",
     type:"text",
-    placeholder: "eg. NGE, GLE, etc.",
+    placeholder: "MAC Address",
   },
   {
-    id: "capacity",
-    label:"Capacity",
-    type:"number",
-    min: "1",
-    max: "70",
-  },
-  {
-    id: "length",
-    label:"Length",
-    type:"number",
-    min: "1",
-    max: "1000",
-  },
-  {
-    id: "width",
-    label:"Width",
-    type:"number",
-    min: "1",
-    max: "1000",
-  },
-  {
-    id: "height",
-    label:"Height",
-    type:"number",
-    min: "1",
-    max: "1000",
-  },
-  {
-    id: "powerSource",
-    label:"Power Source",
-    type:"text",
-    placeholder: "Power Source",
-  },
-  {
-    id: "occupancyStatus",
-    label:"Occupancy Status",
+    id: "status",
+    label:"Status",
     placeholder: "Active/Inactive",
     type:"dropdown", 
     options: ["Inactive", "Active"],
