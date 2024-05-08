@@ -3,7 +3,7 @@
 ## Project Title
 **Location-Aware Attendance Tracking: A Mobile Application for Efficient Monitoring and Management of CITU Faculty and Student Attendance**
 
-## Team Members
+## Team Members (2324-sem2-cap1-g1/g2/g3/g4-11)
 - **Ilustrisimo, James Ruther**
 - **Masendo, Davidlanz**
 - **Paez, Marie Antoinette**
