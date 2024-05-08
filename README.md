@@ -58,5 +58,5 @@ To install and run this application locally, follow these steps:
 1. Clone this repository.
 2. Navigate to the project directory.
 3. Install dependencies using `npm install`, `npm install @mui/material @emotion/react @emotion/styled @mui/icons-material @mui/x-data-grid`.
-4. Take note this application used Firebase.
+4. Take note this application uses Firebase as database.
 5. Run the application using `npm start`.
