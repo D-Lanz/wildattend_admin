@@ -1,4 +1,4 @@
-# WildAttend: Location-Aware Attendance Tracking
+# WildAttend - Admin Side
 
 ## Project Title
 **Location-Aware Attendance Tracking: A Mobile Application for Efficient Monitoring and Management of CITU Faculty and Student Attendance**
