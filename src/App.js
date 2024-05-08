@@ -11,6 +11,11 @@ import Edit from './pages/edit/edit';
 import SelectList from './pages/selectList/selectList';
 import Connect from './pages/connect/connect';
 
+// ENTITIES WITH NO IMG
+import New2 from './pages/new2/new2';
+import Edit2 from './pages/edit2/edit2';
+import Single2 from './pages/single2/single2';
+
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs, roomInputs } from './formSource';
 
@@ -19,6 +24,8 @@ import { classColumns, userColumns, userClassColumns, roomColumns } from './data
 
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle, roomSingle } from './singleSource';
+
+
 
 
 function App() {
@@ -156,21 +163,34 @@ function App() {
 
             {/* route for "rooms" entity*/}
             <Route path="rooms">
+
+              {/* VIEW LIST OF ROOMS DATATABLE */}
               <Route index element={
                 <RequireAuth>
                   <List title="List of Rooms" entity="rooms" tableTitle="Add New Room" entityColumns={roomColumns}/>
                 </RequireAuth>
               } />
-              <Route path=":roomId" element={
+
+              {/* VIEW SINGLE ROOM */}
+              <Route path=":id" element={
                 <RequireAuth>
-                  <Single entitySingle={roomSingle} entity="rooms"
+                  <Single2 entitySingle={roomSingle} entity="rooms"
                       // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
                       entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Assign to a Class" entityColumns={classColumns}/>
                 </RequireAuth>
                 } />
+
+              {/* route for editing room entity*/}
+              <Route path=":id/edit" element={
+                  <RequireAuth>
+                    <Edit2 inputs={roomInputs} title="Edit Room" entityType="room"/>
+                  </RequireAuth>
+                }
+              />
+
               <Route path="new" element={
                 <RequireAuth>
-                  <New inputs={roomInputs} title="Add New Room" entityType="room" />
+                  <New2 inputs={roomInputs} title="Add New Room" entityType="room" />
                 </RequireAuth>
                 } />
             </Route>

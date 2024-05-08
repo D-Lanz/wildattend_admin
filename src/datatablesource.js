@@ -40,18 +40,9 @@ export const userClassColumns = [
 ];
 
 export const roomColumns = [
-  {
-    field: 'img', headerName: 'Room', width: 230, renderCell:(params)=>{
-      return(
-        <div className="cellWithImg">
-          <img className="cellImg" src={params.row.img} alt="avatar"/>
-          {params.row.building} {params.row.roomNum}
-        </div>
-      );
-    },
-  },
   { field: 'building', headerName: 'Building', width: 120, },
   { field: 'roomNum', headerName: 'Room No.', width: 120, },
+  { field: 'location', headerName: 'Location', width: 220, },
   { field: 'capacity', headerName: 'Capacity', width: 120, },
   { field: 'occupancyStatus', headerName: 'Status', width: 220, },
 ];
