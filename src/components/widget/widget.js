@@ -140,7 +140,7 @@ const Widget = ({ type }) => {
       <div className="leftw">
         <span className="wtitle">{data.title}</span>
         <span className="counter">{data.amount}</span>
-        <Link to={data.link}>
+        <Link className="linkw" to={data.link}>
           <span className="linkw">{data.linkph}</span>
         </Link>
         

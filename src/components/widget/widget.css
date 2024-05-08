@@ -43,3 +43,11 @@
   border-radius: 5px;
   align-self: flex-end;
 }
+
+.linkw{
+  text-decoration: none;
+}
+
+.linkw:hover{
+  color: white;
+}
