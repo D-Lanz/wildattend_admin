@@ -21,6 +21,9 @@ export const classSingle = [
   { field: 'classRoom', headerName: 'Classroom'},
   { field: 'semester', headerName: 'Semester'},
   { field: 'schoolYear', headerName: 'School Year'},
+  { field: 'days', headerName: 'Days'},
+  { field: 'startTime', headerName: 'Start Time'},
+  { field: 'endTime', headerName: 'End Time'},
 ];
 
 //ROOM SINGLE.JS

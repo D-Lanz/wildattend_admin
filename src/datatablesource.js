@@ -45,12 +45,14 @@ export const roomColumns = [
   { field: 'roomNum', headerName: 'Room No.', width: 120, },
   { field: 'location', headerName: 'Location', width: 220, },
   { field: 'capacity', headerName: 'Capacity', width: 120, },
-  { field: 'occupancyStatus', headerName: 'Status', width: 220, },
+  { field: 'occupancyStatus', headerName: 'Status', width: 120, },
+  { field: 'timeStamp', headerName: 'Document Timestamp', width: 220, },
 ];
 
 export const accessPointColumns = [
   { field: 'macAddress', headerName: 'MAC Address', width: 320, },
   { field: 'location', headerName: 'Location', width: 320, },
   { field: 'signalStr', headerName: 'Signal Strength', width: 120, },
-  { field: 'status', headerName: 'Status', width: 220, },
+  { field: 'status', headerName: 'Status', width: 120, },
+  { field: 'timeStamp', headerName: 'Document Timestamp', width: 220, },
 ];

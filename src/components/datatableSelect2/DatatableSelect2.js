@@ -1,4 +1,4 @@
-import "./datatableSelect2.css";
+import "./datatableSelect2.css"
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -110,8 +110,8 @@ const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
       width: 100,
       renderCell:(params) => {
         return(
-          <div roomName="cellAction">
-            <div roomName="viewButton" onClick={() => handleAdd(params)}>
+          <div className="cellAction">
+            <div className="viewButton" onClick={() => handleAdd(params)}>
               Add
             </div>
           </div>
@@ -119,8 +119,8 @@ const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
   }} ];
 
   return (
-    <div roomName="datatableSelect2">
-      <div roomName="datatableSelect2Title">
+    <div className="datatableSelect2">
+      <div className="datatableSelect2Title">
         {tableTitle}
       </div>
       <DataGrid

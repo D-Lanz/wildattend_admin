@@ -81,14 +81,32 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               )}
               <div className="detailss">
                 <h1 className="itemTitles">{title}</h1>
+
                 {entitySingle.map((dataS) => (
                   <div className="detailItems" key={dataS.field}>
                     <span className="itemKeys">{dataS.headerName}:</span>
                     <span className="itemValues">
-                      {data && data[dataS.field]}
+                      {data && data[dataS.field] ? (
+                        dataS.field === "days" ? (
+                          Object.entries(data[dataS.field])
+                            .reverse() // Reverse the array of days
+                            .map(([day, checked], index, array) => (
+                              <span key={day} className="itemValues">
+                                {checked && `${day}${index !== array.length - 1 ? ', ' : ''}`}
+                              </span>
+                            ))
+                        ) : (
+                          data[dataS.field]
+                        )
+                      ) : (
+                        "Loading..." // or any other placeholder
+                      )}
                     </span>
                   </div>
                 ))}
+
+
+
               </div>
             </div>
           </div>
