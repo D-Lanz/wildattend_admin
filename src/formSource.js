@@ -81,12 +81,19 @@ export const classInputs= [
     type:"dropdown", // Change the type to "dropdown"
     options: ["Lecture", "Lab"], // Add options for the dropdown
   },
-   {
-     id: "days",
-     label:"Day/s of the Week",
-     type:"text",
-     placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
-   },
+  // {
+  //   id: "days",
+  //   label:"Day/s of the Week",
+  //   type:"text",
+  //   placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
+  // },
+  {
+    id: "days",
+    label:"Day/s of the Week",
+    type:"text",
+    placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
+    options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  },
   {
     id: "startTime",
     label:"Start Time",

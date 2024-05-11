@@ -5,16 +5,19 @@ import { AuthContext } from './context/AuthContext';
 import AdminDashboard from './pages/admin_dashboard/dashboard';
 import Login from './pages/login/loginpage';
 import List from './pages/list/list';
+
+// ENTITIES WITH IMG (USERS & CLASSES)
 import New from './pages/new/new';
 import Single from './pages/single/single';
 import Edit from './pages/edit/edit';
-import SelectList from './pages/selectList/selectList';
+import SelectList1 from './pages/selectList1/selectList1';
 import Connect from './pages/connect/connect';
 
-// ENTITIES WITH NO IMG
+// ENTITIES WITH NO IMG (ROOMS & ACCESS POINTS)
 import New2 from './pages/new2/new2';
 import Edit2 from './pages/edit2/edit2';
 import Single2 from './pages/single2/single2';
+import SelectList2 from './pages/selectList2/selectList2';
 
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs, roomInputs, accessPointInputs } from './formSource';
@@ -82,7 +85,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
+                    <SelectList1 entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />
@@ -130,7 +133,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
+                    <SelectList1 entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
                   </RequireAuth>
                 }
               />
@@ -187,7 +190,7 @@ function App() {
               {/* INSIDE SELECTING, ROOMS HAVE CLASSES */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
+                    <SelectList2 entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />

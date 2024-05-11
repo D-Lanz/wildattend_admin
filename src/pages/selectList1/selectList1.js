@@ -1,11 +1,11 @@
-import "./selectList.css"
+import "./selectList1.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DatatableSelect1 from "../../components/datatableSelect1/DatatableSelect1";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 
-const SelectList = ({title, entity, tableTitle, entityColumns}) => {
+const SelectList1 = ({title, entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -29,4 +29,4 @@ const SelectList = ({title, entity, tableTitle, entityColumns}) => {
   )
 }
 
-export default SelectList;
+export default SelectList1;

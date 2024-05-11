@@ -60,17 +60,73 @@ const New = ({ inputs, title, entityType }) => {
     setData({ ...data, [id]: value });
   };
 
+  //AUTO-ID
+  // const handleAdd = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     let collectionName;
+
+  //     switch (entityType) {
+  //       case "user":
+  //         collectionName = "users";
+  //         break;
+  //       case "class":
+  //         collectionName = "classes";
+  //         break;
+  //       default:
+  //         throw new Error("Invalid entityType");
+  //     }
+
+  //     if (entityType === "user") {
+  //       const res = await createUserWithEmailAndPassword(
+  //         auth,
+  //         data.email,
+  //         data.password
+  //       );
+
+  //       // await setDoc(doc(db, collectionName, res.user.uid)
+  //       await setDoc(doc(db, collectionName, res.user.uid), {
+  //         ...data,
+  //         timeStamp: serverTimestamp(),
+  //         // classes: [], // Initialize classes array for the user
+  //         // attendanceRecords: [], // Initialize attendanceRecords array for the user
+  //       });
+  //     } else {
+  //       await addDoc(collection(db, collectionName), {
+  //         ...data,
+  //         // instructor: null, // Initialize instructor reference as null
+  //         // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
+  //         // attendanceRecords: [], // Initialize attendanceRecords array for the class
+  //       });
+  //     }
+
+  //     navigate(-1);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  //CUSTOM ID
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
       let collectionName;
-
+      let docId; // Document ID variable
+  
       switch (entityType) {
         case "user":
           collectionName = "users";
+          // Use idNum as document ID for users
+          docId = data.idNum;
           break;
         case "class":
           collectionName = "classes";
+          // Create a custom document ID based on class attributes
+          docId = `${data.classCode}_${data.classSec}_${data.semester}_${data.schoolYear}`;
+          // Add a boolean "status" field to indicate if the class has started or not
+          const status = false; // Assuming the class has not started by default
+          // Merge the status field with other data
+          data = { ...data, status };
           break;
         case "room":
           collectionName = "rooms";
@@ -78,15 +134,15 @@ const New = ({ inputs, title, entityType }) => {
         default:
           throw new Error("Invalid entityType");
       }
-
+  
       if (entityType === "user") {
         const res = await createUserWithEmailAndPassword(
           auth,
           data.email,
           data.password
         );
-
-        await setDoc(doc(db, collectionName, res.user.uid), {
+  
+        await setDoc(doc(db, collectionName, docId), {
           ...data,
           timeStamp: serverTimestamp(),
           // classes: [], // Initialize classes array for the user
@@ -100,12 +156,27 @@ const New = ({ inputs, title, entityType }) => {
           // attendanceRecords: [], // Initialize attendanceRecords array for the class
         });
       }
-
+  
       navigate(-1);
     } catch (err) {
       console.log(err);
     }
   };
+  
+  const handleCheckboxChange = (e) => {
+    const day = e.target.value;
+    const isChecked = e.target.checked;
+    
+    // Update the data object based on checkbox changes
+    setData(prevData => ({
+      ...prevData,
+      days: {
+        ...prevData.days,
+        [day]: isChecked
+      }
+    }));
+  };
+  
 
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
@@ -151,7 +222,22 @@ const New = ({ inputs, title, entityType }) => {
                   <label className="labeln" htmlFor={input.id}>
                     {input.label}
                   </label>
-                  {input.type === "dropdown" ? (
+                  {input.id === "days" ? (
+                    // If input id is "days", render checkboxes
+                    <div>
+                      {input.options.map((option) => (
+                        <div key={option} className="checkboxWrapper">
+                          <input
+                            id={option}
+                            type="checkbox"
+                            value={option}
+                            onChange={handleCheckboxChange}
+                          />
+                          <label htmlFor={option}>{option}</label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : input.type === "dropdown" ? (
                     // Check if input type is dropdown
                     <select
                       className="inputn"
@@ -179,6 +265,7 @@ const New = ({ inputs, title, entityType }) => {
                   )}
                 </div>
               ))}
+
 
               <button
                 disabled={perc !== null && perc < 100}

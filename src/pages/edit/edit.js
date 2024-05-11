@@ -41,7 +41,7 @@ const Edit = ({inputs, title, entityType }) => {
 
   const handleInput = (e) => {
     const id = e.target.id;
-    const value = e.target.value;
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setData({ ...data, [id]: value });
     console.log("Editing ID:", id)
     console.log(data)
@@ -111,6 +111,20 @@ const Edit = ({inputs, title, entityType }) => {
       console.log(err);
     }
   };
+
+  const handleCheckboxChange = (e) => {
+    const day = e.target.value;
+    const isChecked = e.target.checked;
+    
+    // Update the data object based on checkbox changes
+    setData(prevData => ({
+      ...prevData,
+      days: {
+        ...prevData.days,
+        [day]: isChecked
+      }
+    }));
+  };
   
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
@@ -148,8 +162,27 @@ const Edit = ({inputs, title, entityType }) => {
 
               {inputs.map((input) => (
                 <div className="formInput" key={input.id}>
-                  <label className="labeln" htmlFor={input.id}>{input.label}</label>
-                  {input.type === "dropdown" ? (
+                  <label className="labeln" htmlFor={input.id}>
+                    {input.label}
+                  </label>
+                  {input.id === "days" ? (
+                    // If input id is "days", render checkboxes
+                    <div>
+                      {input.options.map((option) => (
+                        <div key={option} className="checkboxWrapper">
+                          <input
+                            id={option}
+                            type="checkbox"
+                            value={option}
+                            onChange={handleCheckboxChange}
+                            checked={data.days && data.days[option]}
+                          />
+                          <label htmlFor={option}>{option}</label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : input.type === "dropdown" ? (
+                    // Check if input type is dropdown
                     <select
                       className="inputn"
                       id={input.id}
@@ -158,10 +191,13 @@ const Edit = ({inputs, title, entityType }) => {
                       value={data[input.id] || ''}
                     >
                       {input.options.map((option) => (
-                        <option key={option} value={option}>{option}</option>
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
                       ))}
                     </select>
                   ) : (
+                    // Render input field for other types
                     <input
                       className="inputn"
                       id={input.id}
@@ -171,12 +207,13 @@ const Edit = ({inputs, title, entityType }) => {
                       onChange={handleInput}
                       required
                       value={data[input.id] || ''}
-                      // Add disabled attribute for email and password fields
-                      disabled={input.id === "email" || input.id === "password" || input.id === "idNum"}
                     />
                   )}
                 </div>
               ))}
+
+
+
               <button
                 disabled={perc !== null && perc < 100}
                 className="buttonn"
