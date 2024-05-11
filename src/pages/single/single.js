@@ -2,7 +2,7 @@ import "./single.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
-import Datatable2 from "../../components/datatable2/Datatable2";
+import Datatable1 from "../../components/datatable1/Datatable1";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect, useState } from "react";
 import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
@@ -99,7 +99,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
 
         <div className="bottom">
           {/* <Datatable title="Classes Attended"/> */}
-          <Datatable2
+          <Datatable1
             title={title}
             entity={entityTable}
             tableTitle={tableTitle}

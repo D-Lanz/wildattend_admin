@@ -1,0 +1,67 @@
+.datatable1{
+  height: 500px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  min-height: 200px;
+}
+
+.cellWithImg{
+  display: flex;
+  align-items: center;
+}
+
+.cellImg{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
+}
+
+.cellWithRole {
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.cellAction{
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.viewButton{
+  padding: 2px 5px;
+  border-radius: 5px;
+  background-color: gold;
+  color: maroon;
+  cursor: pointer;
+}
+
+.removeButton{
+  padding: 2px 5px;
+  border-radius: 5px;
+  background-color: maroon;
+  color: gold;
+  cursor: pointer;
+}
+
+.datatable1Title{
+  width: 100%;
+  font-size: 24;
+  color: maroon;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.linkdt{
+  text-decoration: none;
+  color: maroon;
+  border: 1px solid maroon;
+  border-radius: 5px;
+  font-weight: 400;
+  padding: 5px;
+  cursor: pointer;
+}

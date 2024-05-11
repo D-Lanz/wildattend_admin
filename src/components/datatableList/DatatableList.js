@@ -1,13 +1,13 @@
-import "./datatable.css";
+import "./datatablelist.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
 import { auth, db } from "../../firebase";
+//DATATABLE IS USED IN LIST.JS
 
-
-const Datatable = ({entity, tableTitle, entityColumns}) => {
+const DatatableList = ({entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
 
@@ -101,7 +101,7 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
   const actionColumn = [
     { field: "action",
       headerName: "Action",
-      width: 200,
+      width: 130,
       renderCell:(params) => {
         return(
           <div className="cellAction">
@@ -132,14 +132,14 @@ const Datatable = ({entity, tableTitle, entityColumns}) => {
         columns={[...entityColumns, ...actionColumn]}
         initialState={{
           pagination: {
-            paginationModel: { page: 0, pageSize: 8 },
+            paginationModel: { page: 0, pageSize: 5 },
           },
         }}
-        pageSizeOptions={[8, 10]}
+        pageSizeOptions={[5, 10]}
         // checkboxSelection
       />
     </div>
   )
 }
 
-export default Datatable;
+export default DatatableList;

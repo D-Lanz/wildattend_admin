@@ -1,7 +1,7 @@
 import "./list.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import Datatable from "../../components/datatable/Datatable";
+import DatatableList from "../../components/datatableList/DatatableList";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,7 @@ const List = ({title, entity, tableTitle, entityColumns}) => {
         <div className="listContainer">
           <Navbar/>
           <ArrowBackIcon onClick={handleBack} className="backButton" />
-          <Datatable 
+          <DatatableList 
             title={title}
             entity={entity}
             tableTitle={tableTitle}

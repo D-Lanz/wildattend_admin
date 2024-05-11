@@ -1,12 +1,12 @@
-import "./datatable2.css";
+import "./datatable1.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
-// DATATABLE 2 IS FOR SINGLE2.JS ROOMS AND ACCESS POINTS
+//DATATABLE1 IS FOR SINGLE.JS (USERS AND CLASSES)
 
-const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
+const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
@@ -16,8 +16,8 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   useEffect(() => {
     const fetchData = async () => {
       let queryField, queryValue;
-      if (location.pathname.startsWith("/rooms/")) {
-        queryField = "roomID";
+      if (location.pathname.startsWith("/users/")) {
+        queryField = "userID";
         queryValue = id;
       } else if (location.pathname.startsWith("/classes/")) {
         queryField = "classID";
@@ -29,29 +29,29 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
     
       try {
         if (queryField === "classID") {
-          // Fetch rooms based on classID
-          const classRoomsRef = collection(db, "classRooms");
-          const q = query(classRoomsRef, where(queryField, "==", queryValue));
+          // Fetch users based on classID
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where(queryField, "==", queryValue));
           const querySnapshot = await getDocs(q);
           const fetchedData = [];
     
           for (const docSnap of querySnapshot.docs) {
-            const roomClassData = docSnap.data();
-            const roomID = roomClassData.roomID;
+            const userClassData = docSnap.data();
+            const userID = userClassData.userID;
     
-            // Fetch room data from "rooms" collection based on roomID
-            const roomDocRef = doc(db, "rooms", roomID);
-            const roomDocSnapshot = await getDoc(roomDocRef);
+            // Fetch user data from "users" collection based on userID
+            const userDocRef = doc(db, "users", userID);
+            const userDocSnapshot = await getDoc(userDocRef);
     
-            if (roomDocSnapshot.exists()) {
-              const roomData = roomDocSnapshot.data();
+            if (userDocSnapshot.exists()) {
+              const userData = userDocSnapshot.data();
               const rowData = {
-                id: roomID,
-                ...roomData // Add other fields as needed
+                id: userID,
+                ...userData // Add other fields as needed
               };
               fetchedData.push(rowData);
             } else {
-              console.error(`Document with ID ${roomID} does not exist`);
+              console.error(`Document with ID ${userID} does not exist`);
             }
           }
     
@@ -59,14 +59,14 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
           console.log("Fetched Data:", fetchedData); // Console.log the fetched data
         } else {
           // Fetch classes based on classID
-          const classRoomsRef = collection(db, "classRooms");
-          const q = query(classRoomsRef, where(queryField, "==", queryValue));
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where(queryField, "==", queryValue));
           const querySnapshot = await getDocs(q);
           const fetchedData = [];
     
           for (const docSnap of querySnapshot.docs) {
-            const roomClassData = docSnap.data();
-            const classID = roomClassData.classID;
+            const userClassData = docSnap.data();
+            const classID = userClassData.classID;
     
             // Fetch class data from "classes" collection based on classID
             const classDocRef = doc(db, "classes", classID);
@@ -97,81 +97,81 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   fetchData();
 }, [id, location.pathname]);
 
-  // once the "Remove" button is deleted, it will delete the "classRooms" document
+  // once the "Remove" button is deleted, it will delete the "userClasses" document
   const handleRemove = async (params) => {
     try {
-      let roomID, classID, targetField;
-      if (location.pathname.startsWith("/rooms/")) {
-        roomID = id; // Assuming id is roomID
+      let userID, classID, targetField;
+      if (location.pathname.startsWith("/users/")) {
+        userID = id; // Assuming id is userID
         classID = params.row.id; // Assuming params.row.id is classID
         targetField = "classID";
       } else if (location.pathname.startsWith("/classes/")) {
         classID = id; // Assuming id is classID
-        roomID = params.row.id; // Assuming params.row.id is roomID
-        targetField = "roomID";
+        userID = params.row.id; // Assuming params.row.id is userID
+        targetField = "userID";
       } else {
         console.error("Invalid URL path:", location.pathname);
         return;
       }
   
-      // Check if roomID and classID are defined
-      if (!roomID || !classID) {
-        console.error("room ID or class ID is undefined");
+      // Check if userID and classID are defined
+      if (!userID || !classID) {
+        console.error("User ID or class ID is undefined");
         return;
       }
   
-      // Query the "classRooms" collection for the provided roomID and classID
-      const roomClassQuery = query(collection(db, "classRooms"), where("roomID", "==", roomID), where("classID", "==", classID));
-      const roomClassSnapshot = await getDocs(roomClassQuery);
+      // Query the "userClasses" collection for the provided userID and classID
+      const userClassQuery = query(collection(db, "userClasses"), where("userID", "==", userID), where("classID", "==", classID));
+      const userClassSnapshot = await getDocs(userClassQuery);
   
-      if (!roomClassSnapshot.empty) {
+      if (!userClassSnapshot.empty) {
         // If documents are found, delete the first one found
-        const roomClassDocSnap = roomClassSnapshot.docs[0];
-        await deleteDoc(doc(db, "classRooms", roomClassDocSnap.id));
-        console.log("roomClass document deleted successfully!");
+        const userClassDocSnap = userClassSnapshot.docs[0];
+        await deleteDoc(doc(db, "userClasses", userClassDocSnap.id));
+        console.log("UserClass document deleted successfully!");
       } else {
-        console.error(`No roomClass document found with roomID ${roomID} and classID ${classID}`);
+        console.error(`No userClass document found with userID ${userID} and classID ${classID}`);
       }
     } catch (error) {
-      console.error("Error removing room class document:", error);
+      console.error("Error removing user class document:", error);
     }
   };
   
   const handleView = async (params) => {
     try {
-      let roomID, classID, targetField;
-      if (location.pathname.startsWith("/rooms/")) {
-        roomID = id; // Assuming id is roomID
+      let userID, classID, targetField;
+      if (location.pathname.startsWith("/users/")) {
+        userID = id; // Assuming id is userID
         classID = params.row.id; // Assuming params.row.id is classID
         targetField = "classID";
       } else if (location.pathname.startsWith("/classes/")) {
         classID = id; // Assuming id is classID
-        roomID = params.row.id; // Assuming params.row.id is roomID
-        targetField = "roomID";
+        userID = params.row.id; // Assuming params.row.id is userID
+        targetField = "userID";
       } else {
         console.error("Invalid URL path:", location.pathname);
         return;
       }
   
-      // Check if roomID and classID are defined
-      if (!roomID || !classID) {
-        console.error("room ID or class ID is undefined");
+      // Check if userID and classID are defined
+      if (!userID || !classID) {
+        console.error("User ID or class ID is undefined");
         return;
       }
   
-      // Query the "classRooms" collection for the provided roomID and classID
-      const roomClassQuery = query(collection(db, "classRooms"), where("roomID", "==", roomID), where("classID", "==", classID));
-      const roomClassSnapshot = await getDocs(roomClassQuery);
+      // Query the "userClasses" collection for the provided userID and classID
+      const userClassQuery = query(collection(db, "userClasses"), where("userID", "==", userID), where("classID", "==", classID));
+      const userClassSnapshot = await getDocs(userClassQuery);
   
-      if (!roomClassSnapshot.empty) {
+      if (!userClassSnapshot.empty) {
         // If documents are found, navigate to the first one found
-        const roomClassDocSnap = roomClassSnapshot.docs[0];
-        navigate(`/classRooms/${roomClassDocSnap.id}`, { state: { rowData: { id: params.row[targetField] } } });
+        const userClassDocSnap = userClassSnapshot.docs[0];
+        navigate(`/userClasses/${userClassDocSnap.id}`, { state: { rowData: { id: params.row[targetField] } } });
       } else {
-        console.error(`No roomClass document found with roomID ${roomID} and classID ${classID}`);
+        console.error(`No userClass document found with userID ${userID} and classID ${classID}`);
       }
     } catch (error) {
-      console.error("Error fetching room class documents:", error);
+      console.error("Error fetching user class documents:", error);
     }
   };
   
@@ -182,9 +182,9 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
       renderCell:(params) => {
         return(
           <div className="cellAction">
-            {/* <div className="viewButton" onClick={() => handleView(params)}>
+            <div className="viewButton" onClick={() => handleView(params)}>
               View
-            </div> */}
+            </div>
             <div className="removeButton" onClick={() => handleRemove(params)}>
               Remove
             </div>
@@ -193,8 +193,8 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   }} ];
 
   return(
-    <div className="datatable2">
-      <div className="datatable2Title">
+    <div className="datatable1">
+      <div className="datatable1Title">
         {tableTitle}
         {/* MODIFY THIS ASSIGN BUTTON */}
         <Link to={`/${entityAssign}/${id}/select`} style={{ textDecoration: "none" }} className="linkdt">
@@ -216,4 +216,4 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   )
 }
 
-export default Datatable2;
+export default Datatable1;

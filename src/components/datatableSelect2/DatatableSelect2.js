@@ -1,11 +1,11 @@
-import "./datatableSelect.css";
+import "./datatableSelect2.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const DatatableSelect = ({ entity, tableTitle, entityColumns }) => {
+const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate(); // Access to the navigate function
   const [data, setData] = useState([]);
 
@@ -106,7 +106,7 @@ const DatatableSelect = ({ entity, tableTitle, entityColumns }) => {
   const actionColumn = [
     { field: "action",
       headerName: "Action",
-      width: 200,
+      width: 100,
       renderCell:(params) => {
         return(
           <div className="cellAction">
@@ -118,8 +118,8 @@ const DatatableSelect = ({ entity, tableTitle, entityColumns }) => {
   }} ];
 
   return (
-    <div className="datatableSelect">
-      <div className="datatableSelectTitle">
+    <div className="datatableSelect2">
+      <div className="datatableSelect2Title">
         {tableTitle}
       </div>
       <DataGrid
@@ -132,4 +132,4 @@ const DatatableSelect = ({ entity, tableTitle, entityColumns }) => {
   );
 };
 
-export default DatatableSelect;
+export default DatatableSelect2;

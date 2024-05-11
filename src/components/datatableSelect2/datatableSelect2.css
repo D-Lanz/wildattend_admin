@@ -1,4 +1,4 @@
-.datatable{
+.datatableSelect2{
   height: 490px;
   padding: 20px;
 }
@@ -43,7 +43,7 @@
   cursor: pointer;
 }
 
-.datatableTitle{
+.datatableSelect2Title{
   width: 100%;
   font-size: 24;
   color: maroon;

@@ -1,7 +1,7 @@
 export const userColumns = [
-  { field: 'idNum', headerName: 'ID Number', width: 130, },
+  { field: 'idNum', headerName: 'ID Number', width: 150, },
     {
-      field: 'user', headerName: 'User', width: 230, renderCell:(params)=>{
+      field: 'user', headerName: 'User', width: 300, renderCell:(params)=>{
         return(
           <div className="cellWithImg">
             <img className="cellImg" src={params.row.img} alt="avatar"/>
@@ -10,14 +10,15 @@ export const userColumns = [
         );
     },
   },
-  { field: 'email', headerName: 'School Email', width: 230, },
-  { field: 'role', headerName: 'Role', width: 130, },
+  { field: 'email', headerName: 'School Email', width: 280, },
+  { field: 'department', headerName: 'Department', width: 150, },
+  { field: 'role', headerName: 'Role', width: 150, },
 ];
 
 export const classColumns = [
-  { field: 'classCode', headerName: 'ClassCode', width: 100, },
+  { field: 'classCode', headerName: 'ClassCode', width: 130, },
   {
-    field: 'class', headerName: 'Class', width: 230, renderCell:(params)=>{
+    field: 'class', headerName: 'Class', width: 400, renderCell:(params)=>{
       return(
         <div className="cellWithImg">
           <img className="cellImg" src={params.row.img} alt="avatar"/>
@@ -26,11 +27,11 @@ export const classColumns = [
       );
     },
   },
-  { field: 'classSec', headerName: 'Section', width: 100, },
-  { field: 'instructor', headerName: 'Instructor', width: 150, },
-  { field: 'classRoom', headerName: 'Classroom', width: 100, },
-  { field: 'semester', headerName: 'Semester', width: 100, },
-  { field: 'schoolYear', headerName: 'School Year', width: 100, },
+  { field: 'classSec', headerName: 'Section', width: 130, },
+  // { field: 'instructor', headerName: 'Instructor', width: 150, },
+  { field: 'classRoom', headerName: 'Classroom', width: 130, },
+  { field: 'semester', headerName: 'Semester', width: 130, },
+  { field: 'schoolYear', headerName: 'School Year', width: 130, },
 ];
 
 export const userClassColumns = [

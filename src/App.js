@@ -171,8 +171,8 @@ function App() {
               <Route path=":id" element={
                 <RequireAuth>
                   <Single2 entitySingle={roomSingle} entity="rooms"
-                      // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
-                      entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Assign to a Class" entityColumns={classColumns}/>
+                      // INSIDE ROOMS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
+                      entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Classes" entityColumns={classColumns}/>
                 </RequireAuth>
                 } />
 
@@ -180,6 +180,14 @@ function App() {
               <Route path=":id/edit" element={
                   <RequireAuth>
                     <Edit2 inputs={roomInputs} title="Edit Room" entityType="room"/>
+                  </RequireAuth>
+                }
+              />
+
+              {/* INSIDE SELECTING, ROOMS HAVE CLASSES */}
+              <Route path=":id/select" element={
+                  <RequireAuth>
+                    <SelectList entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />

@@ -17,7 +17,7 @@ export const classSingleT = [
 export const classSingle = [
   { field: 'classCode', headerName: 'ClassCode'},
   { field: 'classSec', headerName: 'Section'},
-  { field: 'instructor', headerName: 'Instructor'},
+  // { field: 'instructor', headerName: 'Instructor'},
   { field: 'classRoom', headerName: 'Classroom'},
   { field: 'semester', headerName: 'Semester'},
   { field: 'schoolYear', headerName: 'School Year'},

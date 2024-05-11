@@ -95,7 +95,7 @@ const New = ({ inputs, title, entityType }) => {
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
-          instructor: null, // Initialize instructor reference as null
+          // instructor: null, // Initialize instructor reference as null
           // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
           // attendanceRecords: [], // Initialize attendanceRecords array for the class
         });
