@@ -1,5 +1,5 @@
 import "./datatablelist.css";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
@@ -100,7 +100,7 @@ const DatatableList = ({entity, tableTitle, entityColumns}) => {
 
   const actionColumn = [
     { field: "action",
-      headerName: "Action",
+      headerName: "",
       width: 130,
       renderCell:(params) => {
         return(
@@ -137,6 +137,7 @@ const DatatableList = ({entity, tableTitle, entityColumns}) => {
         }}
         pageSizeOptions={[5, 10]}
         // checkboxSelection
+        slots={{ toolbar: GridToolbar }}
       />
     </div>
   )

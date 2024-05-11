@@ -65,7 +65,7 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
         <Navbar />
         <div className="tops">
           {/* USER VIEW */}
-          <div className="lefts">
+          <div className="leftc">
             <ArrowBackIcon onClick={handleBack} className="backButton" />
             <h1 className="titles">User</h1>
             <div className="items">
@@ -88,7 +88,7 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
           </div>
 
           {/* CLASS VIEW */}
-          <div className="rights">
+          <div className="rightc">
             <h1 className="titles">Class</h1>
             <div className="items">
               {/* Render class data */}

@@ -16,7 +16,7 @@
   gap: 20px;
 }
 
-.lefts, .rights{
+.leftc, .rightc{
   flex: 1;
   padding: 20px;
   -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);

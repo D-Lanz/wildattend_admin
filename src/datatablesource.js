@@ -1,16 +1,19 @@
 export const userColumns = [
   { field: 'idNum', headerName: 'ID Number', width: 150, },
     {
-      field: 'user', headerName: 'User', width: 300, renderCell:(params)=>{
+      field: 'img', headerName: '', width: 50, renderCell:(params)=>{
         return(
           <div className="cellWithImg">
-            <img className="cellImg" src={params.row.img} alt="avatar"/>
-            {params.row.lastName}, {params.row.firstName}
+            <img className="cellImg" src={params.row.img} alt="avatar" style={{marginTop:10}}/>
+            {/* {params.row.lastName}, {params.row.firstName} */}
+             
           </div>
         );
     },
   },
-  { field: 'email', headerName: 'School Email', width: 280, },
+  { field: 'lastName', headerName: 'Last Name', width: 150, },
+  { field: 'firstName', headerName: 'First Name', width: 150, },
+  { field: 'email', headerName: 'School Email', width: 250, },
   { field: 'department', headerName: 'Department', width: 150, },
   { field: 'role', headerName: 'Role', width: 150, },
 ];
@@ -18,15 +21,16 @@ export const userColumns = [
 export const classColumns = [
   { field: 'classCode', headerName: 'ClassCode', width: 130, },
   {
-    field: 'class', headerName: 'Class', width: 400, renderCell:(params)=>{
+    field: 'img', headerName: '', width: 50, renderCell:(params)=>{
       return(
         <div className="cellWithImg">
-          <img className="cellImg" src={params.row.img} alt="avatar"/>
-          {params.row.classDesc}
+          <img className="cellImg" src={params.row.img} alt="avatar" style={{marginTop:10}}/>
+          {/* {params.row.classDesc} */}
         </div>
       );
     },
   },
+  { field: 'classDesc', headerName: 'Class Description', width: 380, },
   { field: 'classSec', headerName: 'Section', width: 130, },
   // { field: 'instructor', headerName: 'Instructor', width: 150, },
   { field: 'classRoom', headerName: 'Classroom', width: 130, },
@@ -50,8 +54,8 @@ export const roomColumns = [
 ];
 
 export const accessPointColumns = [
-  { field: 'macAddress', headerName: 'MAC Address', width: 320, },
-  { field: 'location', headerName: 'Location', width: 320, },
+  { field: 'macAddress', headerName: 'MAC Address', width: 300, },
+  { field: 'location', headerName: 'Location', width: 300, },
   { field: 'signalStr', headerName: 'Signal Strength', width: 120, },
   { field: 'status', headerName: 'Status', width: 120, },
   { field: 'timeStamp', headerName: 'Document Timestamp', width: 220, },
