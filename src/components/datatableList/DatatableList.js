@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
 import { auth, db } from "../../firebase";
+import DeleteModal from "../deleteModal/DeleteModal";
 //DATATABLE IS USED IN LIST.JS
 
 const DatatableList = ({entity, tableTitle, entityColumns}) => {
@@ -37,8 +38,18 @@ const DatatableList = ({entity, tableTitle, entityColumns}) => {
   //     console.log(err);
   //   }
   // }
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleDeleteConfirm = () => {
+    // Perform logout logic (e.g., clear auth token)
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
 
   const handleDelete = async (id) => {
+    setIsDeleteModalOpen(true);
     try {
       // Fetch user or class data to determine the type of entity and corresponding field name
       const entityDocRef = doc(db, entity, id);
@@ -139,6 +150,12 @@ const DatatableList = ({entity, tableTitle, entityColumns}) => {
         // checkboxSelection
         slots={{ toolbar: GridToolbar }}
       />
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
     </div>
   )
 }

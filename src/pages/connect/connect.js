@@ -91,33 +91,51 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
           <div className="rightc">
             <h1 className="titles">Class</h1>
             <div className="items">
-              {/* Render class data */}
-              {classData && (
-                <>
-                  <img src={classData.img || "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"} className="itemImgs" alt="Item" />
-                  <div className="detailss">
-                    <h1 className="itemTitles">{classData.classDesc || ''}</h1>
-                    {classColumns.map(column => (
-                      <div className="detailItems" key={column.field}>
-                        <span className="itemKeys">{column.headerName}:</span>
-                        <span className="itemValues">{classData[column.field]}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
+              {classData && classData.img ? (
+                <img src={classData.img} className="itemImgs" alt="Item" />
+              ) : (
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"
+                  className="itemImgs"
+                  alt="Placeholder"
+                />
               )}
+              <div className="detailss">
+              <h1 className="itemTitles">{classData ? classData.classDesc : ''}</h1>
+
+                {classColumns.map((dataS) => (
+                  <div className="detailItems" key={dataS.field}>
+                    <span className="itemKeys">{dataS.headerName}:</span>
+                    <span className="itemValues">
+                      {classData && classData[dataS.field] ? (
+                        dataS.field === "days" ? (
+                          Object.entries(classData[dataS.field])
+                            .reverse() // Reverse the array of days
+                            .map(([day, checked], index, array) => (
+                              <span key={day} className="itemValues">
+                                {checked && `${day}${index !== array.length - 1 ? ', ' : ''}`}
+                              </span>
+                            ))
+                        ) : (
+                          classData[dataS.field]
+                        )
+                      ) : (
+                        "Loading..." // or any other placeholder
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bottom">
-          {/* Place your datatable components here */}
-          {/* <Datatable title="Classes Attended"/> */}
+        {/* <div className="bottom">
           <DatatableRecord
             entity={entityTable}
             tableTitle={tableTitle}
             entityColumns={entityColumns}/>
-        </div>
+        </div> */}
       </div>
     </div>
   );

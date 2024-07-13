@@ -6,11 +6,13 @@ import Navbar from "../../components/navbar/Navbar";
 import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import UpdateModal from "../../components/updateModal/UpdateModal";
 
 const Edit2 = ({inputs, title, entityType }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [data, setData] = useState("");
+  const [showModal, setShowModal] = useState(false);
   
   console.log(id);
 
@@ -107,6 +109,10 @@ const Edit2 = ({inputs, title, entityType }) => {
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
+
+  const handleUpdateClick = () => {
+    setShowModal(true);
+  };
   
   return(
     <div className="edit">
@@ -157,6 +163,7 @@ const Edit2 = ({inputs, title, entityType }) => {
               ))}
 
               <button
+                onClick={handleUpdateClick}
                 className="buttonn"
                 type="submit"
               >
@@ -164,6 +171,9 @@ const Edit2 = ({inputs, title, entityType }) => {
               </button>
             </form>
           </div>
+          {showModal && (
+          <UpdateModal/>
+          )}
         </div>
       </div>
     </div>

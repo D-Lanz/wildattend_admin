@@ -7,10 +7,12 @@ import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/fires
 import { auth, db, storage } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import AddModal from "../../components/addModal/AddModal";
 
 const New2 = ({ inputs, title, entityType }) => {
   const navigate = useNavigate();
   const [data, setData] = useState({});
+  const [showModal, setShowModal] = useState(false);
 
   const handleInput = (e) => {
     const id = e.target.id;
@@ -72,6 +74,10 @@ const New2 = ({ inputs, title, entityType }) => {
     navigate(-1); // Navigate back to the last page
   };
 
+  const handleAddClick = () => {
+    setShowModal(true);
+  };
+
   return (
     <div className="new">
       <Sidebar />
@@ -131,6 +137,7 @@ const New2 = ({ inputs, title, entityType }) => {
               ))}
 
               <button
+                onClick={handleAddClick}
                 className="buttonn"
                 type="submit"
               >
@@ -138,6 +145,9 @@ const New2 = ({ inputs, title, entityType }) => {
               </button>
             </form>
           </div>
+          {showModal && (
+          <AddModal/>
+          )}
         </div>
       </div>
     </div>

@@ -4,12 +4,14 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import RemoveModal from "../removeModal/RemoveModal";
 // DATATABLE 2 IS FOR SINGLE2.JS ROOMS AND ACCESS POINTS
 
 const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   const navigate = useNavigate(); // Access to the navigate function
   const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   
   console.log(entity)
 
@@ -99,6 +101,7 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
 
   // once the "Remove" button is deleted, it will delete the "classRooms" document
   const handleRemove = async (params) => {
+    setIsRemoveModalOpen(true);
     try {
       let roomID, classID, targetField;
       if (location.pathname.startsWith("/rooms/")) {
@@ -192,6 +195,14 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
         );
   }} ];
 
+  const handleDeleteConfirm = () => {
+    // Perform logout logic (e.g., clear auth token)
+  };
+
+  const handleDeleteCancel = () => {
+    setIsRemoveModalOpen(false);
+  };
+
   return(
     <div className="datatable2">
       <div className="datatable2Title">
@@ -212,6 +223,12 @@ const Datatable2 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
         pageSizeOptions={[5, 10]}
         // checkboxSelection
       />
+      {isRemoveModalOpen && (
+        <RemoveModal
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
     </div>
   )
 }

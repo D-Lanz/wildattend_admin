@@ -8,6 +8,7 @@ import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/fires
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import UpdateModal from '../../components/updateModal/UpdateModal';
 
 const Edit = ({inputs, title, entityType }) => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Edit = ({inputs, title, entityType }) => {
   const [file, setFile] = useState("");
   const [data, setData] = useState("");
   const [perc, setPerc] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   
   console.log(id);
 
@@ -129,6 +131,10 @@ const Edit = ({inputs, title, entityType }) => {
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
+
+  const handleUpdateClick = () => {
+    setShowModal(true);
+  };
   
   return(
     <div className="edit">
@@ -214,7 +220,8 @@ const Edit = ({inputs, title, entityType }) => {
 
 
 
-              <button
+              <button 
+                onClick={handleUpdateClick}
                 disabled={perc !== null && perc < 100}
                 className="buttonn"
                 type="submit"
@@ -223,6 +230,9 @@ const Edit = ({inputs, title, entityType }) => {
               </button>
             </form>
           </div>
+          {showModal && (
+          <UpdateModal/>
+          )}
         </div>
       </div>
     </div>

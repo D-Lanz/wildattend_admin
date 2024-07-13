@@ -9,12 +9,14 @@ import { auth, db, storage } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
+import AddModal from '../../components/addModal/AddModal';
 
 const New = ({ inputs, title, entityType }) => {
   const [file, setFile] = useState("");
   const [data, setData] = useState({});
   const [perc, setPerc] = useState(null);
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const uploadFile = () => {
@@ -112,21 +114,20 @@ const New = ({ inputs, title, entityType }) => {
     try {
       let collectionName;
       let docId; // Document ID variable
+      let newData = { ...data }; // Create a new object to avoid reassignment
   
       switch (entityType) {
         case "user":
           collectionName = "users";
           // Use idNum as document ID for users
-          docId = data.idNum;
+          docId = newData.idNum;
           break;
         case "class":
           collectionName = "classes";
           // Create a custom document ID based on class attributes
-          docId = `${data.classCode}_${data.classSec}_${data.semester}_${data.schoolYear}`;
-          // Add a boolean "status" field to indicate if the class has started or not
-          const status = false; // Assuming the class has not started by default
-          // Merge the status field with other data
-          data = { ...data, status };
+          docId = `${newData.classCode}_${newData.classSec}_${newData.semester}_${newData.schoolYear}`;
+          // Add the "Ongoing" attribute set to false
+          newData = { ...newData, Ongoing: false };
           break;
         case "room":
           collectionName = "rooms";
@@ -138,19 +139,20 @@ const New = ({ inputs, title, entityType }) => {
       if (entityType === "user") {
         const res = await createUserWithEmailAndPassword(
           auth,
-          data.email,
-          data.password
+          newData.email,
+          newData.password
         );
-  
-        await setDoc(doc(db, collectionName, docId), {
-          ...data,
+        
+        await setDoc(doc(db, collectionName, res.user.uid), {
+        // await setDoc(doc(db, collectionName, docId), {
+          ...newData,
           timeStamp: serverTimestamp(),
           // classes: [], // Initialize classes array for the user
           // attendanceRecords: [], // Initialize attendanceRecords array for the user
         });
       } else {
         await addDoc(collection(db, collectionName), {
-          ...data,
+          ...newData,
           // instructor: null, // Initialize instructor reference as null
           // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
           // attendanceRecords: [], // Initialize attendanceRecords array for the class
@@ -161,6 +163,7 @@ const New = ({ inputs, title, entityType }) => {
     } catch (err) {
       console.log(err);
     }
+    setShowModal(true);
   };
   
   const handleCheckboxChange = (e) => {
@@ -181,6 +184,10 @@ const New = ({ inputs, title, entityType }) => {
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
+
+  // const handleAddClick = () => {
+    
+  // };
 
   return (
     <div className="new">
@@ -268,6 +275,7 @@ const New = ({ inputs, title, entityType }) => {
 
 
               <button
+                onClick={handleAdd}
                 disabled={perc !== null && perc < 100}
                 className="buttonn"
                 type="submit"
@@ -276,6 +284,9 @@ const New = ({ inputs, title, entityType }) => {
               </button>
             </form>
           </div>
+          {showModal && (
+          <AddModal/>
+          )}
         </div>
       </div>
     </div>
