@@ -14,6 +14,8 @@ import AddModal from '../../components/addModal/AddModal';
 const New = ({ inputs, title, entityType }) => {
   const [file, setFile] = useState("");
   const [data, setData] = useState({});
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [perc, setPerc] = useState(null);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -60,7 +62,21 @@ const New = ({ inputs, title, entityType }) => {
     const id = e.target.id;
     const value = e.target.value;
     setData({ ...data, [id]: value });
+
+    // Update the firstName and lastName states
+    if (id === "firstName") {
+      setFirstName(value);
+    } else if (id === "lastName") {
+      setLastName(value);
+    }
   };
+
+  useEffect(() => {
+    // Generate the email address based on the first and last name
+    const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
+    setData((prevData) => ({ ...prevData, email }));
+  }, [firstName, lastName]);
+
 
   //AUTO-ID
   // const handleAdd = async (e) => {
@@ -230,7 +246,6 @@ const New = ({ inputs, title, entityType }) => {
                     {input.label}
                   </label>
                   {input.id === "days" ? (
-                    // If input id is "days", render checkboxes
                     <div>
                       {input.options.map((option) => (
                         <div key={option} className="checkboxWrapper">
@@ -245,7 +260,6 @@ const New = ({ inputs, title, entityType }) => {
                       ))}
                     </div>
                   ) : input.type === "dropdown" ? (
-                    // Check if input type is dropdown
                     <select
                       className="inputn"
                       id={input.id}
@@ -258,8 +272,17 @@ const New = ({ inputs, title, entityType }) => {
                         </option>
                       ))}
                     </select>
+                  ) : input.id === "email" ? (
+                    // Email input is disabled and auto-filled
+                    <input
+                      className="inputn"
+                      id={input.id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      value={data.email || ""}
+                      disabled
+                    />
                   ) : (
-                    // Render input field for other types
                     <input
                       className="inputn"
                       id={input.id}
@@ -273,7 +296,6 @@ const New = ({ inputs, title, entityType }) => {
                 </div>
               ))}
 
-
               <button
                 onClick={handleAdd}
                 disabled={perc !== null && perc < 100}
@@ -284,9 +306,7 @@ const New = ({ inputs, title, entityType }) => {
               </button>
             </form>
           </div>
-          {showModal && (
-          <AddModal/>
-          )}
+          {showModal && <AddModal />}
         </div>
       </div>
     </div>

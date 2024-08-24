@@ -62,3 +62,19 @@
   padding: 5px;
   cursor: pointer;
 }
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px; /* Add some space between dropdown and textbox */
+}
+
+.filterSection .MuiFormControl-root {
+  min-width: 200px; /* Set a specific width for the dropdown */
+}
+
+.filterSection .MuiTextField-root {
+  flex: 1; /* Allow the textbox to take the remaining space */
+  max-width: 1000px; /* Limit the maximum width of the textbox */
+}
