@@ -104,9 +104,6 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
                     </span>
                   </div>
                 ))}
-
-
-
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import "./datatablerecord.css";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
@@ -63,10 +63,13 @@ const DatatableRecord = ({ entity, tableTitle, entityColumns, id }) => {
     <div className="datatablerecord">
       <div className="datatablerecordTitle">{tableTitle}</div>
       <DataGrid
+        disableFiltersSelector
+        disableColumnFilter
+        disableDensitySelector
         rows={data}
         columns={[...entityColumns, ...actionColumn]}
         pageSize={5}
-        checkboxSelection
+        slots={{ toolbar: GridToolbar }}
       />
     </div>
   );

@@ -77,7 +77,6 @@ const New = ({ inputs, title, entityType }) => {
     setData((prevData) => ({ ...prevData, email }));
   }, [firstName, lastName]);
 
-
   //AUTO-ID
   // const handleAdd = async (e) => {
   //   e.preventDefault();
@@ -196,7 +195,6 @@ const New = ({ inputs, title, entityType }) => {
     }));
   };
   
-
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };

@@ -130,12 +130,12 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
           </div>
         </div>
 
-        {/* <div className="bottom">
-          <DatatableRecord
+        <div className="bottom">
+          {/* <DatatableRecord
             entity={entityTable}
             tableTitle={tableTitle}
-            entityColumns={entityColumns}/>
-        </div> */}
+            entityColumns={entityColumns}/> */}
+        </div> 
       </div>
     </div>
   );

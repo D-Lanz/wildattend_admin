@@ -17,6 +17,8 @@ const Edit = ({inputs, title, entityType }) => {
   const [data, setData] = useState("");
   const [perc, setPerc] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   
   console.log(id);
 
@@ -47,7 +49,20 @@ const Edit = ({inputs, title, entityType }) => {
     setData({ ...data, [id]: value });
     console.log("Editing ID:", id)
     console.log(data)
+
+    // Update the firstName and lastName states
+    if (id === "firstName") {
+      setFirstName(value);
+    } else if (id === "lastName") {
+      setLastName(value);
+    }
   };
+
+  useEffect(() => {
+    // Generate the email address based on the first and last name
+    const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
+    setData((prevData) => ({ ...prevData, email }));
+  }, [firstName, lastName]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -202,8 +217,21 @@ const Edit = ({inputs, title, entityType }) => {
                         </option>
                       ))}
                     </select>
+                  ) : input.id === "email" ? (
+                    // Render email input field with disabled condition
+                    <input
+                      className="inputn"
+                      id={input.id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      pattern={input.pattern}
+                      onChange={handleInput}
+                      required
+                      value={data[input.id] || ''}
+                      disabled={input.id === "email"}
+                    />
                   ) : (
-                    // Render input field for other types
+                    // Render other input fields
                     <input
                       className="inputn"
                       id={input.id}
@@ -217,7 +245,6 @@ const Edit = ({inputs, title, entityType }) => {
                   )}
                 </div>
               ))}
-
 
 
               <button 
