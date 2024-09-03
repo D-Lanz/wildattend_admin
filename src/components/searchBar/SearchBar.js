@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { TextField, Autocomplete, CircularProgress } from '@mui/material';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase'; // Import your Firestore instance
+import { useNavigate } from 'react-router-dom';
+import "./SearchBar.css";
 
 const collectionsToSearch = [
   { name: 'users', fields: ['email', 'firstName', 'idNum', 'lastName'] },
@@ -14,6 +16,7 @@ const SearchBar = () => {
   const [searchText, setSearchText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     if (searchText.trim() === '') {
@@ -56,7 +59,7 @@ const SearchBar = () => {
   }, [searchText]);
 
   return (
-    <div style={{ width: 300 }}>
+    <div className="search-bar-container" style={{ width: 300 }}>
       <Autocomplete
         freeSolo
         options={suggestions.map(option => {
@@ -95,6 +98,23 @@ const SearchBar = () => {
         onChange={(event, value) => {
           if (value) {
             console.log('Selected Value:', value);
+            // Navigate based on the collection type
+            switch (value.label.split(':')[0]) {
+              case 'users':
+                navigate(`/users/${value.id}`); // Navigate to user page
+                break;
+              case 'rooms':
+                navigate(`/rooms/${value.id}`); // Navigate to room page
+                break;
+              case 'classes':
+                navigate(`/classes/${value.id}`); // Navigate to class page
+                break;
+              case 'accessPoints':
+                navigate(`/accessPoints/${value.id}`); // Navigate to access point page
+                break;
+              default:
+                console.error('Unknown collection type');
+            }
             // Handle the selected value, e.g., navigate to the relevant page or show details
           }
         }}
