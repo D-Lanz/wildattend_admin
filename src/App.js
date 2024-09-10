@@ -28,6 +28,8 @@ import { classColumns, userColumns, userClassColumns, roomColumns, accessPointCo
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle, roomSingle, accessPointSingle } from './singleSource';
 
+//MISC.
+import Schedule from './pages/schedule/schedule';
 
 function App() {
   const {currentUser} = useContext(AuthContext)
@@ -45,6 +47,7 @@ function App() {
           <Route path="/">
             {/* route for login */}
             <Route path="login" element={<Login />} />
+
             {/* route for admin dashboard(index) */}
             <Route index element={
                   <RequireAuth>
@@ -52,7 +55,6 @@ function App() {
                   </RequireAuth>
               }
             />
-
 
             {/* route for "users" entity*/}
             <Route path="users">
@@ -99,7 +101,6 @@ function App() {
               />
             </Route>
 
-
             {/* route for "classes" entity*/}
             <Route path="classes">
               
@@ -145,7 +146,6 @@ function App() {
                 } />
             </Route>
 
-
             {/* route for "userClasses" entity*/}
             <Route path="userClasses">
               
@@ -158,7 +158,6 @@ function App() {
               />
 
             </Route>
-
 
             {/* route for "rooms" entity*/}
             <Route path="rooms">
@@ -202,7 +201,6 @@ function App() {
                 } />
             </Route>
 
-
             {/* route for "accessPoints" entity*/}
             <Route path="accessPoints">
 
@@ -237,7 +235,13 @@ function App() {
                 } />
             </Route>
 
-
+            {/* route for attendance records*/}
+            <Route path="schedule" element={
+                  <RequireAuth>
+                    <Schedule/>
+                  </RequireAuth>
+              }
+            />
 
           </Route>
         </Routes>

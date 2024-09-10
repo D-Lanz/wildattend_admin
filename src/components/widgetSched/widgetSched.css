@@ -1,0 +1,79 @@
+.widgetSched {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 10px;
+  background-color: maroon;
+  color: gold;
+  border-radius: 10px;
+  box-shadow: 10px 10px 16px -4px rgba(128, 0, 0, 0.48);
+  gap: 10px;
+}
+
+.classItemS {
+  flex: 1 1 calc(25% - 20px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.leftwS, .rightwS {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.classImageCircle {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%; /* Makes the image circular */
+}
+
+.wtitleS {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.counter {
+  font-size: 14px;
+}
+
+.ongoingTag {
+  font-weight: bold;
+  color: green;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.linkwS {
+  width: max-content;
+  font-size: 12px;
+  border-bottom: 1px solid gold;
+  text-decoration: none;
+  color: gold;
+  margin-top: 5px;
+}
+
+.linkwS:hover {
+  color: white;
+}
+
+.ongoingTag {
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.ongoingTag {
+  color: green; /* Change color based on ongoing status */
+}
+
+.ongoingTag:not(.ongoing) {
+  color: red; /* Color for "Not Ongoing" */
+}

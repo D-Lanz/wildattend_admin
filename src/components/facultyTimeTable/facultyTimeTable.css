@@ -1,0 +1,24 @@
+.tableSched {
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.tableSched table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableSched th, .tableSched td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.tableSched th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.tableSched tr:nth-child(even) {
+  background-color: #f9f9f9;
+}

@@ -72,7 +72,7 @@ const Sidebar = () => {
             </li>
           </Link>
           <p className="title">ASSESSMENTS</p>
-          <Link to="/" style={{ textDecoration:"none" }}>
+          <Link to="/schedule" style={{ textDecoration:"none" }}>
             <li>
               <ReceiptLongIcon className="icon"/>
               <span>Attendance Records</span>
