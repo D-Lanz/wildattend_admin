@@ -42,15 +42,14 @@ const Schedule = () => {
           <h2>Today's Classes</h2>
           <p>{formattedDateTime}</p>
           <p>Time in Cebu City, Cebu</p>
+          
           <div className="widgets">
             <WidgetSched />
           </div>
         </div>
         
+        {/* RECENT TIME INS OF A FACULTY MEMBER */}
         <div className="tableSched">
-          {/* RECENT TIME INS OF TEACHER */}
-          {/* INSERT A TABLE THAT IS FROM "attendRecord" where if userId's role is "Faculty", it
-          only shows in the table*/}
           <FacultyTimeTable/>
         </div>
         

@@ -1,13 +1,16 @@
-import "./widgetSched.css";
 import { useEffect, useState } from "react";
 import { collection, query, getDocs } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage"; // For fetching the class image
 import { Link } from 'react-router-dom';
 import { db, storage } from "../../firebase"; // Ensure auth is not needed here unless you use it later
+import { FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
+import "./widgetSched.css";
 
 const Widget2 = () => {
   const [classes, setClasses] = useState([]); // To store classes from Firestore
   const [loading, setLoading] = useState(true); // To handle loading state
+  const [filterText, setFilterText] = useState(""); // Search text
+  const [selectedFilter, setSelectedFilter] = useState(""); // Selected filter type
 
   // Get the current day of the week
   const getCurrentDay = () => {
@@ -21,9 +24,7 @@ const Widget2 = () => {
       try {
         const q = query(collection(db, "classes"));
         const querySnapshot = await getDocs(q);
-        
         const currentDay = getCurrentDay(); // Get the current day
-
         const classData = await Promise.all(querySnapshot.docs.map(async (doc) => {
           const data = doc.data();
           
@@ -59,37 +60,90 @@ const Widget2 = () => {
     fetchClasses();
   }, []);
 
+  // Handle filter text change
+  const handleFilterChange = (event) => {
+    setFilterText(event.target.value);
+  };
+
+  // Handle filter dropdown change
+  const handleFilterSelectChange = (event) => {
+    setSelectedFilter(event.target.value);
+  };
+
+  // Filter classes based on search text and selected filter type
+  const filteredClasses = classes.filter((classItem) => {
+    const searchText = filterText.toLowerCase();
+    switch (selectedFilter) {
+      case 'classCode':
+        return classItem.classCode.toLowerCase().includes(searchText);
+      case 'classSec':
+        return classItem.classSec.toLowerCase().includes(searchText);
+      case 'classDesc':
+        return classItem.classDesc.toLowerCase().includes(searchText);
+      default:
+        return (
+          classItem.classCode.toLowerCase().includes(searchText) ||
+          classItem.classSec.toLowerCase().includes(searchText) ||
+          classItem.classDesc.toLowerCase().includes(searchText)
+        );
+    }
+  });
+
   if (loading) {
     return <div>Loading...</div>; // Handle loading state
   }
 
   return (
-    <div className="widgetSched">
-      {classes.length === 0 ? (
-        <div>No classes for today.</div>
-      ) : (
-        classes.map((classItem) => (
-          <div key={classItem.id} className="classItemS">
-            <div className="leftwS">
-              {classItem.classImageUrl ? (
-                <img src={classItem.classImageUrl} alt={classItem.classDesc} className="classImageCircle" />
-              ) : (
-                <div>No Image Available</div>
-              )}
+    <div>
+      <div className="filterSection">
+        <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
+          <InputLabel>Filter by</InputLabel>
+          <Select
+            value={selectedFilter}
+            onChange={handleFilterSelectChange}
+            label="Filter by"
+          >
+            <MenuItem value="">None</MenuItem>
+            <MenuItem value="classCode">Class Code</MenuItem>
+            <MenuItem value="classSec">Class Section</MenuItem>
+            <MenuItem value="classDesc">Class Description</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Search"
+          variant="outlined"
+          value={filterText}
+          onChange={handleFilterChange}
+          style={{ flex: 1, maxWidth: '500px', marginLeft: '20px' }}
+        />
+      </div>
+      <div className="widgetSched">
+        {filteredClasses.length === 0 ? (
+          <div>No classes for today.</div>
+        ) : (
+          filteredClasses.map((classItem) => (
+            <div key={classItem.id} className="classItemS">
+              <div className="leftwS">
+                {classItem.classImageUrl ? (
+                  <img src={classItem.classImageUrl} alt={classItem.classDesc} className="classImageCircle" />
+                ) : (
+                  <div>No Image Available</div>
+                )}
+              </div>
+              <div className="rightwS">
+                <span className="wtitleS">{classItem.classCode} - {classItem.classSec}</span>
+                <span className="counter">{classItem.classDesc}</span>
+                <span className={`ongoingTag ${classItem.Ongoing ? 'ongoing' : 'notOngoing'}`}>
+                  {classItem.Ongoing ? "Ongoing" : "Not Ongoing"}
+                </span>
+                <Link className="linkwS" to={`/classes/${classItem.id}`}>
+                  <span className="linkwS">Link to {classItem.className}</span>
+                </Link>
+              </div>
             </div>
-            <div className="rightwS">
-              <span className="wtitleS">{classItem.classCode} - {classItem.classSec}</span>
-              <span className="counter">{classItem.classDesc}</span>
-              <span className={`ongoingTag ${classItem.Ongoing ? 'ongoing' : 'notOngoing'}`}>
-                {classItem.Ongoing ? "Ongoing" : "Not Ongoing"}
-              </span>
-              <Link className="linkwS" to={`/classes/${classItem.id}`}>
-                <span className="linkwS">Link to {classItem.className}</span>
-              </Link>
-            </div>
-          </div>
-        ))
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };
