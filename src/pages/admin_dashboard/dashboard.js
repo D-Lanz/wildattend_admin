@@ -3,6 +3,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Widget from "../../components/widget/widget";
 import SearchBar from "../../components/searchBar/SearchBar"; // Import the SearchBar component
 import "./dashboard.css";
+import DateTimeWidget from "../../components/dateTimeWidget/dateTimeWidget";
 
 const AdminDashboard = () => {
   return (
@@ -10,7 +11,8 @@ const AdminDashboard = () => {
       <Sidebar />
       <div className="homeContainer">
         <Navbar />
-        <SearchBar /> {/* Add the SearchBar here */}
+        <SearchBar />
+        <DateTimeWidget/>
         <div className="widgets">
           <Widget type="user" />
           <Widget type="student" />

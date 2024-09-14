@@ -23,7 +23,7 @@ const LoginPage = () => {
       // Signed in 
       const user = userCredential.user;
       dispatch({type:"LOGIN", payload:user})
-      navigate("/")
+      navigate("/dashboard")
       console.log("Logged In Succesfully!")
       console.log(user)
       // ...

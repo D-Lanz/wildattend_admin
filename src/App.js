@@ -30,9 +30,10 @@ import { classSingle, userSingle, roomSingle, accessPointSingle } from './single
 
 //MISC.
 import Schedule from './pages/schedule/schedule';
+import AdminProfile from './pages/admin_profile/admin_profile';
 
 function App() {
-  const {currentUser} = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext);
 
   const RequireAuth = ({ children }) => {
     return currentUser ? children : <Navigate to="/login" />;
@@ -44,17 +45,17 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/">
-            {/* route for login */}
-            <Route path="login" element={<Login />} />
+          {/* Login Route - accessible without auth */}
+          <Route path="/login" element={<Login />} />
 
-            {/* route for admin dashboard(index) */}
-            <Route index element={
-                  <RequireAuth>
-                    <AdminDashboard />
-                  </RequireAuth>
-              }
-            />
+          {/* All other routes are wrapped inside RequireAuth */}
+          <Route path="/" element={<Navigate to="/login" />} /> {/* Redirect from root */}
+
+          <Route path="dashboard" element={
+            <RequireAuth>
+              <AdminDashboard />
+            </RequireAuth>
+          } />
 
             {/* route for "users" entity*/}
             <Route path="users">
@@ -237,13 +238,19 @@ function App() {
 
             {/* route for attendance records*/}
             <Route path="schedule" element={
-                  <RequireAuth>
-                    <Schedule/>
-                  </RequireAuth>
-              }
-            />
-
-          </Route>
+            <RequireAuth>
+              <Schedule />
+            </RequireAuth>
+          } />
+          
+          <Route path="profile" element={
+            <RequireAuth>
+              <AdminProfile />
+            </RequireAuth>
+          } />
+          
+          {/* Redirect to login for any unknown paths */}
+          <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
       </BrowserRouter>
     </div>

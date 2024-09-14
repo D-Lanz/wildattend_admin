@@ -1,0 +1,38 @@
+.profile {
+  display: flex;
+}
+
+.profile h1{
+  color: #CEA108;
+}
+
+.profileContainer{
+  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  flex: 6;
+}
+
+.profilePicContainer {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profilePic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Adjust if necessary */
+  font-size: 1.5rem;
+  color: #666;
+}
