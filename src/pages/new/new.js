@@ -3,13 +3,13 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AddModal from '../../components/addModal/AddModal';
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import AddModal from '../../components/addModal/AddModal';
 
 const New = ({ inputs, title, entityType }) => {
   const [file, setFile] = useState("");
@@ -71,11 +71,12 @@ const New = ({ inputs, title, entityType }) => {
     }
   };
 
-  useEffect(() => {
-    // Generate the email address based on the first and last name
-    const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
-    setData((prevData) => ({ ...prevData, email }));
-  }, [firstName, lastName]);
+    useEffect(() => {
+    if (entityType === "user") {
+      const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
+      setData((prevData) => ({ ...prevData, email }));
+    }
+  }, [firstName, lastName, entityType]);
 
   //AUTO-ID
   // const handleAdd = async (e) => {
@@ -270,8 +271,7 @@ const New = ({ inputs, title, entityType }) => {
                         </option>
                       ))}
                     </select>
-                  ) : input.id === "email" ? (
-                    // Email input is disabled and auto-filled
+                  ) : input.id === "email" && entityType === "user" ? (
                     <input
                       className="inputn"
                       id={input.id}

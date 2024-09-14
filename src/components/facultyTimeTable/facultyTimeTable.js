@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, where, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase"; // Ensure you import db from your Firebase configuration
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import Button from "@mui/material/Button";
 import "./facultyTimeTable.css";
 
@@ -116,6 +116,11 @@ const FacultyTimeTable = () => {
           pageSize={10}
           rowsPerPageOptions={[5, 10, 20]}
           checkboxSelection={false}
+          pagination={false}  // Disable pagination
+          slots={{ toolbar: GridToolbar }}
+          disableFiltersSelector
+          disableColumnFilter
+          disableDensitySelector
         />
       </div>
     </div>

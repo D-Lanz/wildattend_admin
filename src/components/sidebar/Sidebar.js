@@ -1,4 +1,5 @@
 import "./sidebar.css";
+import logo from "./logo.png"; // Import the logo image
 import React, { useState } from 'react';
 import LogoutConfirmation from './LogoutConfirmation'; // Import your confirmation component
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -32,11 +33,17 @@ const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="top">
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <span className="logo">Admin</span>
+        <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+          <div className="logo-container">
+            <img
+              src={logo}
+              alt="App Logo"
+              className="logo-image"
+            />
+          </div>
         </Link>
       </div>
-      <hr />
+      {/* <hr /> */}
       <div className="center">
         <ul>
           <p className="title">MAIN</p>
@@ -44,6 +51,12 @@ const Sidebar = () => {
             <li>
               <DashboardIcon className="icon" />
               <span>Dashboard</span>
+            </li>
+          </Link>
+          <Link to="/schedule" style={{ textDecoration:"none" }}>
+            <li>
+              <ReceiptLongIcon className="icon"/>
+              <span>Attendance Records</span>
             </li>
           </Link>
           <p className="title">LISTS</p>
@@ -71,7 +84,7 @@ const Sidebar = () => {
               <span>Manage Access Points</span>
             </li>
           </Link>
-          <p className="title">ASSESSMENTS</p>
+          {/* <p className="title">ASSESSMENTS</p>
           <Link to="/schedule" style={{ textDecoration:"none" }}>
             <li>
               <ReceiptLongIcon className="icon"/>
@@ -83,7 +96,7 @@ const Sidebar = () => {
               <AssessmentIcon className="icon" />
               <span>Generate Reports</span>
             </li>
-          </Link>
+          </Link> */}
           <p className="title">USER</p>
           <Link to="/profile" style={{ textDecoration: 'none' }}>
             <li>

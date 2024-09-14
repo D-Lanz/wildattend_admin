@@ -1,0 +1,52 @@
+/* Existing styles */
+.main {
+  display: flex;
+}
+
+.main h1 {
+  color: #CEA108;
+}
+
+.tempContainer {
+  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  flex: 6;
+}
+
+.tempCon{
+  display: flex;
+}
+
+/* New styles */
+.leftColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 20px;
+}
+
+.rightColumn {
+  flex: 2;
+  padding: 20px;
+}
+
+.classDetails {
+  background-color: #FFF;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dateFilter {
+  background-color: #FFF;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dataTable {
+  height: 600px; /* Adjust height as needed */
+  background-color: #FFF;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

@@ -31,6 +31,7 @@ import { classSingle, userSingle, roomSingle, accessPointSingle } from './single
 //MISC.
 import Schedule from './pages/schedule/schedule';
 import AdminProfile from './pages/admin_profile/admin_profile';
+import AttendRecord from './pages/attendRecord/attendRecord';
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -206,8 +207,7 @@ function App() {
             <Route path="accessPoints">
 
               {/* VIEW LIST OF ROOMS DATATABLE */}
-              <Route index element={
-                <RequireAuth>
+              <Route index element={ <RequireAuth>
                   <List title="List of Access Points" entity="accessPoints" tableTitle="Add New Access Point" entityColumns={accessPointColumns}/>
                 </RequireAuth>
               } />
@@ -236,18 +236,13 @@ function App() {
                 } />
             </Route>
 
-            {/* route for attendance records*/}
-            <Route path="schedule" element={
-            <RequireAuth>
-              <Schedule />
-            </RequireAuth>
-          } />
+            {/* Route for attendance records */}
+            <Route path="schedule">
+              <Route index element={<RequireAuth> <Schedule/> </RequireAuth>}/>
+              <Route path=":id" element={<RequireAuth><AttendRecord /></RequireAuth>} />
+            </Route>
           
-          <Route path="profile" element={
-            <RequireAuth>
-              <AdminProfile />
-            </RequireAuth>
-          } />
+          <Route path="profile" element={<RequireAuth><AdminProfile /></RequireAuth>}/>
           
           {/* Redirect to login for any unknown paths */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
