@@ -83,7 +83,7 @@ const Widget = ({ type }) => {
       data={
         title:"USERS",
         linkph:"See all users",
-        link: "users",
+        link: "/users",
         icon:(<PeopleAltIcon className="iconw"/>),
         amount: userAmount,
       };
@@ -92,6 +92,7 @@ const Widget = ({ type }) => {
       data={
         title:"STUDENTS",
         linkph:"See all students",
+        link: "/users?role=Student",
         icon:(<SchoolIcon className="iconw"/>),
         amount: userAmount,
       };
@@ -100,6 +101,7 @@ const Widget = ({ type }) => {
       data={
         title:"FACULTY",
         linkph:"See all faculty members",
+        link: "/users?role=Faculty",
         icon:(<SquareFootIcon className="iconw"/>),
         amount: userAmount,
       };
@@ -108,7 +110,7 @@ const Widget = ({ type }) => {
       data={
         title:"CLASSES",
         linkph:"See all classes",
-        link: "classes",
+        link: "/classes",
         icon:(<ClassIcon className="iconw"/>),
         amount: classAmount,
       };
@@ -117,7 +119,7 @@ const Widget = ({ type }) => {
       data={
         title:"ROOMS",
         linkph:"See all rooms",
-        link: "rooms",
+        link: "/rooms",
         icon:(<RoomIcon className="iconw"/>),
         amount: roomAmount,
     };
@@ -126,7 +128,7 @@ const Widget = ({ type }) => {
       data={
         title:"ACCESS POINTS",
         linkph:"See all access points",
-        link: "accessPoints",
+        link: "/accessPoints",
         icon:(<RssFeedIcon className="iconw"/>),
         amount: accessPtAmount,
     };

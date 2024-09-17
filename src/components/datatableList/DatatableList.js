@@ -1,6 +1,6 @@
 import "./datatablelist.css";
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { Link, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
@@ -10,16 +10,28 @@ import { MenuItem, Select, TextField, InputLabel, FormControl } from "@mui/mater
 
 const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Get location to access state
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedColumn, setSelectedColumn] = useState(entityColumns[0]?.field || ''); // Default to first column
   const [filterText, setFilterText] = useState('');
+  const queryParams = new URLSearchParams(location.search);
+  const roleFilter = queryParams.get('role');
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, entity), (snapShot) => {
       let list = [];
       snapShot.docs.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        
+        // Apply role filter if entity is "users" and roleFilter is present
+        if (entity === 'users' && roleFilter) {
+          if (data.role === roleFilter) {
+            list.push({ id: doc.id, ...data });
+          }
+        } else {
+          list.push({ id: doc.id, ...data });
+        }
       });
       setData(list);
     }, (error) => {
@@ -28,7 +40,15 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
     return () => {
       unsub();
     };
-  }, [entity]);
+  }, [entity, roleFilter]);  // Add roleFilter to dependencies
+  
+  useEffect(() => {
+    if (roleFilter && entityColumns.some(col => col.field === 'role')) {
+      setSelectedColumn('role');
+      setFilterText(roleFilter);
+    }
+  }, [roleFilter, entityColumns]);
+  
 
   const handleFilterChange = (event) => {
     setFilterText(event.target.value);
