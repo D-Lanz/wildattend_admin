@@ -95,7 +95,7 @@ const Widget2 = () => {
 
   return (
     <div>
-      <div className="filterSection">
+      <div className="filterSection2">
         <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
           <InputLabel>Filter by</InputLabel>
           <Select
@@ -114,7 +114,7 @@ const Widget2 = () => {
           variant="outlined"
           value={filterText}
           onChange={handleFilterChange}
-          style={{ flex: 1, maxWidth: '500px', marginLeft: '20px' }}
+          style={{ flex: 1, maxWidth: '500px', marginLeft: '0px', marginTop: '-20px' }}
         />
       </div>
       <div className="widgetSched">

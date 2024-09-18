@@ -1,5 +1,6 @@
 .search-bar-container{
-    margin-top: 20px;
-    margin-left: 40px;
+    position: relative;
+    top: 135px;
+    left: 40px;
 }
 

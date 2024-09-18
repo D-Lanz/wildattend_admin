@@ -17,8 +17,11 @@ const Schedule = () => {
 
         {/* CLASSES DEPENDE SA WEEKDAY */}
         <div>
-          <h2>Today's Classes</h2>
-          <DateTimeWidget/>
+          <h2 style={{marginLeft: '10px'}}>Today's Classes</h2>
+          <div className="datime">
+            <DateTimeWidget/>
+          </div>
+          
           
           <div className="widgets">
             <WidgetSched />
