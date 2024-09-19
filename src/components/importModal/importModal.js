@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
-import { db } from "../../firebase";
-import { doc, getDoc, collection, getDocs, setDoc, query, where, writeBatch } from 'firebase/firestore';
-import './importModal.css'; // Import the CSS file for styling
+import { db, auth } from "../../firebase";
+import { doc, getDoc, collection, getDocs, setDoc, query, where, writeBatch, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import './modal.css';
+import PreviewModal from './previewModal';
 
 const ImportModal = ({ onClose, onConfirm, classID }) => {
   const [csvData, setCsvData] = useState([]);
   const [fileError, setFileError] = useState('');
   const [classDetails, setClassDetails] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -49,36 +53,50 @@ const ImportModal = ({ onClose, onConfirm, classID }) => {
     }
   };
 
-  const importCSVData = async () => {
+  const preparePreviewData = async () => {
     if (!csvData || csvData.length === 0) {
       setFileError('No CSV data available.');
       return;
     }
-    
-    const batch = writeBatch(db); // Create a batch instance
+  
+    const alreadyEnrolled = [];
+    const registered = [];
+    const notYetRegistered = [];
+  
     const usersCollection = collection(db, 'users');
     const userClassesCollection = collection(db, 'userClasses');
-    
+  
     // Define default values
     const defaultImg = 'https://cdn-icons-png.flaticon.com/512/201/201818.png';
     const defaultRole = 'Student';
-    const defaultPasswordSuffix = '123456CITU';
-    
+  
+    // Map CSV headers to Firestore fields
+    const headerMap = {
+      'ID Number': 'idNum',
+      'Last Name': 'lastName',
+      'First Name': 'firstName',
+      'Institutional Email': 'email',
+      'Department': 'department'
+    };
+  
     for (const row of csvData) {
-      // Extract fields with default values if missing
-      const idNum = row.idNum || '';
-      const lastName = row.lastName || '';
-      const firstName = row.firstName || '';
-      const email = row.email || '';
-      const department = row.department || '';
-    
-      // Skip rows with critical missing fields
+      const mappedRow = Object.keys(headerMap).reduce((acc, header) => {
+        const field = headerMap[header];
+        acc[field] = row[header] || '';
+        return acc;
+      }, {});
+  
+      const idNum = mappedRow.idNum || '';
+      const lastName = mappedRow.lastName || '';
+      const firstName = mappedRow.firstName || '';
+      const email = mappedRow.email || '';
+      const department = mappedRow.department || '';
+  
       if (!idNum || !lastName || !firstName || !email) {
-        console.warn('Skipping row with missing data:', row);
+        console.warn('Skipping row with missing essential data:', mappedRow);
         continue;
       }
-    
-      // Check for existing user document
+  
       const userQuery = query(
         usersCollection,
         where('idNum', '==', idNum),
@@ -86,129 +104,244 @@ const ImportModal = ({ onClose, onConfirm, classID }) => {
         where('firstName', '==', firstName),
         where('email', '==', email)
       );
-    
+  
       const userSnapshot = await getDocs(userQuery);
-    
+  
       if (!userSnapshot.empty) {
-        userSnapshot.forEach((userDoc) => {
+        const userDoc = userSnapshot.docs[0];
+        const userId = userDoc.id;
+        const userClassesQuery = query(
+          userClassesCollection,
+          where('classID', '==', classID),
+          where('userID', '==', userId)
+        );
+  
+        const userClassesSnapshot = await getDocs(userClassesQuery);
+  
+        if (!userClassesSnapshot.empty) {
+          alreadyEnrolled.push({
+            idNum,
+            lastName,
+            firstName
+          });
+        } else {
+          registered.push({
+            idNum,
+            lastName,
+            firstName,
+            email,
+            department
+          });
+        }
+      } else {
+        notYetRegistered.push({
+          idNum,
+          lastName,
+          firstName,
+          email,
+          department
+        });
+      }
+    }
+  
+    setPreviewData({ alreadyEnrolled, registered, notYetRegistered });
+    setShowPreview(true);
+  };  
+
+  const handleFinalize = async () => {
+    if (!csvData || csvData.length === 0) {
+      setFileError('No CSV data available.');
+      return;
+    }
+
+    const batch = writeBatch(db);
+    const usersCollection = collection(db, 'users');
+    const userClassesCollection = collection(db, 'userClasses');
+
+    // Define default values
+    const defaultImg = 'https://cdn-icons-png.flaticon.com/512/201/201818.png';
+    const defaultRole = 'Student';
+
+    const headerMap = {
+      'ID Number': 'idNum',
+      'Last Name': 'lastName',
+      'First Name': 'firstName',
+      'Institutional Email': 'email',
+      'Department': 'department'
+    };
+
+    for (const row of csvData) {
+      const mappedRow = Object.keys(headerMap).reduce((acc, header) => {
+        const field = headerMap[header];
+        acc[field] = row[header] || '';
+        return acc;
+      }, {});
+
+      const idNum = mappedRow.idNum || '';
+      const lastName = mappedRow.lastName || '';
+      const firstName = mappedRow.firstName || '';
+      const email = mappedRow.email || '';
+      const department = mappedRow.department || '';
+
+      if (!idNum || !lastName || !firstName || !email) {
+        console.warn('Skipping row with missing essential data:', mappedRow);
+        continue;
+      }
+
+      const password = `${lastName.toLowerCase()}.123456CITU`;
+
+      const userQuery = query(
+        usersCollection,
+        where('idNum', '==', idNum),
+        where('lastName', '==', lastName),
+        where('firstName', '==', firstName),
+        where('email', '==', email)
+      );
+
+      const userSnapshot = await getDocs(userQuery);
+
+      if (!userSnapshot.empty) {
+        userSnapshot.forEach(async (userDoc) => {
           const userId = userDoc.id;
-          const userData = userDoc.data();
-    
-          // Update user document with default values if needed
+
           const userUpdate = {
-            img: userData.img || defaultImg,
-            password: userData.password || `${lastName}.${defaultPasswordSuffix}`,
-            role: userData.role || defaultRole,
-            timestamp: userData.timestamp || new Date(),
+            img: userDoc.data().img || defaultImg,
+            password: userDoc.data().password || password,
+            role: userDoc.data().role || defaultRole,
+            timestamp: userDoc.data().timestamp || new Date(),
           };
-    
-          // Create or update userClasses document
+
+          batch.update(doc(db, 'users', userId), userUpdate);
+
+          const userClassesQuery = query(
+            userClassesCollection,
+            where('classID', '==', classID),
+            where('userID', '==', userId)
+          );
+
+          const userClassesSnapshot = await getDocs(userClassesQuery);
+
+          if (userClassesSnapshot.empty) {
+            const userClassesDoc = {
+              classID: classID,
+              enrollDate: new Date(),
+              userID: userId,
+            };
+
+            const userClassesRef = await addDoc(userClassesCollection, userClassesDoc);
+            console.log('Created userClasses document with ID:', userClassesRef.id);
+          } else {
+            console.log('User is already enrolled in this class.');
+          }
+        });
+      } else {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const newUserUid = userCredential.user.uid;
+
+          const newUser = {
+            idNum: idNum,
+            lastName: lastName,
+            firstName: firstName,
+            email: email,
+            department: department,
+            img: defaultImg,
+            password: password,
+            role: defaultRole,
+            timestamp: new Date(),
+          };
+
+          batch.set(doc(db, 'users', newUserUid), newUser);
+
           const userClassesDoc = {
             classID: classID,
             enrollDate: new Date(),
-            userID: userId,
+            userID: newUserUid,
           };
-    
-          batch.update(userDoc.ref, userUpdate);
-          batch.set(doc(userClassesCollection, userId), userClassesDoc);
-        });
-      } else {
-        // Handle cases where the user does not exist
-        const newUser = {
-          idNum: idNum,
-          lastName: lastName,
-          firstName: firstName,
-          email: email,
-          department: department,
-          img: defaultImg,
-          password: `${lastName}.${defaultPasswordSuffix}`,
-          role: defaultRole,
-          timestamp: new Date(),
-        };
-    
-        // Add new user to Firestore
-        const newUserRef = doc(usersCollection);
-        batch.set(newUserRef, newUser);
-    
-        // Create a userClasses document
-        const userClassesDoc = {
-          classID: classID,
-          enrollDate: new Date(),
-          userID: newUserRef.id,
-        };
-    
-        batch.set(doc(userClassesCollection, newUserRef.id), userClassesDoc);
+
+          const userClassesRef = await addDoc(userClassesCollection, userClassesDoc);
+          console.log('Created userClasses document with ID:', userClassesRef.id);
+        } catch (authError) {
+          console.error('Error creating user in Firebase Authentication:', authError);
+        }
       }
     }
-    
+
     try {
       await batch.commit();
       alert('Data imported successfully!');
-      onClose(); // Close the modal after successful import
+      onClose();
     } catch (error) {
       console.error('Error importing data:', error);
       setFileError('Error importing data. Please try again.');
     }
   };
-  
 
   return (
-    <div className="modalOverlay">
-      <div className="modalContainer">
-        <div className="modalHeader">
-          <h2>
-            {classDetails
-              ? `Enroll Students to ${classDetails.classCode}-${classDetails.classSec} SY ${classDetails.schoolYear} (${classDetails.classType})`
-              : 'Loading class details...'}
-          </h2>
-          <button className="closeButton" onClick={onClose}>
-            &times;
-          </button>
-        </div>
-        <div className="modalBody">
-          <p>Upload a .csv file containing student data (ID Number, Last Name, First Name).</p>
-          
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileUpload}
-            className="fileInput"
-          />
-          {fileError && <p className="errorText">{fileError}</p>}
+    <div>
+      <div className="modalOverlay">
+        <div className="modalContainer">
+          <div className="modalHeader">
+            <h2>
+              {classDetails
+                ? `Enroll Students to ${classDetails.classCode}-${classDetails.classSec} SY ${classDetails.schoolYear} (${classDetails.classType})`
+                : 'Loading class details...'}
+            </h2>
+            <button className="closeButton" onClick={onClose}>
+              &times;
+            </button>
+          </div>
+          <div className="modalBody">
+            <p>Upload a .csv file containing student data</p>
+            <p><b>ID Number | Last Name | First Name | Institutional Email | Department</b></p>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              className="fileInput"
+            />
+            {fileError && <p className="errorText">{fileError}</p>}
 
-          {/* Display CSV contents in a table if data is available */}
-          {csvData.length > 0 && (
-            <div className="tableContainer">
-              <table className="csvTable">
-                <thead>
-                  <tr>
-                    {Object.keys(csvData[0]).map((header) => (
-                      <th key={header}>{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {csvData.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {Object.values(row).map((value, colIndex) => (
-                        <td key={colIndex}>{value}</td>
+            {csvData.length > 0 && (
+              <div className="tableContainer">
+                <table className="csvTable">
+                  <thead>
+                    <tr>
+                      {Object.keys(csvData[0]).map((header) => (
+                        <th key={header}>{header}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-        <div className="modalFooter">
-          <button className="modalButton" onClick={importCSVData}>
-            Confirm
-          </button>
-          <button className="modalButton" onClick={onClose}>
-            Cancel
-          </button>
+                  </thead>
+                  <tbody>
+                    {csvData.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {Object.values(row).map((value, colIndex) => (
+                          <td key={colIndex}>{value}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          <div className="modalFooter">
+            <button className="modalButton" onClick={preparePreviewData}>
+              Preview
+            </button>
+            <button className="modalButton" onClick={onClose}>
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
+      {showPreview && previewData && (
+        <PreviewModal
+          onClose={() => setShowPreview(false)}
+          onConfirm={handleFinalize}
+          previewData={previewData}
+        />
+      )}
     </div>
   );
 };

@@ -237,22 +237,18 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
         columns={[...entityColumns, ...actionColumn]}
         initialState={{
           pagination: {
-            paginationModel: { page: 0, pageSize: 5 },
+            paginationModel: { page: 0, pageSize: 10 }, // Updated default pageSize to 10
           },
         }}
         pageSizeOptions={[5, 10]}
-        // checkboxSelection
+      //   checkboxSelection
       />
+      
       {isRemoveModalOpen && (
         <RemoveModal
           onConfirm={handleDeleteConfirm}
           onCancel={handleDeleteCancel}
         />
-      )}
-
-      {/* Remove confirmation modal */}
-      {isRemoveModalOpen && (
-        <RemoveModal onConfirm={handleDeleteConfirm} onCancel={handleDeleteCancel} />
       )}
 
       {/* Custom modal for /classes/ */}

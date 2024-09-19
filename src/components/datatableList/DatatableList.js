@@ -99,21 +99,21 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       const userClassesRef = collection(db, "userClasses");
       const q = query(userClassesRef, where(queryField, "==", id));
       const querySnapshot = await getDocs(q);
-    
+  
       const deletePromises = [];
       querySnapshot.forEach((doc) => {
         const userClassDocRef = doc(db, "userClasses", doc.id);
         deletePromises.push(deleteDoc(userClassDocRef));
       });
-      
+  
       await Promise.all(deletePromises);
-    
+  
       await deleteDoc(entityDocRef);
-    
+  
       if (entity === "users") {
         await deleteUser(auth, entityData.userId);
       }
-    
+  
       console.log("Delete successful");
     } catch (err) {
       setData(data.filter((item) => item.id !== id));

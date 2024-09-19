@@ -93,3 +93,7 @@
 .fileInput {
   margin-top: 10px;
 }
+
+.modalBody li{
+  background-color: white;
+}
