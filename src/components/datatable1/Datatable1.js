@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import RemoveModal from "../removeModal/RemoveModal";
+import ImportModal from "../importModal/importModal";
 //DATATABLE1 IS FOR SINGLE.JS (USERS AND CLASSES)
 
 const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
@@ -12,6 +13,7 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   const location = useLocation(); // Access to the current location
   const [data, setData] = useState([]);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false); // New state for the modal
   
   console.log(entity)
 
@@ -177,6 +179,16 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
       console.error("Error fetching user class documents:", error);
     }
   };
+
+    // Function to open the custom modal
+    const handleOpenImportModal = () => {
+      setIsImportModalOpen(true);
+    };
+  
+    // Function to close the custom modal
+    const handleCloseImportModal = () => {
+      setIsImportModalOpen(false);
+    };
   
   const actionColumn = [
     { field: "action",
@@ -211,7 +223,15 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
         <Link to={`/${entityAssign}/${id}/select`} style={{ textDecoration: "none" }} className="linkdt">
           Assign
         </Link>
+        
+        {/* Check if the current path is /classes/ and render a button for the modal */}
+        {location.pathname.startsWith('/classes/') && (
+          <Link onClick={handleOpenImportModal} className="linkdt" style={{ textDecoration: "none" }}>
+            Import (.csv)
+          </Link>
+        )}
       </div>
+
       <DataGrid
         rows={data}
         columns={[...entityColumns, ...actionColumn]}
@@ -229,6 +249,20 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
           onCancel={handleDeleteCancel}
         />
       )}
+
+      {/* Remove confirmation modal */}
+      {isRemoveModalOpen && (
+        <RemoveModal onConfirm={handleDeleteConfirm} onCancel={handleDeleteCancel} />
+      )}
+
+      {/* Custom modal for /classes/ */}
+      {isImportModalOpen && (
+        <ImportModal 
+          onClose={handleCloseImportModal} 
+          classID={id} // Pass the classID to the ImportModal
+        />
+      )}
+
     </div>
   )
 }
