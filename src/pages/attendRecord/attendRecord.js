@@ -1,15 +1,59 @@
 import "./attendRecord.css";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
-import { DataGrid } from '@mui/x-data-grid'; // Ensure you have installed @mui/x-data-grid
-import { useState } from "react";
-import { TextField, Button } from "@mui/material"; // Importing Material UI components
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate, useParams } from "react-router-dom";
+import { DataGrid } from '@mui/x-data-grid';
+import { useState, useEffect } from "react";
+import { TextField } from "@mui/material";
+import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Import Firebase Storage functions
+import { db } from "../../firebase"; // Import your Firestore instance
 
 const AttendRecord = () => {
-  const [date, setDate] = useState(null); // State for selected date
-  const [attendanceData, setAttendanceData] = useState([]); // State for attendance data
+  const [date, setDate] = useState(null); 
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [classDetails, setClassDetails] = useState(null); // State to hold class details
+  const [classImageUrl, setClassImageUrl] = useState(""); // State for class image URL
+  const { id } = useParams(); // Use 'id' instead of 'classID'
+  const navigate = useNavigate();
 
-  // Example columns for DataGrid
+  useEffect(() => {
+    // Function to fetch class details
+    const fetchClassDetails = async () => {
+      try {
+        console.log("Fetching details for classID:", id); // Debug the id (classID)
+        if (!id) {
+          throw new Error("classID is undefined or null");
+        }
+
+        // Fetch class document from Firestore
+        const classDocRef = doc(db, "classes", id);
+        const classDocSnap = await getDoc(classDocRef);
+
+        if (classDocSnap.exists()) {
+          const classData = classDocSnap.data();
+          setClassDetails(classData); // Set class details
+        } else {
+          console.error("No such class document!");
+        }
+      } catch (error) {
+        console.error("Error fetching class details:", error);
+      }
+    };
+
+    fetchClassDetails();
+  }, [id]);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleDateChange = (event) => {
+    setDate(event.target.value);
+    // Add logic to fetch data based on selected date
+  };
+
   const columns = [
     { field: 'userID', headerName: 'User ID', width: 150 },
     { field: 'firstName', headerName: 'First Name', width: 150 },
@@ -17,14 +61,19 @@ const AttendRecord = () => {
     { field: 'timeIn', headerName: 'Time In', width: 150 },
     { field: 'timeOut', headerName: 'Time Out', width: 150 },
     { field: 'status', headerName: 'Status', width: 150 },
-    // { field: 'action', headerName: 'Action', width: 100 }
   ];
 
-  // Example function to handle date change
-  const handleDateChange = (event) => {
-    setDate(event.target.value);
-    // Add logic to fetch data based on selected date
+  const formatTime = (time) => {
+    if (!time) return "";
+    
+    const [hours, minutes] = time.split(':');
+    const hours12 = hours % 12 || 12; // Convert to 12-hour format, treating 0 as 12
+    const ampm = hours < 12 ? 'AM' : 'PM';
+    
+    return `${hours12}:${minutes} ${ampm}`;
   };
+  
+  
 
   return (
     <div className="main">
@@ -33,13 +82,24 @@ const AttendRecord = () => {
         <Navbar />
         <div className="tempCon">
           <div className="leftColumn">
+            <ArrowBackIcon onClick={handleBack} className="backButton" />
             <div className="classDetails">
-              {/* Add classID details here */}
-              <h2>Class ID: 12345</h2> {/* Example Class ID */}
+              {/* Display class details */}
+              {classDetails ? (
+                <>
+                  {classDetails.img && (
+                    <img src={classDetails.img} alt="Class" className="classImage" />
+                  )}
+
+                  <h2>{classDetails.classCode} - {classDetails.classSec} ({classDetails.schoolYear} {classDetails.semester} Sem)</h2>
+                  <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)}</p>
+                </>
+              ) : (
+                <p>Loading class details...</p>
+              )}
             </div>
 
             <div className="dateFilter">
-              {/* Date filter component */}
               <TextField
                 id="date"
                 label="Select Date"
@@ -51,7 +111,6 @@ const AttendRecord = () => {
             </div>
           </div>
           <div className="rightColumn">
-            {/* DataGrid component */}
             <div className="dataTable">
               <DataGrid
                 rows={attendanceData}

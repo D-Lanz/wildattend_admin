@@ -137,7 +137,10 @@ const Widget2 = () => {
                   {classItem.Ongoing ? "Ongoing" : "Not Ongoing"}
                 </span>
                 <Link className="linkwS" to={`/schedule/${classItem.id}`}>
-                  <span className="linkwS">Link to {classItem.className}</span>
+                  <span className="linkwS">View Schedule {classItem.className}</span>
+                </Link>
+                <Link className="linkwS" to={`/classes/${classItem.id}`}>
+                  <span className="linkwS">View Details {classItem.className}</span>
                 </Link>
               </div>
             </div>

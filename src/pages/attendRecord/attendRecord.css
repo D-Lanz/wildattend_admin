@@ -50,3 +50,12 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.classImage {
+  width: 100px; /* Set the width */
+  height: 100px; /* Set the height */
+  border-radius: 50%; /* Make the image circular */
+  object-fit: cover; /* Ensure the image covers the entire area without distortion */
+  display: block; /* Center the image if needed */
+  margin: 0 auto; /* Center the image horizontally */
+}
