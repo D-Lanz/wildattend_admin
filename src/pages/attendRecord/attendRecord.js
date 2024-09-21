@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from "react";
 import { TextField } from "@mui/material";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore"; // Correct imports
+import { doc, getDoc, collection, query, where, getDocs, documentId } from "firebase/firestore";
 import { db } from "../../firebase"; // Import your Firestore instance
 import { format } from 'date-fns'; // Import date-fns for date formatting
 
@@ -86,78 +86,65 @@ const AttendRecord = () => {
         const attendanceQuery = query(attendanceRef, where("classID", "==", id));
         const attendanceSnapshot = await getDocs(attendanceQuery);
     
-        console.log("Attendance Snapshot:", attendanceSnapshot.docs.length);
+        const attendanceRecords = {
+          faculty: [],
+          students: [],
+        };
     
-        const attendanceRecords = [];
-    
-        // Create a map for attendance data
-        attendanceSnapshot.forEach(doc => {
-          const attendanceData = doc.data();
-          attendanceRecords.push({
-            userID: attendanceData.userID, // Use userID instead of id
-            timeIn: attendanceData.timeIn.toDate(), 
-            timeOut: attendanceData.timeOut ? attendanceData.timeOut.toDate() : null,
-            status: attendanceData.status,
-          });
-        });
-    
-        console.log("Attendance Records:", attendanceRecords);
-    
-        const userIDs = attendanceRecords.map(record => record.userID); // Get userIDs
-        console.log("User IDs:", userIDs);
+        const userIDs = attendanceSnapshot.docs.map(doc => doc.data().userID);
+        console.log("User IDs from Attendance Records:", userIDs);
     
         if (userIDs.length > 0) {
-          const usersRef = collection(db, "users");
-          const usersQuery = query(usersRef, where("userID", "in", userIDs));
-          const usersSnapshot = await getDocs(usersQuery);
-    
-          console.log("Users Snapshot:", usersSnapshot.docs.length);
+          // Fetch user details
+          const usersPromises = userIDs.map(userID => getDoc(doc(db, "users", userID)));
+          const usersSnapshots = await Promise.all(usersPromises);
     
           const usersMap = {};
-          usersSnapshot.forEach(doc => {
-            const userData = doc.data();
-            usersMap[doc.id] = { 
-              firstName: userData.firstName, 
-              lastName: userData.lastName, 
-              role: userData.role 
-            };
-          });
-    
-          console.log("Users Map:", usersMap);
-    
-          const studentRecords = [];
-          const facultyRecords = [];
-    
-          attendanceRecords.forEach(record => {
-            const userData = usersMap[record.userID]; // Use userID here
-            if (userData) {
-              const fullRecord = {
-                userID: record.userID,
+          usersSnapshots.forEach(userDoc => {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              usersMap[userDoc.id] = {
                 firstName: userData.firstName,
                 lastName: userData.lastName,
-                timeIn: record.timeIn ? record.timeIn.toLocaleString() : "--",
-                timeOut: record.timeOut ? record.timeOut.toLocaleString() : "--",
-                status: record.status,
+                role: userData.role,
               };
-    
-              if (userData.role === "Student") {
-                studentRecords.push(fullRecord);
-              } else if (userData.role === "Faculty") {
-                facultyRecords.push(fullRecord);
-              }
             } else {
-              console.warn(`User ID ${record.userID} not found in usersMap`); // Warn if userID is not found
+              console.warn(`User ID ${userDoc.id} not found`);
             }
           });
     
-          console.log("Student Records:", studentRecords);
-          console.log("Faculty Records:", facultyRecords);
+          console.log("User Map:", usersMap);
     
-          setAttendanceData({ students: studentRecords, faculty: facultyRecords });
+          attendanceSnapshot.forEach(doc => {
+            const attendanceData = doc.data();
+            const userID = attendanceData.userID;
+            const userData = usersMap[userID];
+    
+            const record = {
+              id: doc.id,
+              userID: userID,
+              firstName: userData ? userData.firstName : "--",
+              lastName: userData ? userData.lastName : "--",
+              role: userData ? userData.role : "--",
+              timeIn: attendanceData.timeIn.toDate(),
+              timeOut: attendanceData.timeOut ? attendanceData.timeOut.toDate() : null,
+              status: attendanceData.status || "Absent",
+            };
+    
+            // Push to the appropriate role array
+            if (userData && userData.role === "Faculty") {
+              attendanceRecords.faculty.push(record);
+            } else if (userData && userData.role === "Student") {
+              attendanceRecords.students.push(record);
+            }
+          });
         } else {
-          console.log("No User IDs found.");
-          setAttendanceData({ students: [], faculty: [] });
+          console.warn("No user IDs found in attendance records.");
         }
+    
+        // Update the state with the separated attendance records
+        setAttendanceData(attendanceRecords);
+        console.log("Final Attendance Data Set to State:", attendanceRecords);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
@@ -233,27 +220,28 @@ const AttendRecord = () => {
             </div>
           </div>
           <div className="rightColumn">
-            <h2>Faculty</h2>
-            <div className="dataTable2">
-              <DataGrid
-                rows={attendanceData.faculty || []}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5, 10, 20]}
-                disableSelectionOnClick
-              />
-            </div>
-            <h2>Students</h2>
-            <div className="dataTable">
-              <DataGrid
-                rows={attendanceData.students || []}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5, 10, 20]}
-                disableSelectionOnClick
-              />
-            </div>
+          <h2>Faculty</h2>
+          <div className="dataTable2">
+            <DataGrid
+              rows={attendanceData.faculty || []}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5, 10, 20]}
+              disableSelectionOnClick
+            />
           </div>
+          <h2>Students</h2>
+          <div className="dataTable">
+            <DataGrid
+              rows={attendanceData.students || []}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5, 10, 20]}
+              disableSelectionOnClick
+            />
+          </div>
+        </div>
+
 
         </div>
       </div>
