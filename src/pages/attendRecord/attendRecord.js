@@ -220,28 +220,27 @@ const AttendRecord = () => {
             </div>
           </div>
           <div className="rightColumn">
-          <h2>Faculty</h2>
-          <div className="dataTable2">
-            <DataGrid
-              rows={attendanceData.faculty || []}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5, 10, 20]}
-              disableSelectionOnClick
-            />
+            <h2>Faculty</h2>
+            <div className="dataTable2">
+              <DataGrid
+                rows={attendanceData.faculty || []}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5, 10, 20]}
+                disableSelectionOnClick
+              />
+            </div>
+            <h2>Students</h2>
+            <div className="dataTable">
+              <DataGrid
+                rows={attendanceData.students || []}
+                columns={columns}
+                pageSize={5}
+                rowsPerPageOptions={[5, 10, 20]}
+                disableSelectionOnClick
+              />
+            </div>
           </div>
-          <h2>Students</h2>
-          <div className="dataTable">
-            <DataGrid
-              rows={attendanceData.students || []}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5, 10, 20]}
-              disableSelectionOnClick
-            />
-          </div>
-        </div>
-
 
         </div>
       </div>
