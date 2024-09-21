@@ -8,8 +8,7 @@ import { useState, useEffect } from "react";
 import { TextField } from "@mui/material";
 import { doc, getDoc, collection, query, where, getDocs, documentId } from "firebase/firestore";
 import { db } from "../../firebase"; // Import your Firestore instance
-import { format } from 'date-fns'; // Import date-fns for date formatting
-
+import { format } from 'date-fns';
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd'); // Get today's date in 'yyyy-MM-dd' format
@@ -119,18 +118,18 @@ const AttendRecord = () => {
             const attendanceData = doc.data();
             const userID = attendanceData.userID;
             const userData = usersMap[userID];
-    
+          
             const record = {
               id: doc.id,
               userID: userID,
               firstName: userData ? userData.firstName : "--",
               lastName: userData ? userData.lastName : "--",
               role: userData ? userData.role : "--",
-              timeIn: attendanceData.timeIn.toDate(),
-              timeOut: attendanceData.timeOut ? attendanceData.timeOut.toDate() : null,
+              timeIn: attendanceData.timeIn ? format(attendanceData.timeIn.toDate(), 'hh:mm a') : "--",
+              timeOut: attendanceData.timeOut ? format(attendanceData.timeOut.toDate(), 'hh:mm a') : "--",
               status: attendanceData.status || "Absent",
             };
-    
+          
             // Push to the appropriate role array
             if (userData && userData.role === "Faculty") {
               attendanceRecords.faculty.push(record);
@@ -138,6 +137,7 @@ const AttendRecord = () => {
               attendanceRecords.students.push(record);
             }
           });
+          
         } else {
           console.warn("No user IDs found in attendance records.");
         }
