@@ -51,6 +51,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.dataTable2{
+  height: 220px; /* Adjust height as needed */
+  background-color: #FFF;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .classImage {
   width: 100px; /* Set the width */
   height: 100px; /* Set the height */
