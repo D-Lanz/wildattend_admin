@@ -4,6 +4,8 @@ import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddModal from '../../components/CRUDmodals/AddModal';
+import SuccessModal from "../../components/CRUDmodals/SuccessModal";
+
 import { Visibility, VisibilityOff } from "@mui/icons-material"; // Add this for the eye icon
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -21,12 +23,9 @@ const New = ({ inputs, title, entityType }) => {
   const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const [perc, setPerc] = useState(null);
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
-
-  // Function to toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [actionType, setActionType] = useState(""); // To determine add, update, delete actions
 
   useEffect(() => {
     const uploadFile = () => {
@@ -67,6 +66,13 @@ const New = ({ inputs, title, entityType }) => {
     file && uploadFile();
   }, [file]);
 
+  useEffect(() => {
+    if (entityType === "user") {
+      const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
+      setData((prevData) => ({ ...prevData, email }));
+    }
+  }, [firstName, lastName, entityType]);
+
   const handleInput = (e) => {
     const id = e.target.id;
     const value = e.target.value;
@@ -85,36 +91,9 @@ const New = ({ inputs, title, entityType }) => {
     }
   };
 
-  useEffect(() => {
-    if (entityType === "user") {
-      const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
-      setData((prevData) => ({ ...prevData, email }));
-    }
-  }, [firstName, lastName, entityType]);
+  //CREATE FUNCTION
+  const handleAdd = async () => {
 
-  const handleCheckboxChange = (e) => {
-    const day = e.target.value;
-    const isChecked = e.target.checked;
-
-    setData(prevData => ({
-      ...prevData,
-      days: {
-        ...prevData.days,
-        [day]: isChecked
-      }
-    }));
-  };
-
-  const handleBack = () => {
-    navigate(-1); // Navigate back to the last page
-  };
-
-  const handleAdd = (e) => {
-    e.preventDefault();
-    setShowModal(true); // Show confirmation modal
-  };
-
-  const handleConfirm = async () => {
     try {
       let collectionName;
       let docId; // Document ID variable
@@ -154,17 +133,59 @@ const New = ({ inputs, title, entityType }) => {
           throw new Error("Invalid entityType");
       }
 
-      setShowModal(false); // Close the modal after successful addition
-      navigate(-1); // Navigate back or to another page as needed
+      setShowSuccessModal(true); // Show success modal
     } catch (err) {
       console.log(err);
-      setShowModal(false); // Close the modal if there's an error
     }
+  };  
+
+  //FRONTEND
+  const handleCheckboxChange = (e) => {
+    const day = e.target.value;
+    const isChecked = e.target.checked;
+
+    setData(prevData => ({
+      ...prevData,
+      days: {
+        ...prevData.days,
+        [day]: isChecked
+      }
+    }));
   };
 
-  const handleCancel = () => {
-    setShowModal(false); // Close modal without confirming
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
   };
+
+  const handleBack = () => {
+    navigate(-1); // Navigate back to the last page
+  };
+
+  ////////Opens add modal
+  const handleAddClick = (e) => {
+    e.preventDefault(); // Prevent form submission
+    setShowAddModal(true);
+  };
+
+  const handleAddModalCancel = () => {
+    setShowAddModal(false); // Close modal without confirming
+  };
+
+  const handleAddModalConfirm = () => {
+    handleAdd();  // Call handleAdd without event
+    setShowAddModal(false);  // Close the Add confirmation modal
+  };  
+
+  // Success Modal
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleSuccessModalContinue = () => {
+    setShowSuccessModal(false);
+    navigate(-1); // Example: Navigate to the previous page or to a different page
+  };
+  
 
   return (
     <div className="new">
@@ -276,7 +297,7 @@ const New = ({ inputs, title, entityType }) => {
               ))}
 
               <button
-                onClick={handleAdd}
+                onClick={handleAddClick}
                 disabled={perc !== null && perc < 100}
                 className="buttonn"
                 type="submit"
@@ -285,11 +306,20 @@ const New = ({ inputs, title, entityType }) => {
               </button>
             </form>
           </div>
-          {showModal && (
+          {showAddModal && (
             <AddModal
               entityType={entityType}
-              onConfirm={handleConfirm}
-              onCancel={handleCancel}
+              onConfirm={handleAddModalConfirm}  // No need to pass event
+              onCancel={() => setShowAddModal(false)}
+            />
+          )}
+
+          {showSuccessModal && (
+            <SuccessModal 
+              actionType={actionType} 
+              entityName={entityType}
+              onClose={handleSuccessModalClose}
+              onContinue={handleSuccessModalContinue}
             />
           )}
         </div>

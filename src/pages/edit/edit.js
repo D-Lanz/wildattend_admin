@@ -1,14 +1,17 @@
 import "./edit.css"
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Sidebar from "../../components/sidebar/Sidebar";
-import Navbar from "../../components/navbar/Navbar";
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
+import Sidebar from "../../components/sidebar/Sidebar";
+import Navbar from "../../components/navbar/Navbar";
 import UpdateModal from '../../components/CRUDmodals/UpdateModal';
+import SuccessModal from "../../components/CRUDmodals/SuccessModal";
+
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Edit = ({inputs, title, entityType }) => {
   const navigate = useNavigate();
@@ -16,18 +19,15 @@ const Edit = ({inputs, title, entityType }) => {
   const [file, setFile] = useState("");
   const [data, setData] = useState("");
   const [perc, setPerc] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  
-  console.log(id);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [actionType, setActionType] = useState(""); // To determine add, update, delete actions
 
   useEffect(() => {
-    // Fetch data based on the ID when the component mounts
     const fetchData = async () => {
       try {
-        // Your logic to fetch data based on the ID
-        // For example:
         const docRef = doc(db, entityType === "user" ? "users" : "classes", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -42,6 +42,12 @@ const Edit = ({inputs, title, entityType }) => {
 
     fetchData();
   }, [id, entityType]);
+
+  useEffect(() => {
+    // Generate the email address based on the first and last name
+    const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
+    setData((prevData) => ({ ...prevData, email }));
+  }, [firstName, lastName]);
 
   const handleInput = (e) => {
     const id = e.target.id;
@@ -58,18 +64,14 @@ const Edit = ({inputs, title, entityType }) => {
     }
   };
 
-  useEffect(() => {
-    // Generate the email address based on the first and last name
-    const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
-    setData((prevData) => ({ ...prevData, email }));
-  }, [firstName, lastName]);
-
+  //UPDATE FUNCTION
   const handleUpdate = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault(); // Prevent default only if 'e' exists
+  
     try {
       // Add logic to differentiate between user and class
       let collectionName, documentId;
-  
+    
       switch (entityType) {
         case "user":
           collectionName = "users";
@@ -94,23 +96,13 @@ const Edit = ({inputs, title, entityType }) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             console.log('Upload is ' + progress + '% done');
             setPerc(progress);
-            switch (snapshot.state) {
-              case 'paused':
-                console.log('Upload is paused');
-                break;
-              case 'running':
-                console.log('Upload is running');
-                break;
-              default:
-                break;
-            }
           }, 
           (error) => {
-            console.log(error)
+            console.log(error);
           }, 
           () => {
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              setData((prev) => ({ ...prev, img: downloadURL }))
+              setData((prev) => ({ ...prev, img: downloadURL }));
             });
           }
         );
@@ -119,16 +111,16 @@ const Edit = ({inputs, title, entityType }) => {
       // Update document in Firestore using the existing document ID
       await setDoc(doc(db, collectionName, documentId), {
         ...data,
-        timeStamp: serverTimestamp()
+        timeStamp: serverTimestamp(),
       });
   
-      console.log("ID:", documentId);
-      navigate(-1); // Navigate back after successful update
+      setShowSuccessModal(true); // Show success modal
     } catch (err) {
       console.log(err);
     }
-  };
+  };  
 
+  //FRONTEND
   const handleCheckboxChange = (e) => {
     const day = e.target.value;
     const isChecked = e.target.checked;
@@ -142,13 +134,34 @@ const Edit = ({inputs, title, entityType }) => {
       }
     }));
   };
-  
+
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
 
-  const handleUpdateClick = () => {
-    setShowModal(true);
+  ////////Opens update modal
+  const handleUpdateClick = (e) => {
+    e.preventDefault(); // Prevent form submission
+    setShowUpdateModal(true);
+  };
+
+  const handleUpdateModalCancel = () => {
+    setShowUpdateModal(false); // Close modal
+  };
+
+  const handleUpdateModalConfirm = () => {
+    handleUpdate();  // Call handleUpdate without event
+    setShowUpdateModal(false);  // Close the update confirmation modal
+  };  
+
+  // Success Modal
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleSuccessModalContinue = () => {
+    setShowSuccessModal(false);
+    navigate(-1); // Example: Navigate to the previous page or to a different page
   };
   
   return(
@@ -245,8 +258,22 @@ const Edit = ({inputs, title, entityType }) => {
           </form>
 
           </div>
-          {showModal && (
-          <UpdateModal/>
+          
+          {showUpdateModal && (
+            <UpdateModal
+              entityType={entityType}
+              onConfirm={handleUpdateModalConfirm}  // No need to pass event
+              onCancel={() => setShowUpdateModal(false)}
+            />
+          )}
+
+          {showSuccessModal && (
+            <SuccessModal 
+              actionType={actionType} 
+              entityName={entityType} // You can dynamically pass entity names too
+              onClose={handleSuccessModalClose}
+              onContinue={handleSuccessModalContinue}
+            />
           )}
         </div>
       </div>
