@@ -183,7 +183,7 @@ function App() {
               {/* route for editing room entity*/}
               <Route path=":id/edit" element={
                   <RequireAuth>
-                    <Edit2 inputs={roomInputs} title="Edit Room" entityType="room"/>
+                    <Edit inputs={roomInputs} title="Edit Room" entityType="room"/>
                   </RequireAuth>
                 }
               />
@@ -198,7 +198,7 @@ function App() {
 
               <Route path="new" element={
                 <RequireAuth>
-                  <New2 inputs={roomInputs} title="Add New Room" entityType="room" />
+                  <New inputs={roomInputs} title="Add New Room" entityType="room" />
                 </RequireAuth>
                 } />
             </Route>
@@ -224,14 +224,14 @@ function App() {
               {/* route for editing room entity*/}
               <Route path=":id/edit" element={
                   <RequireAuth>
-                    <Edit2 inputs={accessPointInputs} title="Edit Access Point" entityType="accessPoint"/>
+                    <Edit inputs={accessPointInputs} title="Edit Access Point" entityType="accessPoint"/>
                   </RequireAuth>
                 }
               />
 
               <Route path="new" element={
                 <RequireAuth>
-                  <New2 inputs={accessPointInputs} title="Add New Access Point" entityType="accessPoint" />
+                  <New inputs={accessPointInputs} title="Add New Access Point" entityType="accessPoint" />
                 </RequireAuth>
                 } />
             </Route>

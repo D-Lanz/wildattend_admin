@@ -1,7 +1,7 @@
 import React from "react";
 import "./modal.css";  // Ensure this file has basic styling for modals
 
-const SuccessModal = ({ actionType, entityName, onClose, onContinue }) => {
+const SuccessModal = ({ actionType, entityName, onClose }) => {
   let message = "";
   let actionText = "";
 
@@ -35,9 +35,6 @@ const SuccessModal = ({ actionType, entityName, onClose, onContinue }) => {
         <div className="button">
           <button onClick={onClose}>
             Close
-          </button>
-          <button onClick={onContinue}>
-            {actionText}
           </button>
         </div>
       </div>
