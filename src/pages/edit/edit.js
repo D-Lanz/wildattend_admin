@@ -8,7 +8,7 @@ import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/fires
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import UpdateModal from '../../components/updateModal/UpdateModal';
+import UpdateModal from '../../components/CRUDmodals/UpdateModal';
 
 const Edit = ({inputs, title, entityType }) => {
   const navigate = useNavigate();
@@ -173,89 +173,77 @@ const Edit = ({inputs, title, entityType }) => {
             />
           </div>
           <div className="rightn">
-            <form className="formn" onSubmit={handleUpdate}>
-              <div className="formInput">
-                <label className="labeln" htmlFor="file">
-                  Image: <DriveFolderUploadIcon className="iconn"/>
+          <form className="formn" onSubmit={handleUpdate}>
+            <div className="formInput">
+              <label className="labeln" htmlFor="file">
+                Image: <DriveFolderUploadIcon className="iconn"/>
+              </label>
+              <input className="inputn" onChange={e=>setFile(e.target.files[0])} type="file" id="file" style={{display:"none"}}/>
+            </div>
+
+            {inputs.map((input) => (
+              <div className="formInput" key={input.id}>
+                <label className="labeln" htmlFor={input.id}>
+                  {input.label}
                 </label>
-                <input className="inputn" onChange={e=>setFile(e.target.files[0])} type="file" id="file" style={{display:"none"}}/>
+                {input.id === "days" ? (
+                  // If input id is "days", render checkboxes
+                  <div>
+                    {input.options.map((option) => (
+                      <div key={option} className="checkboxWrapper">
+                        <input
+                          id={option}
+                          type="checkbox"
+                          value={option}
+                          onChange={handleCheckboxChange}
+                          checked={data.days && data.days[option]}
+                        />
+                        <label htmlFor={option}>{option}</label>
+                      </div>
+                    ))}
+                  </div>
+                ) : input.type === "dropdown" ? (
+                  // Check if input type is dropdown
+                  <select
+                    className="inputn"
+                    id={input.id}
+                    onChange={handleInput}
+                    required
+                    value={data[input.id] || ''}
+                  >
+                    {input.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  // Render input fields with conditions for firstName, lastName, and password
+                  <input
+                    className="inputn"
+                    id={input.id}
+                    type={input.type}
+                    placeholder={input.placeholder}
+                    pattern={input.pattern}
+                    onChange={handleInput}
+                    required
+                    value={data[input.id] || ''}
+                    disabled={input.id === "firstName" || input.id === "lastName" || input.id === "password" || input.id === "email"}  // Disable the specific fields
+                  />
+                )}
               </div>
+            ))}
 
-              {inputs.map((input) => (
-                <div className="formInput" key={input.id}>
-                  <label className="labeln" htmlFor={input.id}>
-                    {input.label}
-                  </label>
-                  {input.id === "days" ? (
-                    // If input id is "days", render checkboxes
-                    <div>
-                      {input.options.map((option) => (
-                        <div key={option} className="checkboxWrapper">
-                          <input
-                            id={option}
-                            type="checkbox"
-                            value={option}
-                            onChange={handleCheckboxChange}
-                            checked={data.days && data.days[option]}
-                          />
-                          <label htmlFor={option}>{option}</label>
-                        </div>
-                      ))}
-                    </div>
-                  ) : input.type === "dropdown" ? (
-                    // Check if input type is dropdown
-                    <select
-                      className="inputn"
-                      id={input.id}
-                      onChange={handleInput}
-                      required
-                      value={data[input.id] || ''}
-                    >
-                      {input.options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : input.id === "email" ? (
-                    // Render email input field with disabled condition
-                    <input
-                      className="inputn"
-                      id={input.id}
-                      type={input.type}
-                      placeholder={input.placeholder}
-                      pattern={input.pattern}
-                      onChange={handleInput}
-                      required
-                      value={data[input.id] || ''}
-                      disabled={input.id === "email"}
-                    />
-                  ) : (
-                    // Render other input fields
-                    <input
-                      className="inputn"
-                      id={input.id}
-                      type={input.type}
-                      placeholder={input.placeholder}
-                      pattern={input.pattern}
-                      onChange={handleInput}
-                      required
-                      value={data[input.id] || ''}
-                    />
-                  )}
-                </div>
-              ))}
+            <button 
+              onClick={handleUpdateClick}
+              disabled={perc !== null && perc < 100}
+              className="buttonn"
+              type="submit"
+            >
+              Update
+            </button>
+          </form>
 
-
-              <button 
-                onClick={handleUpdateClick}
-                disabled={perc !== null && perc < 100}
-                className="buttonn"
-                type="submit"
-              >
-                Update
-              </button>
-            </form>
           </div>
           {showModal && (
           <UpdateModal/>

@@ -1,5 +1,5 @@
 import React from "react";
-import "./UpdateModal.css";
+import "./modal.css";
 
 const UpdateModal = ({ onConfirm, onCancel }) => {
   return (

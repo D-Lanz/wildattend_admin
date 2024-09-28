@@ -3,7 +3,8 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddModal from '../../components/addModal/AddModal';
+import AddModal from '../../components/CRUDmodals/AddModal';
+import { Visibility, VisibilityOff } from "@mui/icons-material"; // Add this for the eye icon
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase";
@@ -16,9 +17,16 @@ const New = ({ inputs, title, entityType }) => {
   const [data, setData] = useState({});
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const [perc, setPerc] = useState(null);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+
+  // Function to toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
 
   useEffect(() => {
     const uploadFile = () => {
@@ -31,7 +39,8 @@ const New = ({ inputs, title, entityType }) => {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload is " + progress + "% done");
           setPerc(progress);
           switch (snapshot.state) {
@@ -68,125 +77,25 @@ const New = ({ inputs, title, entityType }) => {
       setFirstName(value);
     } else if (id === "lastName") {
       setLastName(value);
+
+      // Automatically generate password when lastName is populated
+      const generatedPassword = `${value.toLowerCase()}.123456CITU`;
+      setPassword(generatedPassword); // Update password state
+      setData((prevData) => ({ ...prevData, password: generatedPassword })); // Update data state with password
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (entityType === "user") {
       const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
       setData((prevData) => ({ ...prevData, email }));
     }
   }, [firstName, lastName, entityType]);
 
-  //AUTO-ID
-  // const handleAdd = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     let collectionName;
-
-  //     switch (entityType) {
-  //       case "user":
-  //         collectionName = "users";
-  //         break;
-  //       case "class":
-  //         collectionName = "classes";
-  //         break;
-  //       default:
-  //         throw new Error("Invalid entityType");
-  //     }
-
-  //     if (entityType === "user") {
-  //       const res = await createUserWithEmailAndPassword(
-  //         auth,
-  //         data.email,
-  //         data.password
-  //       );
-
-  //       // await setDoc(doc(db, collectionName, res.user.uid)
-  //       await setDoc(doc(db, collectionName, res.user.uid), {
-  //         ...data,
-  //         timeStamp: serverTimestamp(),
-  //         // classes: [], // Initialize classes array for the user
-  //         // attendanceRecords: [], // Initialize attendanceRecords array for the user
-  //       });
-  //     } else {
-  //       await addDoc(collection(db, collectionName), {
-  //         ...data,
-  //         // instructor: null, // Initialize instructor reference as null
-  //         // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
-  //         // attendanceRecords: [], // Initialize attendanceRecords array for the class
-  //       });
-  //     }
-
-  //     navigate(-1);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-
-  //CUSTOM ID
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    try {
-      let collectionName;
-      let docId; // Document ID variable
-      let newData = { ...data }; // Create a new object to avoid reassignment
-  
-      switch (entityType) {
-        case "user":
-          collectionName = "users";
-          // Use idNum as document ID for users
-          docId = newData.idNum;
-          break;
-        case "class":
-          collectionName = "classes";
-          // Create a custom document ID based on class attributes
-          docId = `${newData.classCode}_${newData.classSec}_${newData.semester}_${newData.schoolYear}`;
-          // Add the "Ongoing" attribute set to false
-          newData = { ...newData, Ongoing: false };
-          break;
-        case "room":
-          collectionName = "rooms";
-          break;
-        default:
-          throw new Error("Invalid entityType");
-      }
-  
-      if (entityType === "user") {
-        const res = await createUserWithEmailAndPassword(
-          auth,
-          newData.email,
-          newData.password
-        );
-        
-        await setDoc(doc(db, collectionName, res.user.uid), {
-        // await setDoc(doc(db, collectionName, docId), {
-          ...newData,
-          timeStamp: serverTimestamp(),
-          // classes: [], // Initialize classes array for the user
-          // attendanceRecords: [], // Initialize attendanceRecords array for the user
-        });
-      } else {
-        await addDoc(collection(db, collectionName), {
-          ...newData,
-          // instructor: null, // Initialize instructor reference as null
-          // studentsEnrolled: [], // Initialize studentsEnrolled array for the class
-          // attendanceRecords: [], // Initialize attendanceRecords array for the class
-        });
-      }
-  
-      navigate(-1);
-    } catch (err) {
-      console.log(err);
-    }
-    setShowModal(true);
-  };
-  
   const handleCheckboxChange = (e) => {
     const day = e.target.value;
     const isChecked = e.target.checked;
-    
-    // Update the data object based on checkbox changes
+
     setData(prevData => ({
       ...prevData,
       days: {
@@ -195,14 +104,67 @@ const New = ({ inputs, title, entityType }) => {
       }
     }));
   };
-  
+
   const handleBack = () => {
     navigate(-1); // Navigate back to the last page
   };
 
-  // const handleAddClick = () => {
-    
-  // };
+  const handleAdd = (e) => {
+    e.preventDefault();
+    setShowModal(true); // Show confirmation modal
+  };
+
+  const handleConfirm = async () => {
+    try {
+      let collectionName;
+      let docId; // Document ID variable
+      let newData = { ...data }; // Create a new object to avoid reassignment
+
+      switch (entityType) {
+        case "user":
+          collectionName = "users";
+          docId = newData.idNum; // Use idNum as document ID for users
+          const res = await createUserWithEmailAndPassword(
+            auth,
+            newData.email,
+            newData.password
+          );
+          await setDoc(doc(db, collectionName, res.user.uid), {
+            ...newData,
+            timeStamp: serverTimestamp(),
+          });
+          break;
+        case "class":
+          collectionName = "classes";
+          docId = `${newData.classCode}_${newData.classSec}_${newData.semester}_${newData.schoolYear}`;
+          newData = { ...newData, Ongoing: false };
+          await setDoc(doc(db, collectionName, docId), {
+            ...newData,
+            timeStamp: serverTimestamp(),
+          });
+          break;
+        case "room":
+          collectionName = "rooms";
+          await addDoc(collection(db, collectionName), {
+            ...newData,
+            timeStamp: serverTimestamp(),
+          });
+          break;
+        default:
+          throw new Error("Invalid entityType");
+      }
+
+      setShowModal(false); // Close the modal after successful addition
+      navigate(-1); // Navigate back or to another page as needed
+    } catch (err) {
+      console.log(err);
+      setShowModal(false); // Close the modal if there's an error
+    }
+  };
+
+  const handleCancel = () => {
+    setShowModal(false); // Close modal without confirming
+  };
 
   return (
     <div className="new">
@@ -263,6 +225,7 @@ const New = ({ inputs, title, entityType }) => {
                       className="inputn"
                       id={input.id}
                       onChange={handleInput}
+                      value={data[input.id] || input.options[0]} // Set default to the first option "Student"
                       required
                     >
                       {input.options.map((option) => (
@@ -280,6 +243,24 @@ const New = ({ inputs, title, entityType }) => {
                       value={data.email || ""}
                       disabled
                     />
+                  ) : input.id === "password" && entityType === "user" ? (
+                    <div className="passwordInputWrapper">
+                      <input
+                        className="inputn"
+                        id="password"
+                        type={showPassword ? "text" : "password"} // Toggle visibility
+                        placeholder={input.placeholder}
+                        value={password}
+                        disabled
+                      />
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="passwordToggle"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </button>
+                    </div>
                   ) : (
                     <input
                       className="inputn"
@@ -304,7 +285,13 @@ const New = ({ inputs, title, entityType }) => {
               </button>
             </form>
           </div>
-          {showModal && <AddModal />}
+          {showModal && (
+            <AddModal
+              entityType={entityType}
+              onConfirm={handleConfirm}
+              onCancel={handleCancel}
+            />
+          )}
         </div>
       </div>
     </div>

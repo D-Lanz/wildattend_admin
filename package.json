@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^13.5.0",
     "capstone": "file:",
     "firebase": "^10.11.0",
+    "firebase-admin": "^12.5.0",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
