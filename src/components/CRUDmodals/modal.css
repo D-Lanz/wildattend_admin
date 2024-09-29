@@ -32,6 +32,10 @@
   justify-content: space-between;
   cursor: pointer;
 }
+
+.button button:first-child {
+  margin-right: 30px; /* Reduces the space between the Cancel and Delete buttons */
+}
   
 .button button{
   font-family: Roboto Mono, sans-serif;
