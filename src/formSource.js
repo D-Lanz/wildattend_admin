@@ -3,8 +3,6 @@ export const userInputs = [
     id: "idNum",
     label:"ID Number",
     type:"text",
-    placeholder: "00-0000-000",
-    pattern:"[0-9]{2}-[0-9]{4}-[0-9]{3}",
   },
   {
     id: "firstName",
@@ -40,7 +38,6 @@ export const userInputs = [
     id: "password",
     label:"Password",
     type:"password",
-    placeholder: "********",
   },
 ]
 

@@ -30,7 +30,6 @@ const DateTimeWidget = () => {
   return (
     <div className="dateTimeWidget">
       <p>{formattedDateTime}</p>
-      <p>Time in Cebu City, Cebu</p>
     </div>
   );
 };
