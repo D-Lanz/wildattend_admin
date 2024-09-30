@@ -7,7 +7,7 @@ import { auth, db } from "../../firebase";
 import DeleteModal from "../CRUDmodals/DeleteModal";
 import SuccessModal from "../CRUDmodals/SuccessModal";
 import { MenuItem, Select, TextField, InputLabel, FormControl } from "@mui/material";
-import { getAuth, deleteUser as deleteAuthUser, onAuthStateChanged } from "firebase/auth"; // Ensure this import is included
+import { getAuth, deleteUser, onAuthStateChanged } from "firebase/auth"; 
 
 const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
@@ -94,7 +94,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
     }
 
     try {
-      const entityDocRef = doc(db, entity, itemToDelete);
+      const entityDocRef = doc(db, entity, itemToDelete); // Get reference to the document to delete
       const entityDocSnapshot = await getDoc(entityDocRef);
       const entityData = entityDocSnapshot.data();
 
@@ -105,7 +105,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
 
       // Deletion logic for users
       if (entity === "users") {
-        if (user.uid === entityData.userId) {
+        if (user.uid === itemToDelete) { // Compare the UID with itemToDelete (document ID)
           await deleteDoc(entityDocRef); // Delete Firestore doc
           await deleteAuthUser(user); // Delete Firebase auth user
           console.log("User account deleted successfully.");

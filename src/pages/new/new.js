@@ -5,6 +5,7 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddModal from '../../components/CRUDmodals/AddModal';
 import SuccessModal from "../../components/CRUDmodals/SuccessModal";
+import ErrorModal from "../../components/CRUDmodals/ErrorModal";
 import { Visibility, VisibilityOff } from "@mui/icons-material"; // Add this for the eye icon
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -23,6 +24,8 @@ const New = ({ inputs, title, entityType }) => {
   const [perc, setPerc] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false); // State for error modal
+  const [errorMessage, setErrorMessage] = useState(""); // State for error message
   const navigate = useNavigate();
   const handleBack = () => navigate(-1);
 
@@ -55,7 +58,7 @@ const New = ({ inputs, title, entityType }) => {
 
   useEffect(() => {
     if (entityType === "user") {
-      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@cit.edu`;
+      const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
       setData((prevData) => ({ ...prevData, email }));
     }
   }, [firstName, lastName, entityType]);
@@ -121,6 +124,8 @@ const New = ({ inputs, title, entityType }) => {
 
       setShowSuccessModal(true);
     } catch (err) {
+      setErrorMessage(err.message); // Set the error message
+      setShowErrorModal(true); // Show the error modal
       console.log(err);
     }
   };
@@ -275,6 +280,14 @@ const New = ({ inputs, title, entityType }) => {
               }}
             />
           )}
+
+          {showErrorModal && (
+            <ErrorModal
+              errorMessage={errorMessage}
+              onClose={() => setShowErrorModal(false)}
+            />
+          )}
+
         </div>
       </div>
     </div>
