@@ -153,7 +153,6 @@ const AttendRecord = () => {
     setDate(event.target.value);
   };
 
-  // Export attendance as Excel file
   const exportAttendance = async (exportType) => {
     try {
       let exportData = [];
@@ -169,11 +168,15 @@ const AttendRecord = () => {
         exportData = attendanceData.students.map(student => ({
           User: `${student.lastName}, ${student.firstName}`,
           Status: student.status,
-          TimeIn: student.timeIn || 'N/A', // Provide default value if timeIn is missing
+          TimeIn: student.timeIn || 'N/A',  // Default to 'N/A' if missing
+          TimeOut: student.timeOut || 'N/A', // Now including TimeOut!
         }));
       } else if (exportType === 'all') {
         // Export for all class days
-        const days = {}; // Stores attendance data by day
+        const days = {}; // Stores attendance data by user
+  
+        // Create a set to collect unique dates
+        const uniqueDates = new Set();
   
         attendanceData.students.forEach(student => {
           // Initialize the user entry if it doesn't exist
@@ -181,13 +184,14 @@ const AttendRecord = () => {
             days[student.userID] = { User: `${student.lastName}, ${student.firstName}` };
           }
   
-          // Use the existing timeIn for formatting
+          // Process the timeIn value for date collection
           if (student.timeIn) {
             try {
               const timeInDate = student.timeIn.toDate(); // Convert Firestore Timestamp to JS Date object
               const attendanceDate = format(timeInDate, 'MMM. dd, yyyy'); // Format the date
-              
-              // Store the formatted attendance date as the key
+              uniqueDates.add(attendanceDate); // Add the formatted date to the set
+  
+              // Store the attendance status by formatted date
               days[student.userID][attendanceDate] = student.status;
             } catch (error) {
               console.error("Error formatting date:", error);
@@ -199,7 +203,21 @@ const AttendRecord = () => {
           }
         });
   
-        exportData = Object.values(days); // Convert the object into an array for export
+        // Create an array of column headers from the unique dates
+        const headerColumns = Array.from(uniqueDates).sort(); // Sort dates
+        headerColumns.unshift("User"); // Add "User" as the first column
+  
+        // Prepare the final export data
+        exportData = Object.values(days).map(userEntry => {
+          const entry = { User: userEntry.User };
+  
+          // Populate the entry with the attendance status for each unique date
+          headerColumns.slice(1).forEach(date => {
+            entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
+          });
+  
+          return entry;
+        });
       }
   
       const worksheet = XLSX.utils.json_to_sheet(exportData);
