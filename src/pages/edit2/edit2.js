@@ -6,7 +6,7 @@ import Navbar from "../../components/navbar/Navbar";
 import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import UpdateModal from "../../components/updateModal/UpdateModal";
+import UpdateModal from "../../components/CRUDmodals/UpdateModal";
 
 const Edit2 = ({inputs, title, entityType }) => {
   const navigate = useNavigate();

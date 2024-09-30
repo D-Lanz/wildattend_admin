@@ -7,7 +7,7 @@ import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/fires
 import { auth, db, storage } from "../../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import AddModal from "../../components/addModal/AddModal";
+import AddModal from "../../components/CRUDmodals/AddModal";
 
 const New2 = ({ inputs, title, entityType }) => {
   const navigate = useNavigate();

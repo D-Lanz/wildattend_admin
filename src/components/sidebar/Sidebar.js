@@ -6,26 +6,35 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ClassIcon from '@mui/icons-material/Class';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import AssessmentIcon from '@mui/icons-material/Assessment';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import LogoutIcon from '@mui/icons-material/Logout';
 import RoomIcon from '@mui/icons-material/Room';
 import RouterIcon from '@mui/icons-material/Router';
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const Sidebar = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+  // Show the logout confirmation modal
   const handleLogoutClick = () => {
     setIsLogoutModalOpen(true);
   };
 
+  // Handle the logout process
   const handleLogoutConfirm = () => {
-    // Perform logout logic (e.g., clear auth token)
-    localStorage.removeItem('authToken'); // Assuming you store auth token in localStorage
-    window.location.href = '/login'; // Redirect to login page
+    // Clear auth token and session data
+    localStorage.removeItem('authToken'); 
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+
+    // Prevent navigation back to the protected pages
+    window.history.replaceState(null, '', window.location.href);
+
+    // Redirect to login page
+    window.location.replace('/login');
   };
 
+  // Close the modal without logging out
   const handleLogoutCancel = () => {
     setIsLogoutModalOpen(false);
   };
@@ -43,7 +52,6 @@ const Sidebar = () => {
           </div>
         </Link>
       </div>
-      {/* <hr /> */}
       <div className="center">
         <ul>
           <p className="title">MAIN</p>
@@ -53,9 +61,9 @@ const Sidebar = () => {
               <span>Dashboard</span>
             </li>
           </Link>
-          <Link to="/schedule" style={{ textDecoration:"none" }}>
+          <Link to="/schedule" style={{ textDecoration: "none" }}>
             <li>
-              <ReceiptLongIcon className="icon"/>
+              <ReceiptLongIcon className="icon" />
               <span>Attendance Records</span>
             </li>
           </Link>
@@ -71,32 +79,20 @@ const Sidebar = () => {
               <ClassIcon className="icon" />
               <span>Manage Classes</span>
             </li>
-          </Link><p className="title">MANAGE</p>
-          <Link to="/rooms" style={{ textDecoration:"none" }}>
+          </Link>
+          <p className="title">MANAGE</p>
+          <Link to="/rooms" style={{ textDecoration: "none" }}>
             <li>
-              <RoomIcon className="icon"/>
+              <RoomIcon className="icon" />
               <span>Manage Rooms</span>
             </li>
           </Link>
-          <Link to="/accessPoints" style={{ textDecoration:"none" }}>
+          <Link to="/accessPoints" style={{ textDecoration: "none" }}>
             <li>
-              <RouterIcon className="icon"/>
+              <RouterIcon className="icon" />
               <span>Manage Access Points</span>
             </li>
           </Link>
-          {/* <p className="title">ASSESSMENTS</p>
-          <Link to="/schedule" style={{ textDecoration:"none" }}>
-            <li>
-              <ReceiptLongIcon className="icon"/>
-              <span>Attendance Records</span>
-            </li>
-          </Link>
-          <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-            <li>
-              <AssessmentIcon className="icon" />
-              <span>Generate Reports</span>
-            </li>
-          </Link> */}
           <p className="title">USER</p>
           <Link to="/profile" style={{ textDecoration: 'none' }}>
             <li>
@@ -105,11 +101,12 @@ const Sidebar = () => {
             </li>
           </Link>
           <li onClick={handleLogoutClick}>
-            <LogoutIcon className="icon"  />
+            <LogoutIcon className="icon" />
             <span>Logout</span>
           </li>
         </ul>
       </div>
+
       {isLogoutModalOpen && (
         <LogoutConfirmation
           onConfirm={handleLogoutConfirm}

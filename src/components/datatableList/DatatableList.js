@@ -3,28 +3,28 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
-import { deleteUser } from "firebase/auth";
 import { auth, db } from "../../firebase";
-import DeleteModal from "../deleteModal/DeleteModal";
+import DeleteModal from "../CRUDmodals/DeleteModal";
 import { MenuItem, Select, TextField, InputLabel, FormControl } from "@mui/material";
+import { getAuth, deleteUser as deleteAuthUser, onAuthStateChanged } from "firebase/auth"; // Ensure this import is included
 
 const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
-  const location = useLocation(); // Get location to access state
+  const location = useLocation();
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
-  const [selectedColumn, setSelectedColumn] = useState(entityColumns[0]?.field || ''); // Default to first column
+  const [selectedColumn, setSelectedColumn] = useState(entityColumns[0]?.field || '');
   const [filterText, setFilterText] = useState('');
   const queryParams = new URLSearchParams(location.search);
   const roleFilter = queryParams.get('role');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null); // Store the ID of the item to delete
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, entity), (snapShot) => {
       let list = [];
       snapShot.docs.forEach((doc) => {
         const data = doc.data();
-        
-        // Apply role filter if entity is "users" and roleFilter is present
         if (entity === 'users' && roleFilter) {
           if (data.role === roleFilter) {
             list.push({ id: doc.id, ...data });
@@ -40,15 +40,14 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
     return () => {
       unsub();
     };
-  }, [entity, roleFilter]);  // Add roleFilter to dependencies
-  
+  }, [entity, roleFilter]);
+
   useEffect(() => {
     if (roleFilter && entityColumns.some(col => col.field === 'role')) {
       setSelectedColumn('role');
       setFilterText(roleFilter);
     }
   }, [roleFilter, entityColumns]);
-  
 
   const handleFilterChange = (event) => {
     setFilterText(event.target.value);
@@ -56,7 +55,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
 
   const handleColumnChange = (event) => {
     setSelectedColumn(event.target.value);
-    setFilterText(''); // Clear filter text when column changes
+    setFilterText('');
   };
 
   const filteredData = data.filter((row) =>
@@ -65,60 +64,77 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       : true
   );
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is authenticated
+        console.log("User is authenticated");
+      } else {
+        // User is not authenticated
+        console.log("User is not authenticated");
+      }
+    });
+  
+    return unsubscribe;
+  }, [auth]);
 
-  const handleDeleteConfirm = () => {
-    // Perform logout logic (e.g., clear auth token)
+  const handleDelete = (id) => {
+    setItemToDelete(id); // Store the ID of the item to delete
+    console.log(id)
+    setIsDeleteModalOpen(true); // Open the delete confirmation modal
+  };
+
+  const handleDeleteConfirm = async () => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is authenticated, proceed with deletion
+        try {
+          async function deleteEntity() {
+            const entityDocRef = doc(db, entity, itemToDelete);
+            const entityDocSnapshot = await getDoc(entityDocRef);
+            const entityData = entityDocSnapshot.data();
+  
+            if (!entityData) {
+              console.error("Entity data not found.");
+              return;
+            }
+  
+            // Only delete if the user is the one being deleted
+            if (entity === "users" && user.uid === entityData.userId) {
+              await deleteDoc(entityDocRef); // Delete the Firestore document
+              await deleteAuthUser(user); // Delete the user from Firebase Authentication
+              console.log("User account deleted successfully from Firebase Authentication.");
+            } else {
+              console.error("You are not authorized to delete this account.");
+              return;
+            }
+  
+            // Delete userClasses documents associated with the user
+            const userClassesRef = collection(db, "userClasses");
+            const q = query(userClassesRef, where("userID", "==", itemToDelete));
+            const querySnapshot = await getDocs(q);
+            const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deletePromises);
+  
+            console.log("Delete successful");
+            setData(data.filter((item) => item.id !== itemToDelete));
+          }
+          deleteEntity();
+        } catch (err) {
+          console.error("Error deleting:", err);
+        } finally {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }
+      } else {
+        console.error("User is not authenticated.");
+      }
+    });
   };
 
   const handleDeleteCancel = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleDelete = async (id) => {
-    setIsDeleteModalOpen(true);
-    try {
-      const entityDocRef = doc(db, entity, id);
-      const entityDocSnapshot = await getDoc(entityDocRef);
-      const entityData = entityDocSnapshot.data();
-      
-      let queryField;
-      if (entity === "users") {
-        queryField = "userID";
-      } else if (entity === "classes") {
-        queryField = "classID";
-      } else if (entity === "rooms") {
-        queryField = "roomID";
-      } else if (entity === "accessPoints") {
-        queryField = "accessPointID";
-      } else {
-        console.error("Invalid entity type:", entity);
-        return;
-      }
-      
-      const userClassesRef = collection(db, "userClasses");
-      const q = query(userClassesRef, where(queryField, "==", id));
-      const querySnapshot = await getDocs(q);
-  
-      const deletePromises = [];
-      querySnapshot.forEach((doc) => {
-        const userClassDocRef = doc(db, "userClasses", doc.id);
-        deletePromises.push(deleteDoc(userClassDocRef));
-      });
-  
-      await Promise.all(deletePromises);
-  
-      await deleteDoc(entityDocRef);
-  
-      if (entity === "users") {
-        await deleteUser(auth, entityData.userId);
-      }
-  
-      console.log("Delete successful");
-    } catch (err) {
-      setData(data.filter((item) => item.id !== id));
-      console.log(err);
-    }
+    setIsDeleteModalOpen(false); // Close the modal on cancel
+    setItemToDelete(null); // Clear the itemToDelete state
   };
 
   const handleView = (id, rowData) => {
@@ -126,26 +142,23 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   };
 
   const actionColumn = [
-    { field: "action",
+    {
+      field: "action",
       headerName: "",
       width: 130,
       renderCell: (params) => {
         return (
           <div className="cellAction">
-            <div
-              className="viewButton"
-              onClick={() => handleView(params.row.id)}
-            >View</div>
-            <div
-              className="deleteButton"
-              onClick={() => handleDelete(params.row.id)}
-            >
+            <div className="viewButton" onClick={() => handleView(params.row.id)}>
+              View
+            </div>
+            <div className="deleteButton" onClick={() => handleDelete(params.row.id)}>
               Delete
             </div>
           </div>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -160,11 +173,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       <div className="filterSection">
         <FormControl variant="outlined">
           <InputLabel>Filter by</InputLabel>
-          <Select
-            value={selectedColumn}
-            onChange={handleColumnChange}
-            label="Filter by"
-          >
+          <Select value={selectedColumn} onChange={handleColumnChange} label="Filter by">
             <MenuItem value="">None</MenuItem>
             {entityColumns.map((column) => (
               <MenuItem key={column.field} value={column.field}>
@@ -188,7 +197,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
         disableDensitySelector
         rows={filteredData}
         columns={[...entityColumns, ...actionColumn]}
-        pagination={false}  // Disable pagination
+        pagination={false} // Disable pagination
         slots={{ toolbar: GridToolbar }}
       />
 
