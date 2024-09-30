@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { deleteDoc, doc, collection, getDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import DeleteModal from "../CRUDmodals/DeleteModal";
+import SuccessModal from "../CRUDmodals/SuccessModal";
 import { MenuItem, Select, TextField, InputLabel, FormControl } from "@mui/material";
 import { getAuth, deleteUser as deleteAuthUser, onAuthStateChanged } from "firebase/auth"; // Ensure this import is included
 
@@ -18,7 +19,8 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const queryParams = new URLSearchParams(location.search);
   const roleFilter = queryParams.get('role');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null); // Store the ID of the item to delete
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);  // New state for success modal
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, entity), (snapShot) => {
@@ -85,53 +87,77 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   };
 
   const handleDeleteConfirm = async () => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is authenticated, proceed with deletion
-        try {
-          async function deleteEntity() {
-            const entityDocRef = doc(db, entity, itemToDelete);
-            const entityDocSnapshot = await getDoc(entityDocRef);
-            const entityData = entityDocSnapshot.data();
-  
-            if (!entityData) {
-              console.error("Entity data not found.");
-              return;
-            }
-  
-            // Only delete if the user is the one being deleted
-            if (entity === "users" && user.uid === entityData.userId) {
-              await deleteDoc(entityDocRef); // Delete the Firestore document
-              await deleteAuthUser(user); // Delete the user from Firebase Authentication
-              console.log("User account deleted successfully from Firebase Authentication.");
-            } else {
-              console.error("You are not authorized to delete this account.");
-              return;
-            }
-  
-            // Delete userClasses documents associated with the user
-            const userClassesRef = collection(db, "userClasses");
-            const q = query(userClassesRef, where("userID", "==", itemToDelete));
-            const querySnapshot = await getDocs(q);
-            const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
-            await Promise.all(deletePromises);
-  
-            console.log("Delete successful");
-            setData(data.filter((item) => item.id !== itemToDelete));
-          }
-          deleteEntity();
-        } catch (err) {
-          console.error("Error deleting:", err);
-        } finally {
-          setIsDeleteModalOpen(false);
-          setItemToDelete(null);
-        }
-      } else {
-        console.error("User is not authenticated.");
+    const user = auth.currentUser;  // Get current authenticated user
+    if (!user) {
+      console.error("User is not authenticated.");
+      return;
+    }
+
+    try {
+      const entityDocRef = doc(db, entity, itemToDelete);
+      const entityDocSnapshot = await getDoc(entityDocRef);
+      const entityData = entityDocSnapshot.data();
+
+      if (!entityData) {
+        console.error("Entity data not found.");
+        return;
       }
-    });
+
+      // Deletion logic for users
+      if (entity === "users") {
+        if (user.uid === entityData.userId) {
+          await deleteDoc(entityDocRef); // Delete Firestore doc
+          await deleteAuthUser(user); // Delete Firebase auth user
+          console.log("User account deleted successfully.");
+          
+          // Delete associated userClasses documents
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where("userID", "==", itemToDelete));
+          const querySnapshot = await getDocs(q);
+          const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+          await Promise.all(deletePromises);
+          console.log("Associated userClasses documents deleted.");
+        } else {
+          console.error("You are not authorized to delete this account.");
+          return;
+        }
+      }
+
+      // Deletion logic for classes, rooms, and accessPoints
+      if (["classes", "rooms", "accessPoints"].includes(entity)) {
+        await deleteDoc(entityDocRef); // Delete the class, room, or access point document
+        console.log(`${entity} document deleted successfully.`);
+
+        // If the entity is a class, also delete associated userClasses documents
+        if (entity === "classes") {
+          const userClassesRef = collection(db, "userClasses");
+          const q = query(userClassesRef, where("classID", "==", itemToDelete));
+          const querySnapshot = await getDocs(q);
+          const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+          await Promise.all(deletePromises);
+          console.log("Associated userClasses documents deleted for the class.");
+        }
+
+        // Show success modal after successful deletion
+        setIsSuccessModalOpen(true);  // Open success modal
+      }
+
+      // Remove the deleted item from the UI
+      setData(data.filter((item) => item.id !== itemToDelete));
+
+    } catch (err) {
+      console.error("Error deleting:", err);
+    } finally {
+      setIsDeleteModalOpen(false); // Close delete modal
+      setItemToDelete(null);  // Clear selected item
+    }
   };
 
+  // Close success modal
+  const handleCloseSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+  };
+  
   const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false); // Close the modal on cancel
     setItemToDelete(null); // Clear the itemToDelete state
@@ -205,6 +231,15 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
         <DeleteModal
           onConfirm={handleDeleteConfirm}
           onCancel={handleDeleteCancel}
+        />
+      )}
+
+      {/* Success Modal (shown if a document is successfully deleted from classes, rooms, or accessPoints) */}
+      {isSuccessModalOpen && (
+        <SuccessModal
+          actionType="delete"
+          entityName={entity === "classes" ? "Class" : entity === "rooms" ? "Room" : "Access Point"}
+          onClose={handleCloseSuccessModal}
         />
       )}
     </div>

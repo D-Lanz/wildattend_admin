@@ -14,8 +14,6 @@ import SelectList1 from './pages/selectList1/selectList1';
 import Connect from './pages/connect/connect';
 
 // ENTITIES WITH NO IMG (ROOMS & ACCESS POINTS)
-import New2 from './pages/new2/new2';
-import Edit2 from './pages/edit2/edit2';
 import Single2 from './pages/single2/single2';
 import SelectList2 from './pages/selectList2/selectList2';
 

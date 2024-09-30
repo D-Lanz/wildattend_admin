@@ -5,7 +5,6 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddModal from '../../components/CRUDmodals/AddModal';
 import SuccessModal from "../../components/CRUDmodals/SuccessModal";
-
 import { Visibility, VisibilityOff } from "@mui/icons-material"; // Add this for the eye icon
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -85,8 +84,9 @@ const New = ({ inputs, title, entityType }) => {
       switch (entityType) {
         case "user":
           collectionName = "users";
-          docId = newData.idNum;
+          // Creating the user with email and password
           const res = await createUserWithEmailAndPassword(auth, newData.email, newData.password);
+          // Adding user to the Firestore with auto-generated ID
           await setDoc(doc(db, collectionName, res.user.uid), {
             ...newData,
             timeStamp: serverTimestamp(),
@@ -94,9 +94,9 @@ const New = ({ inputs, title, entityType }) => {
           break;
         case "class":
           collectionName = "classes";
-          docId = `${newData.classCode}_${newData.classSec}_${newData.semester}_${newData.schoolYear}`;
           newData = { ...newData, Ongoing: false };
-          await setDoc(doc(db, collectionName, docId), {
+          // Using addDoc to create a new class with an auto-generated ID
+          await addDoc(collection(db, collectionName), {
             ...newData,
             timeStamp: serverTimestamp(),
           });

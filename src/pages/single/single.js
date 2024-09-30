@@ -67,7 +67,13 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
         <div className="tops">
           <div className="lefts">
           <ArrowBackIcon onClick={handleBack} className="backButton" />
-          <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
+          <div className="editButtonWrapper">
+            <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
+            {entity === 'classes' && (
+              <Link to={`/schedule/${id}`} className="editButtons">Attendance</Link>
+            )}
+          </div>
+          
             <h1 className="titles">Information</h1>
             <div className="items">
               {data && data.img ? (
