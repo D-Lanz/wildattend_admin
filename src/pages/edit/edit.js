@@ -4,12 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import UpdateModal from '../../components/CRUDmodals/UpdateModal';
 import SuccessModal from "../../components/CRUDmodals/SuccessModal";
-
+import ErrorModal from "../../components/CRUDmodals/ErrorModal";
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
@@ -23,6 +22,8 @@ const Edit = ({ inputs, title, entityType }) => {
   const [lastName, setLastName] = useState("");
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false); // State for error modal
+  const [errorMessage, setErrorMessage] = useState(""); // State for error message
   const handleBack = () => navigate(-1);
 
   useEffect(() => {
@@ -135,9 +136,11 @@ const Edit = ({ inputs, title, entityType }) => {
   
       setShowSuccessModal(true);
     } catch (err) {
+      setErrorMessage(err.message); // Set the error message
+      setShowErrorModal(true); // Show the error modal
       console.log(err);
     }
-  };  
+  };
 
   const handleUpdateClick = (e) => {
     e.preventDefault();
@@ -252,6 +255,13 @@ const Edit = ({ inputs, title, entityType }) => {
                 setShowSuccessModal(false);
                 navigate(-1);
               }}
+            />
+          )}
+
+          {showErrorModal && (
+            <ErrorModal
+              errorMessage={errorMessage}
+              onClose={() => setShowErrorModal(false)}
             />
           )}
         </div>
