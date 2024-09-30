@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url(./Login.jpg); /* Replace with your image path */
+  background-image: url(./Login.png); /* Replace with your image path */
   background-repeat: no-repeat; /* Prevent image tiling */
   background-position: center; /* Center the image */
   background-size: cover; /* Scale image to cover the container */

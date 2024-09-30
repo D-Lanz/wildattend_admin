@@ -3,24 +3,33 @@
 }
 
 .profile h1{
-  color: #CEA108;
+  color: #781B1B;
+  margin-left: 40px;
+  font-size: 24px;
 }
-
+.profile h2 {color: #781B1B;
+  margin-left: 40px;
+  font-size: 20px;
+}
 .profileContainer{
-  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  background: linear-gradient(to bottom, #FFFFFF,  #F8C400);
   flex: 6;
 }
 
 .profilePicContainer {
-  width: 150px;
-  height: 150px;
+  width: 130px;
+  height: 130px;
   overflow: hidden;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 40px; 
+  margin-left: 40px; 
   margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
 
 .profilePic {
   width: 100%;

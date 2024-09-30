@@ -55,8 +55,8 @@ const AdminProfile = () => {
               <img src={profilePic} alt="Profile" className="profilePic" />
             </div>
             <h1>{profile.lastName}, {profile.firstName} ({profile.idNum})</h1>
-            <p>Email: {profile.email}</p>
-            <p>Role: {profile.role}</p>
+            <h2>Email: {profile.email}</h2>
+            <h2>Role: {profile.role}</h2>
             {/* Display other profile information here */}
           </div>
         ) : (

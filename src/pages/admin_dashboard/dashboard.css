@@ -3,11 +3,11 @@
 }
 
 .home h1{
-  color: #CEA108;
+  color: #FFDF16;
 }
 
 .homeContainer{
-  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  background: linear-gradient(to bottom, #FFFFFF,  #F8C400);
   flex: 6;
 }
 

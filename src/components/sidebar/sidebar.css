@@ -1,5 +1,5 @@
 .sidebar{
-  background: #CEA108;
+  background:  #F8C400;
   flex: 1;
   border-right: 0.5px solid rgba(211, 211, 211, 0.527);
   min-height: 100vh;
@@ -16,12 +16,12 @@
 .logo{
   font-size: 20px;
   font-weight: bold;
-  color: maroon;
+  color: #781B1B;
 }
 
 hr{
   height: 0;
-  border: 0.5px solid rgba(211, 211, 211, 0.527);
+  border: 0.5px solid #EBEBEB;
 }
 
 .center{
@@ -52,18 +52,18 @@ li{
 }
 
 li:hover{
-  background-color: #4D1415;
+  background-color: #610A0C;
 }
 
 .icon{
   font-size: 18px;
-  color: gold;
+  color: #FFDF16
 }
 
 span{
   font-size: 13px;
   font-weight: 600;
-  color: #CEA108;
+  color: #F8C400;
   margin-left: 10px;
 }
 
