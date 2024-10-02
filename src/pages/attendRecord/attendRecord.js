@@ -25,7 +25,7 @@ const AttendRecord = () => {
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
-        if (!id) throw new Error("classID is undefined or null");
+        if (!id) throw new Error("classId is undefined or null");
 
         const classDocRef = doc(db, "classes", id);
         const classDocSnap = await getDoc(classDocRef);
@@ -50,7 +50,7 @@ const AttendRecord = () => {
         const userClassesQuery = query(userClassesRef, where("classID", "==", id));
         const userClassesSnapshot = await getDocs(userClassesQuery);
     
-        const userIDs = userClassesSnapshot.docs.map(doc => doc.data().userID);
+        const userIds = userClassesSnapshot.docs.map(doc => doc.data().userID);
     
         const usersRef = collection(db, "users");
         const usersSnapshot = await getDocs(usersRef);
@@ -59,7 +59,7 @@ const AttendRecord = () => {
           const userData = doc.data();
           const userID = doc.id;
     
-          if (userIDs.includes(userID)) {
+          if (userIds.includes(userID)) {
             if (userData.role === "Student") {
               studentCount++;
             } else if (userData.role === "Faculty") {
@@ -79,7 +79,7 @@ const AttendRecord = () => {
     const fetchAttendanceData = async () => {
       try {
         const attendanceRef = collection(db, "attendRecord");
-        const attendanceQuery = query(attendanceRef, where("classID", "==", id));
+        const attendanceQuery = query(attendanceRef, where("classId", "==", id));
         const attendanceSnapshot = await getDocs(attendanceQuery);
     
         const attendanceRecords = {
@@ -87,10 +87,10 @@ const AttendRecord = () => {
           students: [],
         };
     
-        const userIDs = attendanceSnapshot.docs.map(doc => doc.data().userID);
+        const userIds = attendanceSnapshot.docs.map(doc => doc.data().userId);
     
-        if (userIDs.length > 0) {
-          const usersPromises = userIDs.map(userID => getDoc(doc(db, "users", userID)));
+        if (userIds.length > 0) {
+          const usersPromises = userIds.map(userId => getDoc(doc(db, "users", userId)));
           const usersSnapshots = await Promise.all(usersPromises);
     
           const usersMap = {};
@@ -107,8 +107,8 @@ const AttendRecord = () => {
     
           attendanceSnapshot.forEach(doc => {
             const attendanceData = doc.data();
-            const userID = attendanceData.userID;
-            const userData = usersMap[userID];
+            const userId = attendanceData.userId;
+            const userData = usersMap[userId];
     
             const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
             const formattedTimeInDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
@@ -116,7 +116,7 @@ const AttendRecord = () => {
             if (formattedTimeInDate === date) {
               const record = {
                 id: doc.id,
-                userID: userID,
+                userId: userId,
                 firstName: userData ? userData.firstName : "--",
                 lastName: userData ? userData.lastName : "--",
                 role: userData ? userData.role : "--",
@@ -180,8 +180,8 @@ const AttendRecord = () => {
   
         attendanceData.students.forEach(student => {
           // Initialize the user entry if it doesn't exist
-          if (!days[student.userID]) {
-            days[student.userID] = { User: `${student.lastName}, ${student.firstName}` };
+          if (!days[student.userId]) {
+            days[student.userId] = { User: `${student.lastName}, ${student.firstName}` };
           }
   
           // Process the timeIn value for date collection
@@ -192,14 +192,14 @@ const AttendRecord = () => {
               uniqueDates.add(attendanceDate); // Add the formatted date to the set
   
               // Store the attendance status by formatted date
-              days[student.userID][attendanceDate] = student.status;
+              days[student.userId][attendanceDate] = student.status;
             } catch (error) {
               console.error("Error formatting date:", error);
-              days[student.userID]['Invalid Date'] = student.status; // Handle invalid date
+              days[student.userId]['Invalid Date'] = student.status; // Handle invalid date
             }
           } else {
             // If timeIn is missing, use a placeholder for the date
-            days[student.userID]['No Time In'] = student.status;
+            days[student.userId]['No Time In'] = student.status;
           }
         });
   
@@ -264,8 +264,9 @@ const AttendRecord = () => {
                   )}
                   <h2>{classDetails.classCode} - {classDetails.classSec} ({classDetails.schoolYear} {classDetails.semester} Sem)</h2>
                   <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)}</p>
+                  <p>{classDetails.Ongoing ? "Ongoing" : "Not Ongoing"}</p>
                   <hr/>
-                  <p>Total Enrolled: {userCount}</p>
+                  <p>User Count: {userCount}</p>
                   <p>Students: {studentCount}</p>
                   <p>Faculty: {facultyCount}</p>
                 </>
