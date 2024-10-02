@@ -1,13 +1,12 @@
 import "./datatableSelect1.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
+import { useNavigate } from "react-router-dom"; // Import useLocation
 import { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
-  const navigate = useNavigate(); 
-  const location = useLocation(); // Access location using useLocation hook
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
 
   useEffect(() => {

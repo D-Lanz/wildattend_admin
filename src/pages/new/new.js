@@ -78,12 +78,13 @@ const New = ({ inputs, title, entityType }) => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-
+  
     try {
       let collectionName;
       let docId;
       let newData = { ...data };
-
+      let classRef;
+  
       switch (entityType) {
         case "user":
           collectionName = "users";
@@ -99,9 +100,17 @@ const New = ({ inputs, title, entityType }) => {
           collectionName = "classes";
           newData = { ...newData, Ongoing: false };
           // Using addDoc to create a new class with an auto-generated ID
-          await addDoc(collection(db, collectionName), {
+          classRef = await addDoc(collection(db, collectionName), {
             ...newData,
             timeStamp: serverTimestamp(),
+          });
+          
+          // Create a userClasses document for the creator
+          const userID = auth.currentUser.uid; // Get current user ID (creator)
+          await addDoc(collection(db, "userClasses"), {
+            userID: userID,
+            classID: classRef.id, // Reference to the newly created class
+            enrollDate: serverTimestamp(),
           });
           break;
         case "room":
@@ -121,7 +130,7 @@ const New = ({ inputs, title, entityType }) => {
         default:
           throw new Error("Invalid entityType");
       }
-
+  
       setShowSuccessModal(true);
     } catch (err) {
       setErrorMessage(err.message); // Set the error message
@@ -129,6 +138,7 @@ const New = ({ inputs, title, entityType }) => {
       console.log(err);
     }
   };
+  
 
   const handleCheckboxChange = (e) => {
     const { value: day, checked: isChecked } = e.target;
