@@ -98,7 +98,7 @@ const FacultyTimeTable = () => {
           <div className="cellAction">
             <div
               className="viewButton"
-              onClick={() => handleView(params.row.id)}
+              onClick={() => handleViewClick(params.row.id)}
             >View</div>
           </div>
         );

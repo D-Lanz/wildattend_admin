@@ -107,7 +107,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       if (entity === "users") {
         if (user.uid === itemToDelete) { // Compare the UID with itemToDelete (document ID)
           await deleteDoc(entityDocRef); // Delete Firestore doc
-          await deleteAuthUser(user); // Delete Firebase auth user
+          // await deleteAuthUser(user); // Delete Firebase auth user
           console.log("User account deleted successfully.");
           
           // Delete associated userClasses documents
