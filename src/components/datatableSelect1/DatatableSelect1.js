@@ -12,19 +12,19 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const parts = location.pathname.split("/");
+        const parts = window.location.pathname.split("/");
         const entityId = parts[parts.length - 2];
 
         const userClassesSnapshot = await getDocs(collection(db, "userClasses"));
 
         const associatedIDs = userClassesSnapshot.docs
           .filter(doc => {
-            return location.pathname.startsWith("/users/") ?
+            return window.location.pathname.startsWith("/users/") ?
               doc.data().userID === entityId :
               doc.data().classID === entityId;
           })
           .map(doc => {
-            return location.pathname.startsWith("/users/") ?
+            return window.location.pathname.startsWith("/users/") ?
               doc.data().classID :
               doc.data().userID;
           });
@@ -41,25 +41,25 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
     };
 
     fetchData();
-  }, [entity, location.pathname]);
+  }, [entity, window.location.pathname]);
 
   const handleAdd = async (params) => {
     try {
       let userID, classID, targetField;
 
-      const parts = location.pathname.split("/");
+      const parts = window.location.pathname.split("/");
       const entityId = parts[parts.length - 2];
 
-      if (location.pathname.startsWith("/users/")) {
+      if (window.location.pathname.startsWith("/users/")) {
         userID = entityId;
         classID = params.row.id;
         targetField = "classID";
-      } else if (location.pathname.startsWith("/classes/")) {
+      } else if (window.location.pathname.startsWith("/classes/")) {
         classID = entityId;
         userID = params.row.id;
         targetField = "userID";
       } else {
-        console.error("Invalid URL path:", location.pathname);
+        console.error("Invalid URL path:", window.location.pathname);
         return;
       }
 

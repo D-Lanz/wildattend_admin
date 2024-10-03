@@ -175,9 +175,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             <ArrowBackIcon onClick={handleBack} className="backButton" />
             <div className="editButtonWrapper">
               <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
-              {entity === 'classes' && (
-                <Link to={`/schedule/${id}`} className="editButtons">Attendance</Link>
-              )}
+              
             </div>
 
             <h1 className="titles">Information</h1>
