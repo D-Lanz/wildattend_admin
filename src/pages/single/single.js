@@ -3,6 +3,7 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
 import Datatable1 from "../../components/datatable1/Datatable1";
+import Datatable2 from "../../components/datatable2/Datatable2";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { format } from 'date-fns';
 import { useEffect, useState } from "react";
@@ -163,6 +164,10 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
     title = `${data?.lastName || ''}, ${data?.firstName || ''}`;
   } else if (entity === 'classes') {
     title = data?.classDesc || '';
+  } else if (entity === 'rooms') {
+    title = `${data?.building || ''}${data?.roomNum || ''}`;
+  } else if (entity === 'accessPoints') {
+    title = data?.macAddress || '';
   }
 
   return (
@@ -172,12 +177,15 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
         <Navbar />
         <div className="tops">
           <div className="lefts">
-            <ArrowBackIcon onClick={handleBack} className="backButton" />
-            <div className="editButtonWrapper">
-              <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
-              
+            <div className="navWrapper">
+              <ArrowBackIcon onClick={handleBack} className="backButton" />
+              <div className="editButtonWrapper">
+                <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
+                {entity === 'classes' && (
+                  <Link to={`/schedule/${id}`} className="editButtons">Attendance</Link>
+                )}
+              </div>
             </div>
-
             <h1 className="titles">Information</h1>
             <div className="items">
               {data && data.img ? (
@@ -216,19 +224,22 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               </div>
             </div>
           </div>
-          <div className="rights">
-            <Chart
-              aspect={3 / 1}
-              title="Attendance"
-              data={classesData} // Pass the class data to Chart
-              selectedClassID={selectedClassID}
-              onClassSelect={setSelectedClassID} // Update the selected classID
-              attendanceData={attendanceData} // Pass attendance data for the chart
-            />
-          </div>
+          {(entity === 'classes' || entity === 'users') && (
+            <div className="rights">
+              <Chart
+                aspect={3 / 1}
+                title="Attendance"
+                data={classesData} // Pass the class data to Chart
+                selectedClassID={selectedClassID}
+                onClassSelect={setSelectedClassID} // Update the selected classID
+                attendanceData={attendanceData} // Pass attendance data for the chart
+              />
+            </div>
+          )}
         </div>
 
         <div className="bottom">
+        {(entity === 'users' || entity === 'classes') ? (
           <Datatable1
             title={title}
             entity={entityTable}
@@ -238,6 +249,17 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             entityAssign={entityAssign}
             entityConnect={entityConnect}
           />
+        ) : (
+          <Datatable2
+            title={title}
+            entity={entityTable}
+            tableTitle={tableTitle}
+            entityColumns={entityColumns}
+            id={id}
+            entityAssign={entityAssign}
+            entityConnect={entityConnect}
+          />
+        )}
         </div>
       </div>
     </div>

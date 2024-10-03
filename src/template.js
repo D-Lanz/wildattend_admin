@@ -6,13 +6,15 @@ import Sidebar from "../../components/sidebar/Sidebar";
 const Template = () => {
   // functions here
   return (
-    <div className="main">
+    <div className="home">
       <Sidebar />
-      <div className="tempContainer">
+      <div className="homeContainer">
         <Navbar />
+        <div className="contentContainer"> {/* New div below the Navbar */}
+          
 
-        {/* Body contains here */}
-        
+          
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,42 @@
+.home {
+  display: flex;
+  justify-content: flex-start;  /* Aligns items to the start */
+  align-items: stretch;         /* Makes items stretch to fill the height */
+  height: 100vh;                /* Makes the container take the full viewport height */
+}
+
+.homeContainer {
+  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  flex: 6;
+  display: flex;                /* Enables Flexbox for child elements */
+  flex-direction: column;       /* Stack children vertically */
+  justify-content: flex-start;  /* Aligns children to the top */
+}
+
+.contentContainer {
+  text-align: center;           /* Center-align text */
+}
+
+.backButton {
+  cursor: pointer;              /* Change cursor to pointer */
+  font-size: 30px;             /* Increase icon size */
+  color: #CEA108;               /* Match theme color */
+  margin-bottom: 20px;         /* Space below the back button */
+}
+
+.contentContainer h1 {
+  color: maroon;             /* Main heading color */
+  font-size: 2.5rem;            /* Larger heading size */
+  margin: 10px 0;               /* Margin for spacing */
+}
+
+p {
+  color: #555;                  /* Slightly muted text color */
+  font-size: 1.2rem;            /* Text size for the message */
+  margin-bottom: 20px;         /* Space below the paragraph */
+}
+
+.img404 {
+  max-width: 300px;            /* Limit the maximum width */
+  height: auto;                /* Maintain aspect ratio */
+}

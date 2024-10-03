@@ -1,44 +1,34 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
-
 import AdminDashboard from './pages/admin_dashboard/dashboard';
 import Login from './pages/login/loginpage';
 import List from './pages/list/list';
-
 // ENTITIES WITH IMG (USERS & CLASSES)
 import New from './pages/new/new';
 import Single from './pages/single/single';
 import Edit from './pages/edit/edit';
 import SelectList1 from './pages/selectList1/selectList1';
 import Connect from './pages/connect/connect';
-
 // ENTITIES WITH NO IMG (ROOMS & ACCESS POINTS)
-import Single2 from './pages/single2/single2';
 import SelectList2 from './pages/selectList2/selectList2';
-
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs, roomInputs, accessPointInputs } from './formSource';
-
 // FOR LIST.JS
 import { classColumns, userColumns, userClassColumns, roomColumns, accessPointColumns } from './datatablesource';
-
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle, roomSingle, accessPointSingle } from './singleSource';
-
 //MISC.
 import Schedule from './pages/schedule/schedule';
 import AdminProfile from './pages/admin_profile/admin_profile';
 import AttendRecord from './pages/attendRecord/attendRecord';
+import PageNotFound from './pages/pageNotFound/pageNotFound';
 
 function App() {
   const { currentUser } = useContext(AuthContext);
-
   const RequireAuth = ({ children }) => {
     return currentUser ? children : <Navigate to="/login" />;
   };
-
-  // console.log(currentUser)
 
   return (
     <div className="App">
@@ -172,7 +162,7 @@ function App() {
               {/* VIEW SINGLE ROOM */}
               <Route path=":id" element={
                 <RequireAuth>
-                  <Single2 entitySingle={roomSingle} entity="rooms"
+                  <Single entitySingle={roomSingle} entity="rooms"
                       // INSIDE ROOMS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
                       entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Classes" entityColumns={classColumns}/>
                 </RequireAuth>
@@ -213,7 +203,7 @@ function App() {
               {/* VIEW SINGLE ROOM */}
               <Route path=":id" element={
                 <RequireAuth>
-                  <Single2 entitySingle={accessPointSingle} entity="accessPoints"
+                  <Single entitySingle={accessPointSingle} entity="accessPoints"
                       // INSIDE ACCESS POINTS, THEIR DATA TABLE SHOWS THEIR ROOMS INVOLVED
                       entityAssign="accessPoints" entityTable="rooms" entityConnect="roomAccessPoints" tableTitle="Assign to a Room" entityColumns={roomColumns}/>
                 </RequireAuth>
@@ -241,9 +231,8 @@ function App() {
             </Route>
           
           <Route path="profile" element={<RequireAuth><AdminProfile /></RequireAuth>}/>
-          
           {/* Redirect to login for any unknown paths */}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<RequireAuth><PageNotFound/></RequireAuth>} />
         </Routes>
       </BrowserRouter>
     </div>

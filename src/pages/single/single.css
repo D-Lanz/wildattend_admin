@@ -48,15 +48,9 @@
   object-fit: cover;
 }
 
-.editButtons{
-  top: 0;
-  right: 0;
-  padding: 5px;
-  font-size: 12px;
-  color: maroon;
-  background-color: gold;
-  cursor: pointer;
-  border-radius: 0 5px 0 5px;
+.editButtonWrapper {
+  display: flex;          /* Align children (links) in a row */
+  gap: 10px;              /* Add spacing between the links */
 }
 
 .deleteButtons{
@@ -102,4 +96,30 @@
   color: maroon;
   font-size: 50px;
   cursor: pointer;
+}
+
+.navWrapper {
+  display: flex;           /* Align arrow and links horizontally */
+  align-items: center;     /* Align items vertically centered */
+  gap: 15px;               /* Space between arrow and links */
+}
+
+.editButtonWrapper {
+  display: flex;           /* Align links horizontally */
+  gap: 10px;               /* Space between links */
+}
+
+.editButtons {
+  padding: 5px;
+  font-size: 12px;
+  color: maroon;
+  background-color: gold;
+  cursor: pointer;
+  border-radius: 0 5px 0 5px;
+  text-decoration: none;   /* Remove underline */
+}
+
+.backButton {
+  cursor: pointer;
+  font-size: 24px;         /* Adjust size of the arrow if needed */
 }
