@@ -81,7 +81,6 @@ const New = ({ inputs, title, entityType }) => {
   
     try {
       let collectionName;
-      let docId;
       let newData = { ...data };
       let classRef;
   
@@ -213,19 +212,22 @@ const New = ({ inputs, title, entityType }) => {
                         </div>
                       ))}
                     </div>
-                  ) : input.type === "dropdown" ? (
-                    <select
-                      className="inputn"
-                      id={input.id}
-                      onChange={handleInput}
-                      required
-                    >
+                  ) : input.type === "radio" ? (
+                    <div>
                       {input.options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
+                        <div key={option}>
+                          <input
+                            type="radio"
+                            id={input.id}
+                            name={input.id} // All radio buttons need the same name to be grouped
+                            value={option}
+                            onChange={handleInput}
+                            required
+                          />
+                          <label htmlFor={`${input.id}`}>{option}</label>
+                        </div>
                       ))}
-                    </select>
+                    </div>
                   ) : input.id === "email" && entityType === "user" ? (
                     <input
                       className="inputn"

@@ -1,7 +1,7 @@
 import "./edit.css"
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { collection, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, storage } from "../../firebase"
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Sidebar from "../../components/sidebar/Sidebar";
@@ -201,18 +201,23 @@ const Edit = ({ inputs, title, entityType }) => {
                         </div>
                       ))}
                     </div>
-                  ) : input.type === "dropdown" ? (
-                    <select
-                      className="inputn"
-                      id={input.id}
-                      onChange={handleInput}
-                      required
-                      value={data[input.id] || ''}
-                    >
+                  ) : input.type === "radio" ? (
+                    <div>
                       {input.options.map((option) => (
-                        <option key={option} value={option}>{option}</option>
+                        <div key={option}>
+                          <input
+                            type="radio"
+                            id={input.id}
+                            name={input.id} // Same name to group the radio buttons
+                            value={option}
+                            checked={data[input.id] === option} // Set the checked attribute based on current value
+                            onChange={handleInput}
+                            required
+                          />
+                          <label htmlFor={`${input.id}`}>{option}</label>
+                        </div>
                       ))}
-                    </select>
+                    </div>
                   ) : (
                     <input
                       className="inputn"

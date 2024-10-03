@@ -78,6 +78,18 @@ const AttendRecord = () => {
     
     const fetchAttendanceData = async () => {
       try {
+        // 1. Fetch all user IDs (students and faculty) enrolled in the class
+        const userClassesRef = collection(db, "userClasses");
+        const userClassesQuery = query(userClassesRef, where("classId", "==", id));
+        const userClassesSnapshot = await getDocs(userClassesQuery);
+    
+        console.log("userClassesSnapshot size:", userClassesSnapshot.size);
+        userClassesSnapshot.docs.forEach((doc) => console.log("userClasses doc:", doc.data()));
+    
+        const allUserIds = userClassesSnapshot.docs.map(doc => doc.data().userId); // All enrolled user IDs
+        console.log("All enrolled user IDs:", allUserIds);
+    
+        // 2. Fetch attendance records for those who have timed in
         const attendanceRef = collection(db, "attendRecord");
         const attendanceQuery = query(attendanceRef, where("classId", "==", id));
         const attendanceSnapshot = await getDocs(attendanceQuery);
@@ -87,58 +99,96 @@ const AttendRecord = () => {
           students: [],
         };
     
-        const userIds = attendanceSnapshot.docs.map(doc => doc.data().userId);
+        const userIdsWithAttendance = attendanceSnapshot.docs.map(doc => doc.data().userId); // Users with attendance records
+        const userIdsWithoutAttendance = allUserIds.filter(userId => !userIdsWithAttendance.includes(userId)); // Users without attendance
     
-        if (userIds.length > 0) {
-          const usersPromises = userIds.map(userId => getDoc(doc(db, "users", userId)));
-          const usersSnapshots = await Promise.all(usersPromises);
+        console.log("User IDs with attendance records:", userIdsWithAttendance);
+        console.log("User IDs without attendance records:", userIdsWithoutAttendance);
     
-          const usersMap = {};
-          usersSnapshots.forEach(userDoc => {
+        // 3. Fetch user details for users with attendance records
+        const usersPromisesWithAttendance = userIdsWithAttendance.map(userId => getDoc(doc(db, "users", userId)));
+        const usersSnapshotsWithAttendance = await Promise.all(usersPromisesWithAttendance);
+    
+        const usersMapWithAttendance = {};
+        usersSnapshotsWithAttendance.forEach(userDoc => {
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            usersMapWithAttendance[userDoc.id] = {
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              role: userData.role,
+            };
+          }
+        });
+    
+        // 4. Process attendance records for those who have timed in
+        attendanceSnapshot.forEach(doc => {
+          const attendanceData = doc.data();
+          const userId = attendanceData.userId;
+          const userData = usersMapWithAttendance[userId];
+    
+          const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
+          const formattedTimeInDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
+    
+          if (formattedTimeInDate === date) {
+            const record = {
+              id: doc.id,
+              userId: userId,
+              firstName: userData ? userData.firstName : "--",
+              lastName: userData ? userData.lastName : "--",
+              role: userData ? userData.role : "--",
+              timeIn: attendanceData.timeIn ? format(attendanceData.timeIn.toDate(), 'hh:mm a') : "--",
+              timeOut: attendanceData.timeOut ? format(attendanceData.timeOut.toDate(), 'hh:mm a') : "--",
+              status: attendanceData.status || "Absent",
+            };
+    
+            if (userData && userData.role === "Faculty") {
+              attendanceRecords.faculty.push(record);
+            } else if (userData && userData.role === "Student") {
+              attendanceRecords.students.push(record);
+            }
+          }
+        });
+    
+        console.log("Attendance records after processing timed-in users:", attendanceRecords.students);
+    
+        // 5. Fetch user details for users without attendance records (from userClasses)
+        if (userIdsWithoutAttendance.length > 0) {
+          const usersPromisesWithoutAttendance = userIdsWithoutAttendance.map(userId => getDoc(doc(db, "users", userId)));
+          const usersSnapshotsWithoutAttendance = await Promise.all(usersPromisesWithoutAttendance);
+    
+          usersSnapshotsWithoutAttendance.forEach(userDoc => {
             if (userDoc.exists()) {
               const userData = userDoc.data();
-              usersMap[userDoc.id] = {
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                role: userData.role,
-              };
-            }
-          });
-    
-          attendanceSnapshot.forEach(doc => {
-            const attendanceData = doc.data();
-            const userId = attendanceData.userId;
-            const userData = usersMap[userId];
-    
-            const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
-            const formattedTimeInDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
-    
-            if (formattedTimeInDate === date) {
               const record = {
-                id: doc.id,
-                userId: userId,
-                firstName: userData ? userData.firstName : "--",
-                lastName: userData ? userData.lastName : "--",
-                role: userData ? userData.role : "--",
-                timeIn: attendanceData.timeIn ? format(attendanceData.timeIn.toDate(), 'hh:mm a') : "--",
-                timeOut: attendanceData.timeOut ? format(attendanceData.timeOut.toDate(), 'hh:mm a') : "--",
-                status: attendanceData.status || "Absent",
+                id: userDoc.id, // No attendRecord ID, so using user ID here
+                userId: userDoc.id,
+                firstName: userData.firstName || "--",
+                lastName: userData.lastName || "--",
+                role: userData.role || "--",
+                timeIn: "--", // No timeIn (haven't timed in yet)
+                timeOut: "--", // No timeOut
+                status: "Absent", // Default to Absent for those without attendance records
               };
     
-              if (userData && userData.role === "Faculty") {
+              if (userData.role === "Faculty") {
                 attendanceRecords.faculty.push(record);
-              } else if (userData && userData.role === "Student") {
-                attendanceRecords.students.push(record);
+              } else if (userData.role === "Student") {
+                attendanceRecords.students.push(record); // Ensure students are pushed to the array
               }
             }
           });
+    
+          console.log("Attendance records after adding users without attendance:", attendanceRecords.students);
         }
     
-        setAttendanceData(attendanceRecords);
+        // 6. Update state with attendance records
+        setAttendanceData(attendanceRecords); // This should now include students with and without attendRecords
+        console.log("Final attendance data set:", attendanceRecords);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
-    };    
+    };
     
     fetchClassDetails();
     fetchUserCounts();

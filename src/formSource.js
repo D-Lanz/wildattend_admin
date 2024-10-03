@@ -31,8 +31,8 @@ export const userInputs = [
   {
     id: "role",
     label:"Role",
-    type:"dropdown", // Change the type to "dropdown"
-    options: ["Student", "Faculty", "Admin"], // Add options for the dropdown
+    type:"radio",
+    options: ["Student", "Faculty", "Admin"], 
   },
   {
     id: "password",
