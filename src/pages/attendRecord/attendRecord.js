@@ -2,18 +2,21 @@ import "./attendRecord.css";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from "react";
 import { TextField } from "@mui/material";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [date, setDate] = useState(today);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);  
   const [attendanceData, setAttendanceData] = useState([]);
   const [classDetails, setClassDetails] = useState(null); 
   const [userCount, setUserCount] = useState(0); 
@@ -203,83 +206,150 @@ const AttendRecord = () => {
     setDate(event.target.value);
   };
 
+  // New handle functions for the date range
+  const handleStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(event.target.value);
+  };
+
   const exportAttendance = async (exportType) => {
     try {
-      let exportData = [];
-      
-      // Format the date for the file name
-      const formattedDate = exportType === 'selected' ? format(new Date(date), 'yyyy-MM-dd') : 'All_Days';
-      
-      // Construct the file name based on class details
-      const fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_Attendance_${formattedDate}.xlsx`;
-  
-      if (exportType === 'selected') {
-        // Export for selected date
-        exportData = attendanceData.students.map(student => ({
-          User: `${student.lastName}, ${student.firstName}`,
-          Status: student.status,
-          TimeIn: student.timeIn || 'N/A',  // Default to 'N/A' if missing
-          TimeOut: student.timeOut || 'N/A', // Now including TimeOut!
-        }));
-      } else if (exportType === 'all') {
-        // Export for all class days
-        const days = {}; // Stores attendance data by user
-  
-        // Create a set to collect unique dates
-        const uniqueDates = new Set();
-  
-        attendanceData.students.forEach(student => {
-          // Initialize the user entry if it doesn't exist
-          if (!days[student.userId]) {
-            days[student.userId] = { User: `${student.lastName}, ${student.firstName}` };
-          }
-  
-          // Process the timeIn value for date collection
-          if (student.timeIn) {
-            try {
-              const timeInDate = student.timeIn.toDate(); // Convert Firestore Timestamp to JS Date object
-              const attendanceDate = format(timeInDate, 'MMM. dd, yyyy'); // Format the date
-              uniqueDates.add(attendanceDate); // Add the formatted date to the set
-  
-              // Store the attendance status by formatted date
-              days[student.userId][attendanceDate] = student.status;
-            } catch (error) {
-              console.error("Error formatting date:", error);
-              days[student.userId]['Invalid Date'] = student.status; // Handle invalid date
-            }
-          } else {
-            // If timeIn is missing, use a placeholder for the date
-            days[student.userId]['No Time In'] = student.status;
-          }
-        });
-  
-        // Create an array of column headers from the unique dates
-        const headerColumns = Array.from(uniqueDates).sort(); // Sort dates
-        headerColumns.unshift("User"); // Add "User" as the first column
-  
-        // Prepare the final export data
-        exportData = Object.values(days).map(userEntry => {
-          const entry = { User: userEntry.User };
-  
-          // Populate the entry with the attendance status for each unique date
-          headerColumns.slice(1).forEach(date => {
-            entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
-          });
-  
-          return entry;
-        });
-      }
-  
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-  
-      XLSX.writeFile(workbook, fileName); // Use the generated fileName for saving
+        let exportData = [];
+
+        // Set the file name based on export type
+        let fileName;
+        if (exportType === 'selected') {
+            const formattedDate = format(new Date(date), 'yyyy-MM-dd');
+            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_Attendance_${formattedDate}.xlsx`;
+        } else if (exportType === 'range') {
+            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_SelectedDateAttendance.xlsx`;
+        } else if (exportType === 'all') {
+            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_AllDaysAttendance.xlsx`;
+        }
+
+        if (exportType === 'selected') {
+            // Export for selected date
+            exportData = attendanceData.students.map(student => ({
+                User: `${student.lastName}, ${student.firstName}`,
+                Status: student.status,
+                TimeIn: student.timeIn || 'N/A',
+                TimeOut: student.timeOut || 'N/A',
+            }));
+        } else if (exportType === 'range') {
+            // Fetch all attendance records for the specified class
+            const attendanceRef = collection(db, "attendRecord");
+            const attendanceSnapshot = await getDocs(attendanceRef);
+
+            // Filter records for the specific class and date range
+            const filteredRecords = attendanceSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() })) // Include document ID if needed
+                .filter(record => 
+                    record.classId === id &&
+                    record.timeIn >= new Date(startDate) &&
+                    record.timeIn <= new Date(endDate)
+                );
+
+            // Create a set to collect unique dates for the specified range
+            const uniqueDates = [];
+            filteredRecords.forEach(record => {
+                const formattedDate = format(record.timeIn.toDate(), 'yyyy-MM-dd'); // Adjust format as needed
+                if (!uniqueDates.includes(formattedDate)) {
+                    uniqueDates.push(formattedDate); // Collect unique dates
+                }
+
+                // Update exportData structure
+                let studentEntry = exportData.find(entry => entry.User === `${record.lastName}, ${record.firstName}`);
+                if (!studentEntry) {
+                    studentEntry = { User: `${record.lastName}, ${record.firstName}` };
+                    exportData.push(studentEntry);
+                }
+
+                studentEntry[formattedDate] = record.status; // Set attendance status for the date
+            });
+
+            // Handle dates with no attendance (default to 'Absent')
+            const defaultStatus = 'Absent';
+            attendanceData.students.forEach(student => {
+                if (!exportData.find(entry => entry.User === `${student.lastName}, ${student.firstName}`)) {
+                    const entry = { User: `${student.lastName}, ${student.firstName}` };
+                    uniqueDates.forEach(date => {
+                        entry[date] = defaultStatus; // Default to 'Absent'
+                    });
+                    exportData.push(entry);
+                }
+            });
+
+            // Ensure all entries have the same set of unique dates
+            exportData.forEach(entry => {
+                uniqueDates.forEach(date => {
+                    if (!entry[date]) {
+                        entry[date] = defaultStatus; // Default to 'Absent'
+                    }
+                });
+            });
+        } else if (exportType === 'all') {
+            // Existing logic for exporting all class days
+            const days = {}; // Stores attendance data by user
+
+            // Create a set to collect unique dates
+            const uniqueDates = new Set();
+
+            attendanceData.students.forEach(student => {
+                // Initialize the user entry if it doesn't exist
+                if (!days[student.userId]) {
+                    days[student.userId] = { User: `${student.lastName}, ${student.firstName}` };
+                }
+
+                // Process the timeIn value for date collection
+                if (student.timeIn) {
+                    try {
+                        const timeInDate = student.timeIn.toDate(); // Convert Firestore Timestamp to JS Date object
+                        const attendanceDate = format(timeInDate, 'MMM. dd, yyyy'); // Format the date
+                        uniqueDates.add(attendanceDate); // Add the formatted date to the set
+
+                        // Store the attendance status by formatted date
+                        days[student.userId][attendanceDate] = student.status;
+                    } catch (error) {
+                        console.error("Error formatting date:", error);
+                        days[student.userId]['Invalid Date'] = student.status; // Handle invalid date
+                    }
+                } else {
+                    // If timeIn is missing, use a placeholder for the date
+                    days[student.userId]['No Time In'] = student.status;
+                }
+            });
+
+            // Create an array of column headers from the unique dates
+            const headerColumns = Array.from(uniqueDates).sort(); // Sort dates
+            headerColumns.unshift("User"); // Add "User" as the first column
+
+            // Prepare the final export data
+            exportData = Object.values(days).map(userEntry => {
+                const entry = { User: userEntry.User };
+
+                // Populate the entry with the attendance status for each unique date
+                headerColumns.slice(1).forEach(date => {
+                    entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
+                });
+
+                return entry;
+            });
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+        XLSX.writeFile(workbook, fileName); // Use the generated fileName for saving
     } catch (error) {
-      console.error("Error exporting attendance:", error);
+        console.error("Error exporting attendance:", error);
     }
   };
-  
+
+
   const columns = [
     { field: 'lastName', headerName: 'Last Name', width: 150 },
     { field: 'firstName', headerName: 'First Name', width: 150 },
@@ -326,27 +396,57 @@ const AttendRecord = () => {
             </div>
 
             <div className="dateFilter">
-              <TextField
-                id="date"
-                label="Select Date"
-                type="date"
-                value={date}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                onChange={handleDateChange}
-              />
-              
-              {/* Export buttons placed inside the same div */}
+              {/* Existing date selector */}
+              <p>Select Date</p>
+              <div className="selectedContainer">
+                <TextField
+                  id="date"
+                  label="Select Date"
+                  type="date"
+                  value={date}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleDateChange}
+                />
+                <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('selected')}/>
+              </div>
+              <hr/>
+              <p>Selected Date Range</p>
+              {/* New date range selectors */}
+              <div className="dateRangeContainer">
+                <TextField
+                  id="startDate"
+                  label="Start Date"
+                  type="date"
+                  value={startDate}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleStartDateChange}
+                />
+                <TextField
+                  id="endDate"
+                  label="End Date"
+                  type="date"
+                  value={endDate}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleEndDateChange}
+                />
+                <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('range')}/>
+              </div>
+
+
+              {/* Export buttons */}
               <div className="exportButtons">
-                <button className="exportButton1" onClick={() => exportAttendance('selected')}>
-                  Export Attendance for Selected Date
-                </button>
                 <button className="exportButton2" onClick={() => exportAttendance('all')}>
                   Export Attendance for All Class Days
                 </button>
               </div>
             </div>
+
           </div>
 
           <div className="rightColumn">

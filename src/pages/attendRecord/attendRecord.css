@@ -111,3 +111,15 @@
   display: flex;
   gap: 10px; /* Space between buttons */
 }
+
+.dateRangeContainer {
+  display: flex;
+  gap: 16px; /* Adds space between the two fields */
+  align-items: center; /* Vertically aligns them in the center */
+}
+
+.selectedContainer {
+  display: flex;
+  gap: 16px; /* Adds space between the two fields */
+  align-items: center; /* Vertically aligns them in the center */
+}
