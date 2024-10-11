@@ -31,6 +31,7 @@ export const classColumns = [
     },
   },
   { field: 'classDesc', headerName: 'Class Description', width: 380, },
+  { field: 'classType', headerName: 'Type', width: 100, },
   { field: 'classSec', headerName: 'Section', width: 130, },
   // { field: 'instructor', headerName: 'Instructor', width: 150, },
   { field: 'classRoom', headerName: 'Classroom', width: 130, },

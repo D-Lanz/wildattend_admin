@@ -11,6 +11,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db } from "../../firebase";
 import { format, addDays } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
+import AttendancePieChart from "../../components/attendancePieChart/attendancePieChart";
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -368,6 +369,13 @@ const AttendRecord = () => {
     return `${hours12}:${minutes} ${ampm}`;
   };
 
+    // Static data for demonstration purposes
+    const attendanceChartData = [
+      { name: 'On-Time', value: 8 },
+      { name: 'Late', value: 2 },
+      { name: 'Absent', value: 5 },
+    ];
+
   return (
     <div className="main">
       <Sidebar />
@@ -383,18 +391,19 @@ const AttendRecord = () => {
                     <img src={classDetails.img} alt="Class" className="classImage" />
                   )}
                   <h2>{classDetails.classCode} - {classDetails.classSec} ({classDetails.schoolYear} {classDetails.semester} Sem)</h2>
-                  <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)}</p>
+                  <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)} ({classDetails.classType})</p>
                   <p>{classDetails.Ongoing ? "Ongoing" : "Not Ongoing"}</p>
-                  <hr/>
+                  {/* <hr/>
                   <p>User Count: {userCount}</p>
                   <p>Students: {studentCount}</p>
-                  <p>Faculty: {facultyCount}</p>
+                  <p>Faculty: {facultyCount}</p> */}
                 </>
               ) : (
                 <p>Loading class details...</p>
               )}
             </div>
-
+            
+            {/* ONLY HAS ONE DATE */}
             <div className="dateFilter">
               {/* Existing date selector */}
               <p>Select Date</p>
@@ -412,6 +421,12 @@ const AttendRecord = () => {
                 <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('selected')}/>
               </div>
               <hr/>
+              {/* Render the pie chart with static data */}
+              <AttendancePieChart data={attendanceChartData} />
+            </div>
+
+            {/* HAS START AND END DATE */}
+            <div className="dateFilter">
               <p>Selected Date Range</p>
               {/* New date range selectors */}
               <div className="dateRangeContainer">
@@ -450,7 +465,7 @@ const AttendRecord = () => {
           </div>
 
           <div className="rightColumn">
-            <h2>Faculty</h2>
+            <h2>Faculty ({facultyCount})</h2>
             <div className="dataTable2">
               <DataGrid
                 rows={attendanceData.faculty || []}
@@ -460,7 +475,7 @@ const AttendRecord = () => {
                 disableSelectionOnClick
               />
             </div>
-            <h2>Students</h2>
+            <h2>Students ({studentCount})</h2>
             <div className="dataTable">
               <DataGrid
                 rows={attendanceData.students || []}

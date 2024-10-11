@@ -1,13 +1,24 @@
-.chart{
-  flex: 2;
+.chart {
+  display: flex;
   padding: 10px;
   color: maroon;
 }
 
-.titlec{
-  margin-bottom: 20px;
+.titlec {
+  margin-bottom: 10px; /* Reduced margin */
 }
 
-.chartGrid{
+.chartGrid {
   stroke: maroon;
+}
+
+.attendance-labels {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px; /* Reduced margin */
+}
+
+.attendance-label {
+  font-size: 14px; /* Keep font size as needed */
+  margin: 3px 0; /* Reduced spacing between labels */
 }

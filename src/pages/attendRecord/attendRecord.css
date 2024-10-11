@@ -48,6 +48,10 @@
   gap: 10px; /* Space between elements */
 }
 
+.dateFilter h2{
+
+}
+
 .dataTable {
   height: 600px; /* Adjust height as needed */
   background-color: #FFF;

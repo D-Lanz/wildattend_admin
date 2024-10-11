@@ -163,7 +163,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
   if (entity === 'users') {
     title = `${data?.lastName || ''}, ${data?.firstName || ''}`;
   } else if (entity === 'classes') {
-    title = data?.classDesc || '';
+    title = `${data?.classDesc || ''} - ${data?.classType || ''}`;
   } else if (entity === 'rooms') {
     title = `${data?.building || ''}${data?.roomNum || ''}`;
   } else if (entity === 'accessPoints') {
@@ -229,10 +229,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               <Chart
                 aspect={3 / 1}
                 title="Attendance"
-                data={classesData} // Pass the class data to Chart
-                selectedClassID={selectedClassID}
-                onClassSelect={setSelectedClassID} // Update the selected classID
-                attendanceData={attendanceData} // Pass attendance data for the chart
+                // Removed dynamic data and function props for static chart
               />
             </div>
           )}
