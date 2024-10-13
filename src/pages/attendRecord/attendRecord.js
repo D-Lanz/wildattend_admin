@@ -292,47 +292,41 @@ const AttendRecord = () => {
                 });
             });
         } else if (exportType === 'all') {
-            // Existing logic for exporting all class days
-            const days = {}; // Stores attendance data by user
+            const attendanceRecords = {}; // To collect attendance by user
 
-            // Create a set to collect unique dates
-            const uniqueDates = new Set();
+            // Get all attendance records from Firestore
+            const attendanceRef = collection(db, "attendRecord");
+            const attendanceSnapshot = await getDocs(attendanceRef);
 
+            // Create a mapping of userID to student names for easy access
+            const studentMap = {};
             attendanceData.students.forEach(student => {
-                // Initialize the user entry if it doesn't exist
-                if (!days[student.userId]) {
-                    days[student.userId] = { User: `${student.lastName}, ${student.firstName}` };
-                }
-
-                // Process the timeIn value for date collection
-                if (student.timeIn) {
-                    try {
-                        const timeInDate = student.timeIn.toDate(); // Convert Firestore Timestamp to JS Date object
-                        const attendanceDate = format(timeInDate, 'MMM. dd, yyyy'); // Format the date
-                        uniqueDates.add(attendanceDate); // Add the formatted date to the set
-
-                        // Store the attendance status by formatted date
-                        days[student.userId][attendanceDate] = student.status;
-                    } catch (error) {
-                        console.error("Error formatting date:", error);
-                        days[student.userId]['Invalid Date'] = student.status; // Handle invalid date
-                    }
-                } else {
-                    // If timeIn is missing, use a placeholder for the date
-                    days[student.userId]['No Time In'] = student.status;
-                }
+                studentMap[student.userID] = `${student.lastName}, ${student.firstName}`;
             });
 
-            // Create an array of column headers from the unique dates
-            const headerColumns = Array.from(uniqueDates).sort(); // Sort dates
-            headerColumns.unshift("User"); // Add "User" as the first column
+            attendanceSnapshot.forEach(doc => {
+                const attendanceData = doc.data();
+                const userID = attendanceData.userID;
+
+                // Get the user's name using the studentMap
+                if (!attendanceRecords[userID]) {
+                    attendanceRecords[userID] = { User: studentMap[userID] || 'Unknown User' }; // Use the mapping here
+                }
+
+                const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
+                const attendanceDate = timeInDate ? format(timeInDate, 'MMM. dd, yyyy') : 'No Time In';
+
+                attendanceRecords[userID][attendanceDate] = attendanceData.status || 'Absent';
+            });
 
             // Prepare the final export data
-            exportData = Object.values(days).map(userEntry => {
+            const uniqueDates = Array.from(new Set(Object.keys(attendanceRecords[Object.keys(attendanceRecords)[0]]).slice(1))); // Get unique dates
+            uniqueDates.sort(); // Sort dates
+
+            exportData = Object.values(attendanceRecords).map(userEntry => {
                 const entry = { User: userEntry.User };
 
-                // Populate the entry with the attendance status for each unique date
-                headerColumns.slice(1).forEach(date => {
+                uniqueDates.forEach(date => {
                     entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
                 });
 
@@ -344,7 +338,7 @@ const AttendRecord = () => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
-        XLSX.writeFile(workbook, fileName); // Use the generated fileName for saving
+        XLSX.writeFile(workbook, fileName);
     } catch (error) {
         console.error("Error exporting attendance:", error);
     }

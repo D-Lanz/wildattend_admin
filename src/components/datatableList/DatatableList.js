@@ -92,24 +92,34 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       console.error("User is not authenticated.");
       return;
     }
-
+  
     try {
       const entityDocRef = doc(db, entity, itemToDelete); // Get reference to the document to delete
       const entityDocSnapshot = await getDoc(entityDocRef);
       const entityData = entityDocSnapshot.data();
-
+  
       if (!entityData) {
         console.error("Entity data not found.");
         return;
       }
-
+  
       // Deletion logic for users
       if (entity === "users") {
-        if (user.uid === itemToDelete) { // Compare the UID with itemToDelete (document ID)
-          await deleteDoc(entityDocRef); // Delete Firestore doc
-          // await deleteAuthUser(user); // Delete Firebase auth user
+        // Make a call to your server or Firebase Function to delete the user
+        const deleteUserResponse = await fetch('/deleteUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: itemToDelete }) // itemToDelete should be the user's UID
+        });
+  
+        if (deleteUserResponse.ok) {
           console.log("User account deleted successfully.");
-          
+  
+          // Delete Firestore document
+          await deleteDoc(entityDocRef);
+  
           // Delete associated userClasses documents
           const userClassesRef = collection(db, "userClasses");
           const q = query(userClassesRef, where("userID", "==", itemToDelete));
@@ -118,16 +128,16 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
           await Promise.all(deletePromises);
           console.log("Associated userClasses documents deleted.");
         } else {
-          console.error("You are not authorized to delete this account.");
-          return;
+          const errorData = await deleteUserResponse.json();
+          console.error("Failed to delete user account on the server:", errorData.message);
         }
       }
-
+  
       // Deletion logic for classes, rooms, and accessPoints
       if (["classes", "rooms", "accessPoints"].includes(entity)) {
         await deleteDoc(entityDocRef); // Delete the class, room, or access point document
         console.log(`${entity} document deleted successfully.`);
-
+  
         // If the entity is a class, also delete associated userClasses documents
         if (entity === "classes") {
           const userClassesRef = collection(db, "userClasses");
@@ -137,21 +147,21 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
           await Promise.all(deletePromises);
           console.log("Associated userClasses documents deleted for the class.");
         }
-
+  
         // Show success modal after successful deletion
         setIsSuccessModalOpen(true);  // Open success modal
       }
-
+  
       // Remove the deleted item from the UI
       setData(data.filter((item) => item.id !== itemToDelete));
-
+  
     } catch (err) {
       console.error("Error deleting:", err);
     } finally {
       setIsDeleteModalOpen(false); // Close delete modal
       setItemToDelete(null);  // Clear selected item
     }
-  };
+  };  
 
   // Close success modal
   const handleCloseSuccessModal = () => {
