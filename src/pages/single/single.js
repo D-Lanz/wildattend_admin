@@ -224,7 +224,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               </div>
             </div>
           </div>
-          {(entity === 'classes' || entity === 'users') && (
+          {/* {(entity === 'classes' || entity === 'users') && (
             <div className="rights">
               <Chart
                 aspect={3 / 1}
@@ -232,7 +232,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
                 // Removed dynamic data and function props for static chart
               />
             </div>
-          )}
+          )} */}
         </div>
 
         <div className="bottom">

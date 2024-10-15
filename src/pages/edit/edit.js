@@ -16,7 +16,8 @@ const Edit = ({ inputs, title, entityType }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [file, setFile] = useState("");
-  const [data, setData] = useState("");
+  // const [data, setData] = useState("");
+  const [data, setData] = useState({ days: {} }); // Initialize days as an empty object
   const [perc, setPerc] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -72,15 +73,31 @@ const Edit = ({ inputs, title, entityType }) => {
   const handleInput = (e) => {
     const id = e.target.id;
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setData({ ...data, [id]: value });
-
-    if (id === "firstName") {
-      setFirstName(value);
-    } else if (id === "lastName") {
-      setLastName(value);
+  
+    // If the input is for days, update the days map
+    if (e.target.type === 'checkbox') {
+      const dayName = e.target.value; // Get the day name
+      const newDays = { ...data.days, [dayName]: value }; // Create a new days map
+  
+      // Update the state for the specific day
+      setData((prevData) => ({
+        ...prevData,
+        days: {
+          ...prevData.days,
+          [dayName]: e.target.checked, // Update based on checkbox state
+        },
+      }));
+    } else {
+      setData((prevData) => ({ ...prevData, [id]: value }));
+  
+      if (id === "firstName") {
+        setFirstName(value);
+      } else if (id === "lastName") {
+        setLastName(value);
+      }
     }
   };
-
+  
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -193,15 +210,15 @@ const Edit = ({ inputs, title, entityType }) => {
                           <input
                             id={option}
                             type="checkbox"
-                            value={option}
-                            onChange={handleInput}
-                            checked={data.days && data.days[option]}
+                            value={option} // This value will be the day name
+                            onChange={handleInput} // Use handleInput to update state
+                            checked={data.days[option] || false} // Check if the day is selected
                           />
                           <label htmlFor={option}>{option}</label>
                         </div>
                       ))}
                     </div>
-                  ) : input.type === "radio" ? (
+                    ) : input.type === "radio" ? (
                     <div>
                       {input.options.map((option) => (
                         <div key={option}>
