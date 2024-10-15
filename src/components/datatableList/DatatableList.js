@@ -106,7 +106,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       // Deletion logic for users
       if (entity === "users") {
         // Make a call to your server or Firebase Function to delete the user
-        const deleteUserResponse = await fetch('/deleteUser', {
+        const deleteUserResponse = await fetch('http://localhost:5000/deleteUser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

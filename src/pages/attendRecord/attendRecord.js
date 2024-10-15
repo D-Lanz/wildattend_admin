@@ -239,99 +239,67 @@ const AttendRecord = () => {
                 TimeIn: student.timeIn || 'N/A',
                 TimeOut: student.timeOut || 'N/A',
             }));
-        } else if (exportType === 'range') {
+        } else if (exportType === 'range' || exportType === 'all') {
             // Fetch all attendance records for the specified class
             const attendanceRef = collection(db, "attendRecord");
             const attendanceSnapshot = await getDocs(attendanceRef);
 
-            // Filter records for the specific class and date range
-            const filteredRecords = attendanceSnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() })) // Include document ID if needed
-                .filter(record => 
-                    record.classId === id &&
-                    record.timeIn >= new Date(startDate) &&
-                    record.timeIn <= new Date(endDate)
-                );
-
-            // Create a set to collect unique dates for the specified range
-            const uniqueDates = [];
-            filteredRecords.forEach(record => {
-                const formattedDate = format(record.timeIn.toDate(), 'yyyy-MM-dd'); // Adjust format as needed
-                if (!uniqueDates.includes(formattedDate)) {
-                    uniqueDates.push(formattedDate); // Collect unique dates
-                }
-
-                // Update exportData structure
-                let studentEntry = exportData.find(entry => entry.User === `${record.lastName}, ${record.firstName}`);
-                if (!studentEntry) {
-                    studentEntry = { User: `${record.lastName}, ${record.firstName}` };
-                    exportData.push(studentEntry);
-                }
-
-                studentEntry[formattedDate] = record.status; // Set attendance status for the date
-            });
-
-            // Handle dates with no attendance (default to 'Absent')
-            const defaultStatus = 'Absent';
-            attendanceData.students.forEach(student => {
-                if (!exportData.find(entry => entry.User === `${student.lastName}, ${student.firstName}`)) {
-                    const entry = { User: `${student.lastName}, ${student.firstName}` };
-                    uniqueDates.forEach(date => {
-                        entry[date] = defaultStatus; // Default to 'Absent'
-                    });
-                    exportData.push(entry);
-                }
-            });
-
-            // Ensure all entries have the same set of unique dates
-            exportData.forEach(entry => {
-                uniqueDates.forEach(date => {
-                    if (!entry[date]) {
-                        entry[date] = defaultStatus; // Default to 'Absent'
-                    }
-                });
-            });
-        } else if (exportType === 'all') {
-            const attendanceRecords = {}; // To collect attendance by user
-
-            // Get all attendance records from Firestore
-            const attendanceRef = collection(db, "attendRecord");
-            const attendanceSnapshot = await getDocs(attendanceRef);
-
-            // Create a mapping of userID to student names for easy access
+            // Create a mapping of userId to student names for easy access
             const studentMap = {};
             attendanceData.students.forEach(student => {
                 studentMap[student.userID] = `${student.lastName}, ${student.firstName}`;
             });
 
-            attendanceSnapshot.forEach(doc => {
-                const attendanceData = doc.data();
-                const userID = attendanceData.userID;
+            // Initialize the studentAttendanceMap
+            const studentAttendanceMap = {};
+            attendanceData.students.forEach(student => {
+                const studentName = `${student.lastName}, ${student.firstName}`;
+                studentAttendanceMap[studentName] = { User: studentName };
+            });
 
-                // Get the user's name using the studentMap
-                if (!attendanceRecords[userID]) {
-                    attendanceRecords[userID] = { User: studentMap[userID] || 'Unknown User' }; // Use the mapping here
+            // Initialize a set to store unique attendance dates
+            const uniqueDates = new Set();
+
+            // Process attendance records and populate attendance data
+            attendanceSnapshot.docs.forEach(doc => {
+                const record = doc.data();
+                if (record.classId === id) {
+                    const timeInDate = record.timeIn ? record.timeIn.toDate() : null;
+                    const formattedDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
+
+                    if (formattedDate) {
+                        uniqueDates.add(formattedDate); // Collect unique dates
+
+                        // Update the attendance status for that date
+                        const studentName = studentMap[record.userID] || 'Unknown User';
+                        if (studentAttendanceMap[studentName]) {
+                            studentAttendanceMap[studentName][formattedDate] = record.status || 'Absent';
+                        }
+                    }
                 }
-
-                const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
-                const attendanceDate = timeInDate ? format(timeInDate, 'MMM. dd, yyyy') : 'No Time In';
-
-                attendanceRecords[userID][attendanceDate] = attendanceData.status || 'Absent';
             });
 
-            // Prepare the final export data
-            const uniqueDates = Array.from(new Set(Object.keys(attendanceRecords[Object.keys(attendanceRecords)[0]]).slice(1))); // Get unique dates
-            uniqueDates.sort(); // Sort dates
+            // Convert the set to an array and sort the dates
+            const dateArray = Array.from(uniqueDates).sort();
 
-            exportData = Object.values(attendanceRecords).map(userEntry => {
-                const entry = { User: userEntry.User };
-
-                uniqueDates.forEach(date => {
-                    entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
+            // Prepare the final export data including default values for missing dates
+            dateArray.forEach(date => {
+                Object.values(studentAttendanceMap).forEach(student => {
+                    if (!student[date]) {
+                        student[date] = ''; // Default to empty string for missing records
+                    }
                 });
-
-                return entry;
             });
+
+            // Convert the studentAttendanceMap back to an array for exporting
+            exportData = Object.values(studentAttendanceMap);
+
+            // Add the headers (User + unique dates) to the export data
+            const headers = { User: 'User', ...Object.fromEntries(dateArray.map(date => [date, ''])) };
+            exportData.unshift(headers);
+
+            // Ensure that we add an empty row for better readability (optional)
+            exportData.unshift({ User: '', ...Object.fromEntries(dateArray.map(date => [date, ''])) });
         }
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -416,7 +384,7 @@ const AttendRecord = () => {
               </div>
               <hr/>
               {/* Render the pie chart with static data */}
-              <AttendancePieChart data={attendanceChartData} />
+              {/* <AttendancePieChart data={attendanceChartData} /> */}
             </div>
 
             {/* HAS START AND END DATE */}

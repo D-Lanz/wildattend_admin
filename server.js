@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
+const cors = require('cors'); // Import the cors package
 const serviceAccount = require('./config/serviceAccountKey.json'); // Adjust the path as needed
 
 // Initialize the Firebase Admin SDK
@@ -10,6 +11,10 @@ admin.initializeApp({
 
 // Create an Express app
 const app = express();
+
+// Enable CORS for your frontend (http://localhost:3000)
+app.use(cors({ origin: 'http://localhost:3000' }));
+
 app.use(bodyParser.json()); // Middleware to parse JSON request bodies
 
 // Define the route for deleting a user
@@ -27,7 +32,7 @@ app.post('/deleteUser', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000; // Use port 5000 or environment-defined port
+const PORT = 5000; // Use port 5000 or environment-defined port
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

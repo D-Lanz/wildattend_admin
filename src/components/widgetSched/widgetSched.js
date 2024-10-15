@@ -131,7 +131,7 @@ const Widget2 = () => {
                 )}
               </div>
               <div className="rightwS">
-                <span className="wtitleS">{classItem.classCode} - {classItem.classSec}</span>
+                <span className="wtitleS">{classItem.classCode} - {classItem.classSec} ({classItem.classType})</span>
                 <span className="counter">{classItem.classDesc}</span>
                 <span className={`ongoingTag ${classItem.Ongoing ? 'ongoing' : 'notOngoing'}`}>
                   {classItem.Ongoing ? "Ongoing" : "Not Ongoing"}
