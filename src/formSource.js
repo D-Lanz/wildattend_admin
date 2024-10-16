@@ -60,12 +60,6 @@ export const classInputs= [
     type:"text",
     placeholder: "eg. F0/G0",
   },
-  // {
-  //   id: "instructor",
-  //   label:"Instructor",
-  //   type:"text",
-  //   placeholder: "eg. Firstname Lastname",
-  // },
   {
     id: "classRoom",
     label:"Classroom",
@@ -78,12 +72,6 @@ export const classInputs= [
     type:"dropdown", // Change the type to "dropdown"
     options: ["Lecture", "Lab"], // Add options for the dropdown
   },
-  // {
-  //   id: "days",
-  //   label:"Day/s of the Week",
-  //   type:"text",
-  //   placeholder: "eg. Monday, Tuesday, Wednesday, etc.",
-  // },
   {
     id: "days",
     label:"Day/s of the Week",

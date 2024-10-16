@@ -7,7 +7,7 @@ import { auth, db } from "../../firebase";
 import DeleteModal from "../CRUDmodals/DeleteModal";
 import SuccessModal from "../CRUDmodals/SuccessModal";
 import { MenuItem, Select, TextField, InputLabel, FormControl } from "@mui/material";
-import { getAuth, deleteUser, onAuthStateChanged } from "firebase/auth"; 
+import { onAuthStateChanged } from "firebase/auth"; 
 
 const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
@@ -21,28 +21,109 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);  // New state for success modal
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        // Fetch the current user's role from Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        const userData = userDocSnap.data();
+        if (userData) {
+          setUserRole(userData.role);
+        }
+      } else {
+        setUserId(null);
+        setUserRole(null);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      if (!userRole) return;
+    
+      let list = [];
+      
+      // Fetch users, rooms, and accessPoints for both Admin and Faculty
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      usersSnapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+    
+      const roomsSnapshot = await getDocs(collection(db, "rooms"));
+      roomsSnapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+    
+      const accessPointsSnapshot = await getDocs(collection(db, "accessPoints"));
+      accessPointsSnapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+    
+      // Fetch classes based on user role
+      if (userRole === "Admin") {
+        // Fetch all classes for Admin
+        const classSnapshot = await getDocs(collection(db, "classes"));
+        classSnapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+      } else if (userRole === "Faculty") {
+        // Fetch classes associated with the current Faculty user
+        const userClassesQuery = query(collection(db, "userClasses"), where("userID", "==", userId));
+        const userClassesSnapshot = await getDocs(userClassesQuery);
+        const classIds = userClassesSnapshot.docs.map((doc) => doc.data().classID);
+        
+        // Fetch the actual class data
+        const classPromises = classIds.map((classId) => getDoc(doc(db, "classes", classId)));
+        const classSnapshots = await Promise.all(classPromises);
+        classSnapshots.forEach((docSnap) => {
+          if (docSnap.exists()) {
+            list.push({ id: docSnap.id, ...docSnap.data() });
+          }
+        });
+      }
+    
+      setData(list);
+    };
+    
+    fetchClasses();
+  }, [userRole, userId]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, entity), (snapShot) => {
       let list = [];
       snapShot.docs.forEach((doc) => {
         const data = doc.data();
-        if (entity === 'users' && roleFilter) {
-          if (data.role === roleFilter) {
+        
+        if (entity === 'users') {
+          if (!roleFilter || data.role === roleFilter) {
             list.push({ id: doc.id, ...data });
           }
-        } else {
+        } else if (entity === 'rooms' || entity === 'accessPoints') {
+          list.push({ id: doc.id, ...data });
+        } else if (userRole === "Admin") {
           list.push({ id: doc.id, ...data });
         }
       });
+  
       setData(list);
+      setLoading(false); // Set loading to false after data is fetched
     }, (error) => {
       console.log(error);
+      setLoading(false); // Ensure loading is false even on error
     });
+  
     return () => {
       unsub();
     };
-  }, [entity, roleFilter]);
+  }, [entity, roleFilter, userRole]);
 
   useEffect(() => {
     if (roleFilter && entityColumns.some(col => col.field === 'role')) {
@@ -92,24 +173,33 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       console.error("User is not authenticated.");
       return;
     }
-
+  
     try {
       const entityDocRef = doc(db, entity, itemToDelete); // Get reference to the document to delete
       const entityDocSnapshot = await getDoc(entityDocRef);
       const entityData = entityDocSnapshot.data();
-
+  
       if (!entityData) {
         console.error("Entity data not found.");
         return;
       }
-
+  
       // Deletion logic for users
       if (entity === "users") {
-        if (user.uid === itemToDelete) { // Compare the UID with itemToDelete (document ID)
-          await deleteDoc(entityDocRef); // Delete Firestore doc
-          // await deleteAuthUser(user); // Delete Firebase auth user
+        const deleteUserResponse = await fetch('http://localhost:5000/deleteUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: itemToDelete })
+        });
+  
+        if (deleteUserResponse.ok) {
           console.log("User account deleted successfully.");
-          
+  
+          // Delete Firestore document
+          await deleteDoc(entityDocRef);
+  
           // Delete associated userClasses documents
           const userClassesRef = collection(db, "userClasses");
           const q = query(userClassesRef, where("userID", "==", itemToDelete));
@@ -117,18 +207,20 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
           const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
           await Promise.all(deletePromises);
           console.log("Associated userClasses documents deleted.");
+  
+          // Show success modal after successful deletion
+          setIsSuccessModalOpen(true);  // Open success modal here for user deletion
         } else {
-          console.error("You are not authorized to delete this account.");
-          return;
+          const errorData = await deleteUserResponse.json();
+          console.error("Failed to delete user account on the server:", errorData.message);
         }
       }
-
+  
       // Deletion logic for classes, rooms, and accessPoints
       if (["classes", "rooms", "accessPoints"].includes(entity)) {
-        await deleteDoc(entityDocRef); // Delete the class, room, or access point document
+        await deleteDoc(entityDocRef);
         console.log(`${entity} document deleted successfully.`);
-
-        // If the entity is a class, also delete associated userClasses documents
+  
         if (entity === "classes") {
           const userClassesRef = collection(db, "userClasses");
           const q = query(userClassesRef, where("classID", "==", itemToDelete));
@@ -137,21 +229,21 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
           await Promise.all(deletePromises);
           console.log("Associated userClasses documents deleted for the class.");
         }
-
+  
         // Show success modal after successful deletion
-        setIsSuccessModalOpen(true);  // Open success modal
+        setIsSuccessModalOpen(true);
       }
-
+  
       // Remove the deleted item from the UI
       setData(data.filter((item) => item.id !== itemToDelete));
-
+  
     } catch (err) {
       console.error("Error deleting:", err);
     } finally {
       setIsDeleteModalOpen(false); // Close delete modal
       setItemToDelete(null);  // Clear selected item
     }
-  };
+  };  
 
   // Close success modal
   const handleCloseSuccessModal = () => {
@@ -217,15 +309,19 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
         />
       </div>
 
-      <DataGrid
-        disableFiltersSelector
-        disableColumnFilter
-        disableDensitySelector
-        rows={filteredData}
-        columns={[...entityColumns, ...actionColumn]}
-        pagination={false} // Disable pagination
-        slots={{ toolbar: GridToolbar }}
-      />
+      {loading ? (
+      <div>Loading...</div> // Show loading indicator or placeholder
+      ) : (
+        <DataGrid
+          disableFiltersSelector
+          disableColumnFilter
+          disableDensitySelector
+          rows={filteredData}
+          columns={[...entityColumns, ...actionColumn]}
+          pagination={false} // Disable pagination
+          slots={{ toolbar: GridToolbar }}
+        />
+      )}
 
       {isDeleteModalOpen && (
         <DeleteModal
@@ -238,7 +334,13 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
       {isSuccessModalOpen && (
         <SuccessModal
           actionType="delete"
-          entityName={entity === "classes" ? "Class" : entity === "rooms" ? "Room" : "Access Point"}
+          entityName={
+            entity === "classes" ? "Class" :
+            entity === "rooms" ? "Room" :
+            entity === "accessPoints" ? "Access Point" :
+            entity === "users" ? "User" :
+            "Unknown"
+          }          
           onClose={handleCloseSuccessModal}
         />
       )}

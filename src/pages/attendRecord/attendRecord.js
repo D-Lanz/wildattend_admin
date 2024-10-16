@@ -239,112 +239,74 @@ const AttendRecord = () => {
                 TimeIn: student.timeIn || 'N/A',
                 TimeOut: student.timeOut || 'N/A',
             }));
-        } else if (exportType === 'range') {
+        } else if (exportType === 'range' || exportType === 'all') {
             // Fetch all attendance records for the specified class
             const attendanceRef = collection(db, "attendRecord");
             const attendanceSnapshot = await getDocs(attendanceRef);
 
-            // Filter records for the specific class and date range
-            const filteredRecords = attendanceSnapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() })) // Include document ID if needed
-                .filter(record => 
-                    record.classId === id &&
-                    record.timeIn >= new Date(startDate) &&
-                    record.timeIn <= new Date(endDate)
-                );
-
-            // Create a set to collect unique dates for the specified range
-            const uniqueDates = [];
-            filteredRecords.forEach(record => {
-                const formattedDate = format(record.timeIn.toDate(), 'yyyy-MM-dd'); // Adjust format as needed
-                if (!uniqueDates.includes(formattedDate)) {
-                    uniqueDates.push(formattedDate); // Collect unique dates
-                }
-
-                // Update exportData structure
-                let studentEntry = exportData.find(entry => entry.User === `${record.lastName}, ${record.firstName}`);
-                if (!studentEntry) {
-                    studentEntry = { User: `${record.lastName}, ${record.firstName}` };
-                    exportData.push(studentEntry);
-                }
-
-                studentEntry[formattedDate] = record.status; // Set attendance status for the date
-            });
-
-            // Handle dates with no attendance (default to 'Absent')
-            const defaultStatus = 'Absent';
+            // Create a mapping of userId to student names for easy access
+            const studentMap = {};
             attendanceData.students.forEach(student => {
-                if (!exportData.find(entry => entry.User === `${student.lastName}, ${student.firstName}`)) {
-                    const entry = { User: `${student.lastName}, ${student.firstName}` };
-                    uniqueDates.forEach(date => {
-                        entry[date] = defaultStatus; // Default to 'Absent'
-                    });
-                    exportData.push(entry);
-                }
+                studentMap[student.userID] = `${student.lastName}, ${student.firstName}`;
             });
 
-            // Ensure all entries have the same set of unique dates
-            exportData.forEach(entry => {
-                uniqueDates.forEach(date => {
-                    if (!entry[date]) {
-                        entry[date] = defaultStatus; // Default to 'Absent'
-                    }
-                });
+            // Initialize the studentAttendanceMap
+            const studentAttendanceMap = {};
+            attendanceData.students.forEach(student => {
+                const studentName = `${student.lastName}, ${student.firstName}`;
+                studentAttendanceMap[studentName] = { User: studentName };
             });
-        } else if (exportType === 'all') {
-            // Existing logic for exporting all class days
-            const days = {}; // Stores attendance data by user
 
-            // Create a set to collect unique dates
+            // Initialize a set to store unique attendance dates
             const uniqueDates = new Set();
 
-            attendanceData.students.forEach(student => {
-                // Initialize the user entry if it doesn't exist
-                if (!days[student.userId]) {
-                    days[student.userId] = { User: `${student.lastName}, ${student.firstName}` };
-                }
+            // Process attendance records and populate attendance data
+            attendanceSnapshot.docs.forEach(doc => {
+                const record = doc.data();
+                if (record.classId === id) {
+                    const timeInDate = record.timeIn ? record.timeIn.toDate() : null;
+                    const formattedDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
 
-                // Process the timeIn value for date collection
-                if (student.timeIn) {
-                    try {
-                        const timeInDate = student.timeIn.toDate(); // Convert Firestore Timestamp to JS Date object
-                        const attendanceDate = format(timeInDate, 'MMM. dd, yyyy'); // Format the date
-                        uniqueDates.add(attendanceDate); // Add the formatted date to the set
+                    if (formattedDate) {
+                        uniqueDates.add(formattedDate); // Collect unique dates
 
-                        // Store the attendance status by formatted date
-                        days[student.userId][attendanceDate] = student.status;
-                    } catch (error) {
-                        console.error("Error formatting date:", error);
-                        days[student.userId]['Invalid Date'] = student.status; // Handle invalid date
+                        // Update the attendance status for that date
+                        const studentName = studentMap[record.userID] || 'Unknown User';
+                        if (studentAttendanceMap[studentName]) {
+                            studentAttendanceMap[studentName][formattedDate] = record.status || 'Absent';
+                        }
                     }
-                } else {
-                    // If timeIn is missing, use a placeholder for the date
-                    days[student.userId]['No Time In'] = student.status;
                 }
             });
 
-            // Create an array of column headers from the unique dates
-            const headerColumns = Array.from(uniqueDates).sort(); // Sort dates
-            headerColumns.unshift("User"); // Add "User" as the first column
+            // Convert the set to an array and sort the dates
+            const dateArray = Array.from(uniqueDates).sort();
 
-            // Prepare the final export data
-            exportData = Object.values(days).map(userEntry => {
-                const entry = { User: userEntry.User };
-
-                // Populate the entry with the attendance status for each unique date
-                headerColumns.slice(1).forEach(date => {
-                    entry[date] = userEntry[date] || 'Absent'; // Default to 'Absent' if no record
+            // Prepare the final export data including default values for missing dates
+            dateArray.forEach(date => {
+                Object.values(studentAttendanceMap).forEach(student => {
+                    if (!student[date]) {
+                        student[date] = ''; // Default to empty string for missing records
+                    }
                 });
-
-                return entry;
             });
+
+            // Convert the studentAttendanceMap back to an array for exporting
+            exportData = Object.values(studentAttendanceMap);
+
+            // Add the headers (User + unique dates) to the export data
+            const headers = { User: 'User', ...Object.fromEntries(dateArray.map(date => [date, ''])) };
+            exportData.unshift(headers);
+
+            // Ensure that we add an empty row for better readability (optional)
+            exportData.unshift({ User: '', ...Object.fromEntries(dateArray.map(date => [date, ''])) });
         }
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
-        XLSX.writeFile(workbook, fileName); // Use the generated fileName for saving
+        XLSX.writeFile(workbook, fileName);
     } catch (error) {
         console.error("Error exporting attendance:", error);
     }
@@ -422,7 +384,7 @@ const AttendRecord = () => {
               </div>
               <hr/>
               {/* Render the pie chart with static data */}
-              <AttendancePieChart data={attendanceChartData} />
+              {/* <AttendancePieChart data={attendanceChartData} /> */}
             </div>
 
             {/* HAS START AND END DATE */}

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, where, doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Ensure you import db from your Firebase configuration
+import { auth, db } from "../../firebase"; // Ensure you import auth and db from Firebase config
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import Button from "@mui/material/Button";
 import "./facultyTimeTable.css";
 
 // Utility function to format date into "August 30, 2024 at 2:21:41 AM UTC+8"
@@ -31,25 +30,49 @@ const FacultyTimeTable = () => {
   useEffect(() => {
     const fetchFacultyRecords = async () => {
       try {
-        // Fetch users with role "Faculty"
-        const usersQuery = query(collection(db, "users"), where("role", "==", "Faculty"));
-        const usersSnapshot = await getDocs(usersQuery);
-        const facultyIds = usersSnapshot.docs.map(doc => doc.id);
-        const userMap = new Map();
+        // Get the currently authenticated user
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.error("No authenticated user");
+          return;
+        }
 
-        // Fetch user details for the faculty members
-        await Promise.all(facultyIds.map(async (id) => {
-          const userDoc = doc(db, "users", id);
-          const userSnapshot = await getDoc(userDoc);
-          if (userSnapshot.exists()) {
-            userMap.set(id, userSnapshot.data());
-          }
-        }));
+        // Get the current user's role from the "users" collection
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
 
-        // Fetch attendRecord for these faculty members
-        const attendRecordQuery = query(collection(db, "attendRecord"), where("userId", "in", facultyIds));
+        if (!userDocSnapshot.exists()) {
+          console.error("No user document found");
+          return;
+        }
+
+        const userData = userDocSnapshot.data();
+        const userRole = userData.role; // Get the current user's role
+
+        let attendRecordQuery;
+
+        // If user is "Faculty", fetch only their own time-in records
+        if (userRole === "Faculty") {
+          attendRecordQuery = query(
+            collection(db, "attendRecord"),
+            where("userId", "==", currentUser.uid) // Fetch records for the current user
+          );
+        } 
+        // If user is "Admin", fetch all faculty time-in records
+        else if (userRole === "Admin") {
+          // Fetch users with role "Faculty"
+          const facultyQuery = query(collection(db, "users"), where("role", "==", "Faculty"));
+          const facultySnapshot = await getDocs(facultyQuery);
+          const facultyIds = facultySnapshot.docs.map(doc => doc.id);
+
+          attendRecordQuery = query(
+            collection(db, "attendRecord"),
+            where("userId", "in", facultyIds) // Fetch records for all faculty members
+          );
+        }
+
+        // Execute the query and get the records
         const attendRecordSnapshot = await getDocs(attendRecordQuery);
-
         const records = attendRecordSnapshot.docs.map(doc => {
           const data = doc.data();
           const user = userMap.get(data.userId) || {};
