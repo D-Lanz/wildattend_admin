@@ -218,99 +218,103 @@ const AttendRecord = () => {
 
   const exportAttendance = async (exportType) => {
     try {
-        let exportData = [];
-
-        // Set the file name based on export type
-        let fileName;
-        if (exportType === 'selected') {
-            const formattedDate = format(new Date(date), 'yyyy-MM-dd');
-            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_Attendance_${formattedDate}.xlsx`;
-        } else if (exportType === 'range') {
-            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_SelectedDateAttendance.xlsx`;
-        } else if (exportType === 'all') {
-            fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_AllDaysAttendance.xlsx`;
-        }
-
-        if (exportType === 'selected') {
-            // Export for selected date
-            exportData = attendanceData.students.map(student => ({
-                User: `${student.lastName}, ${student.firstName}`,
-                Status: student.status,
-                TimeIn: student.timeIn || 'N/A',
-                TimeOut: student.timeOut || 'N/A',
-            }));
-        } else if (exportType === 'range' || exportType === 'all') {
-            // Fetch all attendance records for the specified class
-            const attendanceRef = collection(db, "attendRecord");
-            const attendanceSnapshot = await getDocs(attendanceRef);
-
-            // Create a mapping of userId to student names for easy access
-            const studentMap = {};
-            attendanceData.students.forEach(student => {
-                studentMap[student.userID] = `${student.lastName}, ${student.firstName}`;
-            });
-
-            // Initialize the studentAttendanceMap
-            const studentAttendanceMap = {};
-            attendanceData.students.forEach(student => {
-                const studentName = `${student.lastName}, ${student.firstName}`;
-                studentAttendanceMap[studentName] = { User: studentName };
-            });
-
-            // Initialize a set to store unique attendance dates
-            const uniqueDates = new Set();
-
-            // Process attendance records and populate attendance data
-            attendanceSnapshot.docs.forEach(doc => {
-                const record = doc.data();
-                if (record.classId === id) {
-                    const timeInDate = record.timeIn ? record.timeIn.toDate() : null;
-                    const formattedDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
-
-                    if (formattedDate) {
-                        uniqueDates.add(formattedDate); // Collect unique dates
-
-                        // Update the attendance status for that date
-                        const studentName = studentMap[record.userID] || 'Unknown User';
-                        if (studentAttendanceMap[studentName]) {
-                            studentAttendanceMap[studentName][formattedDate] = record.status || 'Absent';
-                        }
-                    }
-                }
-            });
-
-            // Convert the set to an array and sort the dates
-            const dateArray = Array.from(uniqueDates).sort();
-
-            // Prepare the final export data including default values for missing dates
-            dateArray.forEach(date => {
-                Object.values(studentAttendanceMap).forEach(student => {
-                    if (!student[date]) {
-                        student[date] = ''; // Default to empty string for missing records
-                    }
-                });
-            });
-
-            // Convert the studentAttendanceMap back to an array for exporting
-            exportData = Object.values(studentAttendanceMap);
-
-            // Add the headers (User + unique dates) to the export data
-            const headers = { User: 'User', ...Object.fromEntries(dateArray.map(date => [date, ''])) };
-            exportData.unshift(headers);
-
-            // Ensure that we add an empty row for better readability (optional)
-            exportData.unshift({ User: '', ...Object.fromEntries(dateArray.map(date => [date, ''])) });
-        }
-
-        const worksheet = XLSX.utils.json_to_sheet(exportData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-
-        XLSX.writeFile(workbook, fileName);
+      let exportData = [];
+  
+      // Set the file name based on export type
+      let fileName;
+      if (exportType === 'selected') {
+        const formattedDate = format(new Date(date), 'yyyy-MM-dd');
+        fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_Attendance_${formattedDate}.xlsx`;
+      } else if (exportType === 'range') {
+        fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_SelectedDateAttendance.xlsx`;
+      } else if (exportType === 'all') {
+        fileName = `${classDetails.classCode}${classDetails.classSec}_${classDetails.schoolYear}_AllDaysAttendance.xlsx`;
+      }
+  
+      // Fetch attendance data for both students and faculty
+      if (exportType === 'selected') {
+        // Export for selected date
+        exportData = [...attendanceData.students, ...attendanceData.faculty].map((user) => ({
+          User: `${user.lastName}, ${user.firstName}`,
+          Status: user.status,
+          TimeIn: user.timeIn || 'N/A',
+          TimeOut: user.timeOut || 'N/A',
+        }));
+      } else if (exportType === 'all') {
+        // Fetch all attendance records for the specified class
+        const attendanceRef = collection(db, "attendRecord");
+        const attendanceSnapshot = await getDocs(attendanceRef);
+  
+        // Create a mapping of userId to names for both students and faculty
+        const userMap = {};
+        [...attendanceData.students, ...attendanceData.faculty].forEach((user) => {
+          userMap[user.userId] = `${user.lastName}, ${user.firstName}`;
+        });
+  
+        // Initialize attendance map for both students and faculty
+        const userAttendanceMap = {};
+        [...attendanceData.students, ...attendanceData.faculty].forEach((user) => {
+          const userName = `${user.lastName}, ${user.firstName}`;
+          userAttendanceMap[userName] = { User: userName };
+        });
+  
+        // Initialize a set to store unique attendance dates
+        const uniqueDates = new Set();
+  
+        // Process attendance records
+        attendanceSnapshot.docs.forEach((doc) => {
+          const record = doc.data();
+          if (record.classId === id) {
+            const timeInDate = record.timeIn ? record.timeIn.toDate() : null;
+            const formattedDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
+  
+            if (formattedDate) {
+              uniqueDates.add(formattedDate);
+  
+              // Update the attendance status for the user
+              const userName = userMap[record.userId] || 'Unknown User';
+              if (userAttendanceMap[userName]) {
+                userAttendanceMap[userName][formattedDate] = record.status || 'Absent';
+              }
+            }
+          }
+        });
+  
+        // Convert the set to an array and sort the dates
+        const dateArray = Array.from(uniqueDates).sort();
+  
+        // Prepare the final export data
+        Object.entries(userAttendanceMap).forEach(([userName, attendance]) => {
+          dateArray.forEach((date) => {
+            // If there's no attendance record for the date, default to 'Absent'
+            if (!attendance.hasOwnProperty(date)) {
+              attendance[date] = 'Absent';
+            }
+          });
+          exportData.push(attendance);
+        });
+  
+        // Add the headers (User + unique dates)
+        const headers = { User: 'User', ...Object.fromEntries(dateArray.map((date) => [date, date])) };
+        exportData.unshift(headers);
+      }
+  
+      // Write to Excel file
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+  
+      XLSX.writeFile(workbook, fileName);
     } catch (error) {
-        console.error("Error exporting attendance:", error);
+      console.error("Error exporting attendance:", error);
     }
   };
+  
+  
+
+
+
+  
 
 
   const columns = [

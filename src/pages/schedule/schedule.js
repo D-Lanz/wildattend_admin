@@ -29,9 +29,9 @@ const Schedule = () => {
         </div>
         
         {/* RECENT TIME INS OF A FACULTY MEMBER */}
-        <div className="tableSched">
+        {/* <div className="tableSched">
           <FacultyTimeTable />
-        </div>
+        </div> */}
       </div>
     </div>
   );
