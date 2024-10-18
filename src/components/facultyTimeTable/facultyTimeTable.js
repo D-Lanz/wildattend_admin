@@ -1,153 +1,130 @@
-// import { useState, useEffect } from "react";
-// import { collection, query, getDocs, where, doc, getDoc } from "firebase/firestore";
-// import { auth, db } from "../../firebase"; // Ensure you import auth and db from Firebase config
-// import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-// import "./facultyTimeTable.css";
+import { useState, useEffect } from "react";
+import { collection, query, getDocs, where, doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase"; // Ensure you import db from your Firebase configuration
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import Button from "@mui/material/Button";
+import "./facultyTimeTable.css";
 
-// // Utility function to format date into "August 30, 2024 at 2:21:41 AM UTC+8"
-// const formatDateTime = (date) => {
-//   if (!date) return "N/A";
+// Utility function to format date into "August 30, 2024 at 2:21:41 AM UTC+8"
+const formatDateTime = (date) => {
+  if (!date) return "N/A";
   
-//   const options = {
-//     year: 'numeric',
-//     month: 'long',
-//     day: 'numeric',
-//     hour: 'numeric',
-//     minute: 'numeric',
-//     second: 'numeric',
-//     hour12: true,
-//     timeZone: 'Asia/Manila',
-//     timeZoneName: 'short',
-//   };
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true,
+    timeZone: 'Asia/Manila',
+    timeZoneName: 'short',
+  };
   
-//   return new Intl.DateTimeFormat('en-US', options).format(date);
-// };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
 
-// const FacultyTimeTable = () => {
-//   const [facultyRecords, setFacultyRecords] = useState([]);
-//   const [loading, setLoading] = useState(true);
+const FacultyTimeTable = () => {
+  const [facultyRecords, setFacultyRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-//   useEffect(() => {
-//     const fetchFacultyRecords = async () => {
-//       try {
-//         // Get the currently authenticated user
-//         const currentUser = auth.currentUser;
-//         if (!currentUser) {
-//           console.error("No authenticated user");
-//           return;
-//         }
+  useEffect(() => {
+    const fetchFacultyRecords = async () => {
+      try {
+        // Fetch users with role "Faculty"
+        const usersQuery = query(collection(db, "users"), where("role", "==", "Faculty"));
+        const usersSnapshot = await getDocs(usersQuery);
+        const facultyIds = usersSnapshot.docs.map(doc => doc.id);
+        const userMap = new Map();
 
-//         // Get the current user's role from the "users" collection
-//         const userDocRef = doc(db, "users", currentUser.uid);
-//         const userDocSnapshot = await getDoc(userDocRef);
+        // Fetch user details for the faculty members
+        await Promise.all(facultyIds.map(async (id) => {
+          const userDoc = doc(db, "users", id);
+          const userSnapshot = await getDoc(userDoc);
+          if (userSnapshot.exists()) {
+            userMap.set(id, userSnapshot.data());
+          }
+        }));
 
-//         if (!userDocSnapshot.exists()) {
-//           console.error("No user document found");
-//           return;
-//         }
+        // Fetch attendRecord for these faculty members
+        const attendRecordQuery = query(collection(db, "attendRecord"), where("userId", "in", facultyIds));
+        const attendRecordSnapshot = await getDocs(attendRecordQuery);
 
-//         const userData = userDocSnapshot.data();
-//         const userRole = userData.role; // Get the current user's role
+        const records = attendRecordSnapshot.docs.map(doc => {
+          const data = doc.data();
+          const user = userMap.get(data.userId) || {};
+          return {
+            id: doc.id,
+            className: data.className,
+            timeIn: data.timeIn ? formatDateTime(new Date(data.timeIn.toDate())) : "N/A",
+            timeOut: data.timeOut ? formatDateTime(new Date(data.timeOut.toDate())) : "N/A",
+            name: `${user.lastName || ""}, ${user.firstName || ""}`.trim(),
+            status: data.status,
+          };
+        });
 
-//         let attendRecordQuery;
+        setFacultyRecords(records);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching faculty records:", error);
+        setLoading(false);
+      }
+    };
 
-//         // If user is "Faculty", fetch only their own time-in records
-//         if (userRole === "Faculty") {
-//           attendRecordQuery = query(
-//             collection(db, "attendRecord"),
-//             where("userId", "==", currentUser.uid) // Fetch records for the current user
-//           );
-//         } 
-//         // If user is "Admin", fetch all faculty time-in records
-//         else if (userRole === "Admin") {
-//           // Fetch users with role "Faculty"
-//           const facultyQuery = query(collection(db, "users"), where("role", "==", "Faculty"));
-//           const facultySnapshot = await getDocs(facultyQuery);
-//           const facultyIds = facultySnapshot.docs.map(doc => doc.id);
+    fetchFacultyRecords();
+  }, []);
 
-//           attendRecordQuery = query(
-//             collection(db, "attendRecord"),
-//             where("userId", "in", facultyIds) // Fetch records for all faculty members
-//           );
-//         }
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-//         // Execute the query and get the records
-//         const attendRecordSnapshot = await getDocs(attendRecordQuery);
-//         const records = attendRecordSnapshot.docs.map(doc => {
-//           const data = doc.data();
-//           const user = userMap.get(data.userId) || {};
-//           return {
-//             id: doc.id,
-//             className: data.className,
-//             timeIn: data.timeIn ? formatDateTime(new Date(data.timeIn.toDate())) : "N/A",
-//             timeOut: data.timeOut ? formatDateTime(new Date(data.timeOut.toDate())) : "N/A",
-//             name: `${user.lastName || ""}, ${user.firstName || ""}`.trim(),
-//             status: data.status,
-//           };
-//         });
+  const handleViewClick = (id) => {
+    // Handle view button click
+    console.log("View button clicked for ID:", id);
+    // Implement the functionality for viewing details here
+  };
 
-//         setFacultyRecords(records);
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Error fetching faculty records:", error);
-//         setLoading(false);
-//       }
-//     };
+  const columns = [
+    { field: 'name', headerName: 'Name', width: 200 },
+    { field: 'className', headerName: 'Class Name', width: 150 },
+    { field: 'timeIn', headerName: 'Time In', width: 300 },
+    { field: 'timeOut', headerName: 'Time Out', width: 300 },
+    { field: 'status', headerName: 'Status', width: 150 },
+    { field: "action",
+      headerName: "",
+      width: 130,
+      renderCell: (params) => {
+        return (
+          <div className="cellAction">
+            <div
+              className="viewButton"
+              onClick={() => handleViewClick(params.row.id)}
+            >View</div>
+          </div>
+        );
+      }
+    },
+  ];
 
-//     fetchFacultyRecords();
-//   }, []);
+  return (
+    <div className="facultyTimeTable">
+      <h2>Faculty Time Table</h2>
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={facultyRecords}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[5, 10, 20]}
+          checkboxSelection={false}
+          pagination={false}  // Disable pagination
+          slots={{ toolbar: GridToolbar }}
+          disableFiltersSelector
+          disableColumnFilter
+          disableDensitySelector
+        />
+      </div>
+    </div>
+  );
+};
 
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
-
-//   const handleViewClick = (id) => {
-//     // Handle view button click
-//     console.log("View button clicked for ID:", id);
-//     // Implement the functionality for viewing details here
-//   };
-
-//   const columns = [
-//     { field: 'name', headerName: 'Name', width: 200 },
-//     { field: 'className', headerName: 'Class Name', width: 150 },
-//     { field: 'timeIn', headerName: 'Time In', width: 300 },
-//     { field: 'timeOut', headerName: 'Time Out', width: 300 },
-//     { field: 'status', headerName: 'Status', width: 150 },
-//     { field: "action",
-//       headerName: "",
-//       width: 130,
-//       renderCell: (params) => {
-//         return (
-//           <div className="cellAction">
-//             <div
-//               className="viewButton"
-//               onClick={() => handleViewClick(params.row.id)}
-//             >View</div>
-//           </div>
-//         );
-//       }
-//     },
-//   ];
-
-//   return (
-//     <div className="facultyTimeTable">
-//       <h2>Faculty Time Table</h2>
-//       <div style={{ height: 400, width: '100%' }}>
-//         <DataGrid
-//           rows={facultyRecords}
-//           columns={columns}
-//           pageSize={10}
-//           rowsPerPageOptions={[5, 10, 20]}
-//           checkboxSelection={false}
-//           pagination={false}  // Disable pagination
-//           slots={{ toolbar: GridToolbar }}
-//           disableFiltersSelector
-//           disableColumnFilter
-//           disableDensitySelector
-//         />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default FacultyTimeTable;
+export default FacultyTimeTable;

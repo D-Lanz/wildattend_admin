@@ -310,7 +310,6 @@ const AttendRecord = () => {
     }
   };
   
-  
 
 
 
@@ -387,8 +386,8 @@ const AttendRecord = () => {
                 <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('selected')}/>
               </div>
               <hr/>
-              {/* Render the pie chart with static data */}
-              {/* <AttendancePieChart data={attendanceChartData} /> */}
+              {/* Render the pie chart with static data
+              <AttendancePieChart data={attendanceChartData} /> */}
             </div>
 
             {/* HAS START AND END DATE */}

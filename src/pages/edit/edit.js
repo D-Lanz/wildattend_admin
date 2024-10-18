@@ -102,69 +102,60 @@ const Edit = ({ inputs, title, entityType }) => {
     e.preventDefault();
 
     try {
-        let collectionName;
+      let collectionName;
   
-        switch (entityType) {
-            case "user":
-                collectionName = "users";
-                break;
-            case "class":
-                collectionName = "classes";
-                break;
-            case "room":
-                collectionName = "rooms";
-                break;
-            case "accessPoint":
-                collectionName = "accessPoints";
-                break;
-            default:
-                throw new Error("Invalid entityType");
-        }
-
-        const documentId = id;
-
-        if (file) {
-            const name = new Date().getTime() + file.name;
-            const storageRef = ref(storage, name);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-
-            uploadTask.on(
-                'state_changed',
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                    setPerc(progress);
-                },
-                (error) => {
-                    console.log(error);
-                },
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    setData((prev) => ({ ...prev, img: downloadURL }));
-                    
-                    // Once the image URL is available, update Firestore
-                    await setDoc(doc(db, collectionName, documentId), {
-                        ...data,
-                        img: downloadURL,  // Ensure the image URL is set
-                        timeStamp: serverTimestamp(),
-                    });
-
-                    setShowSuccessModal(true);
-                }
-            );
-        } else {
-            // If no file is uploaded, just update the Firestore document
-            await setDoc(doc(db, collectionName, documentId), {
-                ...data,
-                timeStamp: serverTimestamp(),
+      switch (entityType) {
+        case "user":
+          collectionName = "users";
+          break;
+        case "class":
+          collectionName = "classes";
+          break;
+        case "room":
+          collectionName = "rooms";
+          break;
+        case "accessPoint":
+          collectionName = "accessPoints";
+          break;
+        default:
+          throw new Error("Invalid entityType");
+      }
+  
+      const documentId = id;
+  
+      if (file) {
+        const name = new Date().getTime() + file.name;
+        const storageRef = ref(storage, name);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+  
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+            setPerc(progress);
+          },
+          (error) => {
+            console.log(error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              setData((prev) => ({ ...prev, img: downloadURL }));
             });
-
-            setShowSuccessModal(true);
-        }
+          }
+        );
+      }
+  
+      await setDoc(doc(db, collectionName, documentId), {
+        ...data,
+        timeStamp: serverTimestamp(),
+      });
+  
+      setShowSuccessModal(true);
     } catch (err) {
-        setErrorMessage(err.message); // Set the error message
-        setShowErrorModal(true); // Show the error modal
-        console.log(err);
+      setErrorMessage(err.message); // Set the error message
+      setShowErrorModal(true); // Show the error modal
+      console.log(err);
     }
   };
 
