@@ -84,3 +84,7 @@ span{
   font-weight: bold;
   color: #333; /* Adjust color as needed */
 }
+
+.user-info span{
+  color: maroon;
+}

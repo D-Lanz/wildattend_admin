@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage"; // For fetching the class image
 import { Link } from 'react-router-dom';
-import { db, storage } from "../../firebase"; // Ensure auth is not needed here unless you use it later
+import { db, storage, auth } from "../../firebase"; // Ensure auth is included
 import { FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
 import "./widgetSched.css";
 
@@ -12,53 +12,79 @@ const Widget2 = () => {
   const [filterText, setFilterText] = useState(""); // Search text
   const [selectedFilter, setSelectedFilter] = useState(""); // Selected filter type
 
-  // Get the current day of the week
   const getCurrentDay = () => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const currentDayIndex = new Date().getDay(); // getDay() returns 0 for Sunday, 1 for Monday, etc.
-    return days[currentDayIndex];
+    return days[new Date().getDay()]; // Get current day
+  };
+
+  const fetchClassesForFaculty = async (userId) => {
+    // Fetch userClasses documents where the userID matches the current user
+    const q = query(collection(db, "userClasses"), where("userID", "==", userId));
+    const querySnapshot = await getDocs(q);
+    const classIDs = querySnapshot.docs.map(doc => doc.data().classID);
+    // Now fetch the class documents based on these class IDs
+    const classQuery = query(collection(db, "classes"), where("__name__", "in", classIDs));
+    return await getDocs(classQuery);
+  };
+
+  const fetchAllClasses = async () => {
+    const q = query(collection(db, "classes"));
+    return await getDocs(q);
   };
 
   useEffect(() => {
     const fetchClasses = async () => {
+      setLoading(true); // Set loading state
       try {
-        const q = query(collection(db, "classes"));
-        const querySnapshot = await getDocs(q);
-        const currentDay = getCurrentDay(); // Get the current day
+        const user = auth.currentUser;
+        if (!user) {
+          throw new Error("No authenticated user found.");
+        }
+        // Fetch the user's role from the Firestore `users` collection
+        const userDoc = await getDocs(query(collection(db, "users"), where("__name__", "==", user.uid)));
+        const userData = userDoc.docs[0].data(); // Assuming the document exists
+        let querySnapshot;
+        if (userData.role === "Faculty") {
+          // Fetch classes associated with the faculty user
+          querySnapshot = await fetchClassesForFaculty(user.uid);
+        } else if (userData.role === "Admin") {
+          // Fetch all classes if the user is an Admin
+          querySnapshot = await fetchAllClasses();
+        } else {
+          // Handle other roles if necessary
+          throw new Error("Unauthorized role");
+        }
+        const currentDay = getCurrentDay();
         const classData = await Promise.all(querySnapshot.docs.map(async (doc) => {
           const data = doc.data();
-          
-          // Check if the current day is set to true in the "days" map
+
           if (data.days && data.days[currentDay]) {
-            // Fetch the class image from Firebase Storage
             let classImageUrl = "";
             if (data.img) {
-              const imageRef = ref(storage, data.img); // Assuming classImage is the image path
+              const imageRef = ref(storage, data.img);
               classImageUrl = await getDownloadURL(imageRef);
             }
 
             return {
-              id: doc.id, // classDocumentId
+              id: doc.id,
               ...data,
               classImageUrl,
             };
           }
-          return null; // If the class does not meet the condition, return null
+          return null;
         }));
 
-        // Filter out any null entries (classes that don't meet the day condition)
         const filteredClasses = classData.filter(classItem => classItem !== null);
-        
-        setClasses(filteredClasses); // Set the filtered data
-        setLoading(false); // Set loading to false after data is loaded
+        setClasses(filteredClasses);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching classes:", error);
-        setLoading(false);
+        setLoading(false); // Ensure loading is set to false on error
       }
     };
-
+  
     fetchClasses();
-  }, []);
+  }, []); // Correct placement of dependency array
 
   // Handle filter text change
   const handleFilterChange = (event) => {
@@ -131,7 +157,7 @@ const Widget2 = () => {
                 )}
               </div>
               <div className="rightwS">
-                <span className="wtitleS">{classItem.classCode} - {classItem.classSec}</span>
+                <span className="wtitleS">{classItem.classCode} - {classItem.classSec} ({classItem.classType})</span>
                 <span className="counter">{classItem.classDesc}</span>
                 <span className={`ongoingTag ${classItem.Ongoing ? 'ongoing' : 'notOngoing'}`}>
                   {classItem.Ongoing ? "Ongoing" : "Not Ongoing"}

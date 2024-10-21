@@ -28,10 +28,10 @@ const Schedule = () => {
           </div>
         </div>
         
-        {/* RECENT TIME INS OF A FACULTY MEMBER */}
+        {/* RECENT TIME INS OF A FACULTY MEMBER
         <div className="tableSched">
           <FacultyTimeTable />
-        </div>
+        </div> */}
       </div>
     </div>
   );
