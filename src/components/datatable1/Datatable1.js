@@ -6,6 +6,7 @@ import { collection, doc, getDoc, getDocs, query, where, deleteDoc } from "fireb
 import { db } from "../../firebase";
 import RemoveModal from "../removeModal/RemoveModal";
 import ImportModal from "../importModal/importModal";
+import { getAuth } from "firebase/auth"; // Import getAuth
 //DATATABLE1 IS FOR SINGLE.JS (USERS AND CLASSES)
 
 const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
@@ -20,33 +21,40 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   useEffect(() => {
     const fetchData = async () => {
       let queryField, queryValue;
+      const auth = getAuth(); // Get current user
+      const currentUser = auth.currentUser;
+  
       if (location.pathname.startsWith("/users/")) {
         queryField = "userID";
-        queryValue = id;
+        queryValue = id; // This should be the userID from the URL
       } else if (location.pathname.startsWith("/classes/")) {
         queryField = "classID";
-        queryValue = id;
+        queryValue = id; // This should be the classID from the URL
       } else {
         console.error("Invalid URL path:", location.pathname);
         return;
       }
-    
+  
       try {
+        // Fetch user role from Firestore
+        const userRoleDoc = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
+        const userRoleData = userRoleDoc.docs[0]?.data();
+  
         if (queryField === "classID") {
-          // Fetch users based on classID
+          // If we are fetching based on classID
           const userClassesRef = collection(db, "userClasses");
           const q = query(userClassesRef, where(queryField, "==", queryValue));
           const querySnapshot = await getDocs(q);
           const fetchedData = [];
-    
+  
           for (const docSnap of querySnapshot.docs) {
             const userClassData = docSnap.data();
             const userID = userClassData.userID;
-    
+  
             // Fetch user data from "users" collection based on userID
             const userDocRef = doc(db, "users", userID);
             const userDocSnapshot = await getDoc(userDocRef);
-    
+  
             if (userDocSnapshot.exists()) {
               const userData = userDocSnapshot.data();
               const rowData = {
@@ -58,48 +66,86 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
               console.error(`Document with ID ${userID} does not exist`);
             }
           }
-    
+  
           setData(fetchedData);
           console.log("Fetched Data:", fetchedData); // Console.log the fetched data
-        } else {
-          // Fetch classes based on classID
-          const userClassesRef = collection(db, "userClasses");
-          const q = query(userClassesRef, where(queryField, "==", queryValue));
-          const querySnapshot = await getDocs(q);
-          const fetchedData = [];
-    
-          for (const docSnap of querySnapshot.docs) {
-            const userClassData = docSnap.data();
-            const classID = userClassData.classID;
-    
-            // Fetch class data from "classes" collection based on classID
-            const classDocRef = doc(db, "classes", classID);
-            const classDocSnapshot = await getDoc(classDocRef);
-    
-            if (classDocSnapshot.exists()) {
-              const classData = classDocSnapshot.data();
-              const rowData = {
-                id: classID,
-                ...classData // Add other fields as needed
-              };
-              fetchedData.push(rowData);
-            } else {
-              console.error(`Document with ID ${classID} does not exist`);
+  
+        } else if (queryField === "userID") {
+          // If we are fetching based on userID
+          if (userRoleData.role === "Admin") {
+            // For Admin user, fetch all classes taken by the selected user
+            const userClassesRef = collection(db, "userClasses");
+            const adminUserClassesQuery = query(userClassesRef, where("userID", "==", queryValue));
+            const adminUserClassesSnapshot = await getDocs(adminUserClassesQuery);
+            const fetchedData = [];
+  
+            for (const docSnap of adminUserClassesSnapshot.docs) {
+              const userClassData = docSnap.data();
+              const classID = userClassData.classID;
+  
+              // Fetch class data from "classes" collection based on classID
+              const classDocRef = doc(db, "classes", classID);
+              const classDocSnapshot = await getDoc(classDocRef);
+  
+              if (classDocSnapshot.exists()) {
+                const classData = classDocSnapshot.data();
+                const rowData = {
+                  id: classID,
+                  ...classData // Add other fields as needed
+                };
+                fetchedData.push(rowData);
+              } else {
+                console.error(`Class with ID ${classID} does not exist`);
+              }
             }
+  
+            setData(fetchedData);
+            console.log("Fetched Admin Classes Data:", fetchedData);
+  
+          } else if (userRoleData.role === "Faculty") {
+            // For Faculty user, fetch mutual classes with the selected user (Students)
+            const mutualClassesRef = collection(db, "userClasses");
+            const facultyUserClassesQuery = query(mutualClassesRef, where("userID", "==", currentUser.uid));
+            const facultyUserClassesSnapshot = await getDocs(facultyUserClassesQuery);
+            const facultyClassIDs = facultyUserClassesSnapshot.docs.map(doc => doc.data().classID);
+  
+            // Now fetch the selected user's classes (Student)
+            const selectedUserClassesQuery = query(mutualClassesRef, where("userID", "==", queryValue));
+            const selectedUserClassesSnapshot = await getDocs(selectedUserClassesQuery);
+  
+            // Filter mutual classes based on classIDs
+            const mutualClassIDs = selectedUserClassesSnapshot.docs
+              .map(doc => doc.data().classID)
+              .filter(classID => facultyClassIDs.includes(classID));
+  
+            // Fetch classes based on mutual classIDs
+            const fetchedData = await Promise.all(mutualClassIDs.map(async classID => {
+              const classDocRef = doc(db, "classes", classID);
+              const classDocSnapshot = await getDoc(classDocRef);
+              if (classDocSnapshot.exists()) {
+                return {
+                  id: classID,
+                  ...classDocSnapshot.data(),
+                };
+              } else {
+                console.error(`Class with ID ${classID} does not exist`);
+                return null;
+              }
+            }));
+  
+            // Filter out null entries
+            setData(fetchedData.filter(item => item !== null));
+            console.log("Fetched Mutual Classes Data:", fetchedData);
           }
-    
-          setData(fetchedData);
-          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
         }
       } catch (error) {
         console.error("Error fetching data:", error);
         setData([]);
       }
     };
-    
-
-  fetchData();
-}, [id, location.pathname]);
+  
+    fetchData();
+  }, [id, location.pathname]);  
 
   // once the "Remove" button is deleted, it will delete the "userClasses" document
   const handleRemove = async (params) => {

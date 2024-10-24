@@ -1,8 +1,9 @@
 import "./datatableSelect1.css";
 import { DataGrid } from "@mui/x-data-grid";
-import { useNavigate } from "react-router-dom"; // Import useLocation
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 
 const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
@@ -12,27 +13,56 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        
+        // Fetch the role of the current user
+        const userSnapshot = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
+        const userRole = userSnapshot.docs[0]?.data()?.role;
+
         const parts = window.location.pathname.split("/");
         const entityId = parts[parts.length - 2];
 
+        // Fetch userClasses to check existing associations
         const userClassesSnapshot = await getDocs(collection(db, "userClasses"));
-
+        
         const associatedIDs = userClassesSnapshot.docs
-          .filter(doc => {
-            return window.location.pathname.startsWith("/users/") ?
-              doc.data().userID === entityId :
-              doc.data().classID === entityId;
-          })
-          .map(doc => {
-            return window.location.pathname.startsWith("/users/") ?
-              doc.data().classID :
-              doc.data().userID;
-          });
+          .filter(doc => window.location.pathname.startsWith("/users/") ?
+            doc.data().userID === entityId :
+            doc.data().classID === entityId
+          )
+          .map(doc => window.location.pathname.startsWith("/users/") ?
+            doc.data().classID :
+            doc.data().userID
+          );
 
-        const entitySnapshot = await getDocs(collection(db, entity));
-
-        const filteredData = entitySnapshot.docs.filter(doc => !associatedIDs.includes(doc.id))
-          .map(doc => ({ id: doc.id, ...doc.data() }));
+        let filteredData = [];
+        
+        if (window.location.pathname.startsWith("/users/")) {
+          if (userRole === "Admin") {
+            // Admin: Show all classes except those already associated
+            const entitySnapshot = await getDocs(collection(db, "classes"));
+            filteredData = entitySnapshot.docs
+              .filter(doc => !associatedIDs.includes(doc.id))
+              .map(doc => ({ id: doc.id, ...doc.data() }));
+          } else if (userRole === "Faculty") {
+            // Faculty: Show only classes handled by the faculty
+            const facultyClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
+            const facultyClassesSnapshot = await getDocs(facultyClassesQuery);
+            const facultyClassIDs = facultyClassesSnapshot.docs.map(doc => doc.data().classID);
+            
+            const entitySnapshot = await getDocs(collection(db, "classes"));
+            filteredData = entitySnapshot.docs
+              .filter(doc => facultyClassIDs.includes(doc.id) && !associatedIDs.includes(doc.id))
+              .map(doc => ({ id: doc.id, ...doc.data() }));
+          }
+        } else if (window.location.pathname.startsWith("/classes/")) {
+          // If URL starts with /classes/, show all users except those already enrolled
+          const entitySnapshot = await getDocs(collection(db, "users"));
+          filteredData = entitySnapshot.docs
+            .filter(doc => !associatedIDs.includes(doc.id))
+            .map(doc => ({ id: doc.id, ...doc.data() }));
+        }
 
         setData(filteredData);
       } catch (error) {
@@ -86,24 +116,25 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
   };
 
   const actionColumn = [
-    { field: "action",
+    {
+      field: "action",
       headerName: "Action",
       width: 100,
-      renderCell:(params) => {
-        return(
+      renderCell: (params) => {
+        return (
           <div className="cellAction">
             <div className="viewButton" onClick={() => handleAdd(params)}>
               Add
             </div>
           </div>
         );
-  }} ];
+      },
+    },
+  ];
 
   return (
     <div className="datatableSelect1">
-      <div className="datatableSelect1Title">
-        {tableTitle}
-      </div>
+      <div className="datatableSelect1Title">{tableTitle}</div>
       <DataGrid
         rows={data}
         columns={[...entityColumns, ...actionColumn]}
