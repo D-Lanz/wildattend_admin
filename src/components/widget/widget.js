@@ -7,8 +7,8 @@ import RssFeedIcon from '@mui/icons-material/RssFeed';
 import RoomIcon from '@mui/icons-material/Room';
 
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db, storage } from "../../firebase"
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase";
 import { Link } from 'react-router-dom';
 
 const Widget = ({ type }) => {
@@ -17,40 +17,50 @@ const Widget = ({ type }) => {
   const [roomAmount, setRoomAmount] = useState(0);
   const [accessPtAmount, setAccessPtAmount] = useState(0);
 
-  let nullAmount = 0;
-  let data;
-
-  // Fetch user count from Firestore
   const fetchUserCount = async () => {
     try {
       let count = 0;
-      const snapshot = await getDocs(collection(db, "users")); // Assuming your collection is named "users"
-      
-      // Check each document to count based on the role attribute
+      const snapshot = await getDocs(collection(db, "users"));
       snapshot.forEach(doc => {
         const userData = doc.data();
         if (type === "user" || (type === "student" && userData.role === "Student") || (type === "faculty" && userData.role === "Faculty")) {
           count++;
         }
       });
-      
       setUserAmount(count);
     } catch (error) {
       console.error("Error fetching count:", error);
     }
   };
 
-  // Fetch class count from Firestore
   const fetchClassCount = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "classes"));
-      setClassAmount(snapshot.size);
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const userRole = userDoc.data().role;
+          
+          if (userRole === "Faculty") {
+            // Count classes associated with the current Faculty user
+            const userClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
+            const userClassesSnapshot = await getDocs(userClassesQuery);
+            setClassAmount(userClassesSnapshot.size); // Using snapshot size directly for count
+            
+          } else if (userRole === "Admin") {
+            // Count all classes if user is Admin
+            const allClassesSnapshot = await getDocs(collection(db, "classes"));
+            setClassAmount(allClassesSnapshot.size); // Using snapshot size directly for count
+          }
+        }
+      }
     } catch (error) {
       console.error("Error fetching class count:", error);
     }
   };
 
-  // Fetch room count from Firestore
   const fetchRoomCount = async () => {
     try {
       const snapshot = await getDocs(collection(db, "rooms"));
@@ -60,7 +70,6 @@ const Widget = ({ type }) => {
     }
   };
 
-  // Fetch accessPoint count from Firestore
   const fetchAccessPtCount = async () => {
     try {
       const snapshot = await getDocs(collection(db, "accessPoints"));
@@ -69,7 +78,6 @@ const Widget = ({ type }) => {
       console.error("Error fetching access point count:", error);
     }
   };
-  
 
   useEffect(() => {
     fetchRoomCount();
@@ -78,65 +86,67 @@ const Widget = ({ type }) => {
     fetchAccessPtCount();
   }, []); // Run once on component mount
 
-  switch(type){
+  let data;
+
+  switch (type) {
     case "user":
-      data={
-        title:"USERS",
-        linkph:"See all users",
+      data = {
+        title: "USERS",
+        linkph: "See all users",
         link: "/users",
-        icon:(<PeopleAltIcon className="iconw"/>),
+        icon: (<PeopleAltIcon className="iconw" />),
         amount: userAmount,
       };
       break;
     case "student":
-      data={
-        title:"STUDENTS",
-        linkph:"See all students",
+      data = {
+        title: "STUDENTS",
+        linkph: "See all students",
         link: "/users?role=Student",
-        icon:(<SchoolIcon className="iconw"/>),
+        icon: (<SchoolIcon className="iconw" />),
         amount: userAmount,
       };
       break;
     case "faculty":
-      data={
-        title:"FACULTY",
-        linkph:"See all faculty members",
+      data = {
+        title: "FACULTY",
+        linkph: "See all faculty members",
         link: "/users?role=Faculty",
-        icon:(<SquareFootIcon className="iconw"/>),
+        icon: (<SquareFootIcon className="iconw" />),
         amount: userAmount,
       };
       break;
     case "class":
-      data={
-        title:"CLASSES",
-        linkph:"See all classes",
+      data = {
+        title: "CLASSES",
+        linkph: "See all classes",
         link: "/classes",
-        icon:(<ClassIcon className="iconw"/>),
+        icon: (<ClassIcon className="iconw" />),
         amount: classAmount,
       };
       break;
     case "room":
-      data={
-        title:"ROOMS",
-        linkph:"See all rooms",
+      data = {
+        title: "ROOMS",
+        linkph: "See all rooms",
         link: "/rooms",
-        icon:(<RoomIcon className="iconw"/>),
+        icon: (<RoomIcon className="iconw" />),
         amount: roomAmount,
-    };
+      };
       break;
     case "accesspt":
-      data={
-        title:"ACCESS POINTS",
-        linkph:"See all access points",
+      data = {
+        title: "ACCESS POINTS",
+        linkph: "See all access points",
         link: "/accessPoints",
-        icon:(<RssFeedIcon className="iconw"/>),
+        icon: (<RssFeedIcon className="iconw" />),
         amount: accessPtAmount,
-    };
-    break;
+      };
+      break;
     default:
-    break;
+      break;
   }
-  
+
   return (
     <div className="widget">
       <div className="leftw">
@@ -145,7 +155,6 @@ const Widget = ({ type }) => {
         <Link className="linkw" to={data.link}>
           <span className="linkw">{data.linkph}</span>
         </Link>
-        
       </div>
       <div className="rightw">
         {data.icon}

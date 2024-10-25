@@ -9,7 +9,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from "../../firebase"; // Firebase db import
 
-const AdminDashboard = () => {
+const Dashboard = () => {
   const [lastname, setLastname] = useState(''); // State for user's lastname
   const [firstname, setFirstname] = useState(''); // State for user's firstname
   const [idNum, setIdNum] = useState(''); // State for user's idNum
@@ -87,4 +87,4 @@ const AdminDashboard = () => {
   );
 }
 
-export default AdminDashboard;
+export default Dashboard;

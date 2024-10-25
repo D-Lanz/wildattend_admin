@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
-import AdminDashboard from './pages/admin_dashboard/dashboard';
+import Dashboard from './pages/dashboard/dashboard';
 import Login from './pages/login/loginpage';
 import List from './pages/list/list';
 // ENTITIES WITH IMG (USERS & CLASSES)
@@ -42,7 +42,7 @@ function App() {
 
           <Route path="dashboard" element={
             <RequireAuth>
-              <AdminDashboard />
+              <Dashboard />
             </RequireAuth>
           } />
 
