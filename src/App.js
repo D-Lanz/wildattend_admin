@@ -1,28 +1,32 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate} from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
+
 import Dashboard from './pages/dashboard/dashboard';
 import Login from './pages/login/loginpage';
 import List from './pages/list/list';
-// ENTITIES WITH IMG (USERS & CLASSES)
 import New from './pages/new/new';
 import Single from './pages/single/single';
 import Edit from './pages/edit/edit';
-import SelectList1 from './pages/selectList1/selectList1';
 import Connect from './pages/connect/connect';
-// ENTITIES WITH NO IMG (ROOMS & ACCESS POINTS)
-import SelectList2 from './pages/selectList2/selectList2';
+
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs, roomInputs, accessPointInputs } from './formSource';
 // FOR LIST.JS
 import { classColumns, userColumns, userClassColumns, roomColumns, accessPointColumns } from './datatablesource';
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle, roomSingle, accessPointSingle } from './singleSource';
-//MISC.
+
+//RELATIOJNALS
+import SelectListUserClasses from './pages/selectList_UserClasses/selectList_UserClasses';
+import SelectListClassRooms from './pages/selectList_ClassRooms/selectList_ClassRooms';
+
+//OTHER TABS
 import Schedule from './pages/schedule/schedule';
 import AdminProfile from './pages/admin_profile/admin_profile';
 import AttendRecord from './pages/attendRecord/attendRecord';
 import PageNotFound from './pages/pageNotFound/pageNotFound';
+
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -77,7 +81,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList1 entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
+                    <SelectListUserClasses entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />
@@ -124,7 +128,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList1 entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
+                    <SelectListUserClasses entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
                   </RequireAuth>
                 }
               />
@@ -179,7 +183,7 @@ function App() {
               {/* INSIDE SELECTING, ROOMS HAVE CLASSES */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectList2 entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
+                    <SelectListClassRooms entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
                   </RequireAuth>
                 }
               />

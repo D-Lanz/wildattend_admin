@@ -1,11 +1,12 @@
-import "./selectList2.css"
+import "./selectList_ClassRooms.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import DatatableSelect2 from "../../components/datatableSelect2/DatatableSelect2";
+import TableClassRooms from "../../components/tableClassRooms/tableClassRooms";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 
-const SelectList2 = ({title, entity, tableTitle, entityColumns}) => {
+
+const SelectListClassRooms = ({title, entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -18,7 +19,7 @@ const SelectList2 = ({title, entity, tableTitle, entityColumns}) => {
         <div className="selectlist2Container">
           <Navbar/>
           <ArrowBackIcon onClick={handleBack} className="backButton" />
-          <DatatableSelect2 
+          <TableClassRooms
             title={title}
             entity={entity}
             tableTitle={tableTitle}
@@ -29,4 +30,4 @@ const SelectList2 = ({title, entity, tableTitle, entityColumns}) => {
   )
 }
 
-export default SelectList2;
+export default SelectListClassRooms;

@@ -1,4 +1,4 @@
-import "./datatableSelect1.css";
+import "./tableUserClasses.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -6,7 +6,7 @@ import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 
-const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
+const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
 
@@ -133,8 +133,8 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
   ];
 
   return (
-    <div className="datatableSelect1">
-      <div className="datatableSelect1Title">{tableTitle}</div>
+    <div className="tableUserClasses">
+      <div className="tableUserClassesTitle">{tableTitle}</div>
       <DataGrid
         rows={data}
         columns={[...entityColumns, ...actionColumn]}
@@ -144,4 +144,4 @@ const DatatableSelect1 = ({ entity, tableTitle, entityColumns }) => {
   );
 };
 
-export default DatatableSelect1;
+export default TableUserClasses;

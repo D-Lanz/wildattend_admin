@@ -1,4 +1,4 @@
-.datatableSelect2{
+.tableUserClasses{
   height: 490px;
   padding: 20px;
 }
@@ -43,7 +43,7 @@
   cursor: pointer;
 }
 
-.datatableSelect2Title{
+.tableUserClassesTitle{
   width: 100%;
   font-size: 24;
   color: maroon;

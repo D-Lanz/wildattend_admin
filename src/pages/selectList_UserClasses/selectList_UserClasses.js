@@ -1,11 +1,11 @@
-import "./selectList1.css"
+import "./selectList_UserClasses.css"
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import DatatableSelect1 from "../../components/datatableSelect1/DatatableSelect1";
+import TableUserClasses from "../../components/tableUserClasses/tableUserClasses";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from "react-router-dom";
 
-const SelectList1 = ({title, entity, tableTitle, entityColumns}) => {
+const SelectListUserClasses = ({title, entity, tableTitle, entityColumns}) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -18,7 +18,7 @@ const SelectList1 = ({title, entity, tableTitle, entityColumns}) => {
         <div className="selectlistContainer">
           <Navbar/>
           <ArrowBackIcon onClick={handleBack} className="backButton" />
-          <DatatableSelect1 
+          <TableUserClasses
             title={title}
             entity={entity}
             tableTitle={tableTitle}
@@ -29,4 +29,4 @@ const SelectList1 = ({title, entity, tableTitle, entityColumns}) => {
   )
 }
 
-export default SelectList1;
+export default SelectListUserClasses;

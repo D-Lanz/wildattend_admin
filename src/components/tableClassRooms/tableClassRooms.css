@@ -1,4 +1,4 @@
-.datatableSelect1{
+.tableClassRooms{
   height: 490px;
   padding: 20px;
 }
@@ -43,7 +43,7 @@
   cursor: pointer;
 }
 
-.datatableSelect1Title{
+.tableClassRoomsTitle{
   width: 100%;
   font-size: 24;
   color: maroon;

@@ -1,11 +1,11 @@
-import "./datatableSelect2.css";
+import "./tableClassRooms.css";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 import { useEffect, useState } from "react";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
+const TableClassRooms = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate(); 
   const location = useLocation(); // Access location using useLocation hook
   const [data, setData] = useState([]);
@@ -116,8 +116,8 @@ const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
   }} ];
 
   return (
-    <div className="datatableSelect2">
-      <div className="datatableSelect2Title">
+    <div className="tableClassRooms">
+      <div className="tableClassRoomsTitle">
         {tableTitle}
       </div>
       <DataGrid
@@ -129,4 +129,4 @@ const DatatableSelect2 = ({ entity, tableTitle, entityColumns }) => {
   );
 };
 
-export default DatatableSelect2;
+export default TableClassRooms;
