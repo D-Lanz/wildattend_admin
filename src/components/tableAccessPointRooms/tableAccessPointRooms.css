@@ -1,0 +1,64 @@
+.tableAccessPointRooms{
+  height: 490px;
+  padding: 20px;
+}
+
+.cellWithImg{
+  display: flex;
+  align-items: center;
+}
+
+.cellImg{
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
+}
+
+.cellWithRole {
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.cellAction{
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.viewButton{
+  padding: 2px 5px;
+  border-radius: 5px;
+  background-color: gold;
+  color: maroon;
+  cursor: pointer;
+}
+
+.deleteButton{
+  padding: 2px 5px;
+  border-radius: 5px;
+  background-color: maroon;
+  color: gold;
+  cursor: pointer;
+}
+
+.tableAccessPointRoomsTitle{
+  width: 100%;
+  font-size: 24;
+  color: maroon;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.linkdt{
+  text-decoration: none;
+  color: maroon;
+  border: 1px solid maroon;
+  border-radius: 5px;
+  font-weight: 400;
+  padding: 5px;
+  cursor: pointer;
+}

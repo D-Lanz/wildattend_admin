@@ -20,13 +20,13 @@ import { classSingle, userSingle, roomSingle, accessPointSingle } from './single
 //RELATIOJNALS
 import SelectListUserClasses from './pages/selectList_UserClasses/selectList_UserClasses';
 import SelectListClassRooms from './pages/selectList_ClassRooms/selectList_ClassRooms';
+import SelectListAccessPointRooms from './pages/selectList_AccessPointRooms/selectList_AccessPointRooms';
 
 //OTHER TABS
 import Schedule from './pages/schedule/schedule';
 import AdminProfile from './pages/admin_profile/admin_profile';
 import AttendRecord from './pages/attendRecord/attendRecord';
 import PageNotFound from './pages/pageNotFound/pageNotFound';
-
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -225,16 +225,24 @@ function App() {
                 <RequireAuth>
                   <New inputs={accessPointInputs} title="Add New Access Point" entityType="accessPoint" />
                 </RequireAuth>
-                } />
+              } />
+
+              {/* INSIDE SELECTING, ACCESSPOINTS ARE ADDED INTO A ROOM */}
+              <Route path=":id/select" element={
+                  <RequireAuth>
+                    <SelectListAccessPointRooms entity="rooms" tableTitle="Assign AP to a Room" entityColumns={roomColumns}/>
+                  </RequireAuth>
+                }
+              />
             </Route>
 
-            {/* Route for attendance records */}
-            <Route path="schedule">
-              <Route index element={<RequireAuth> <Schedule/> </RequireAuth>}/>
-              <Route path=":id" element={<RequireAuth><AttendRecord /></RequireAuth>} />
-            </Route>
-          
+          {/* Route for attendance records */}
+          <Route path="schedule">
+            <Route index element={<RequireAuth> <Schedule/> </RequireAuth>}/>
+            <Route path=":id" element={<RequireAuth><AttendRecord /></RequireAuth>} />
+          </Route>  
           <Route path="profile" element={<RequireAuth><AdminProfile /></RequireAuth>}/>
+          
           {/* Redirect to login for any unknown paths */}
           <Route path="*" element={<RequireAuth><PageNotFound/></RequireAuth>} />
         </Routes>

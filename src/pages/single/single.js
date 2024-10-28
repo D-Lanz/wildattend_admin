@@ -4,6 +4,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Chart from "../../components/chart/Chart";
 import Datatable1 from "../../components/datatable1/Datatable1";
 import Datatable2 from "../../components/datatable2/Datatable2";
+import Datatable3 from "../../components/datatable3/Datatable3";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { format } from 'date-fns';
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
   const { id } = useParams(); // User's document ID
   const [data, setData] = useState(null);
   const location = useLocation();
+
   const { rowData } = location.state || {};
   const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState([]); // For storing attendance records
@@ -238,6 +240,16 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
         <div className="bottom">
         {(entity === 'users' || entity === 'classes') ? (
           <Datatable1
+            title={title}
+            entity={entityTable}
+            tableTitle={tableTitle}
+            entityColumns={entityColumns}
+            id={id}
+            entityAssign={entityAssign}
+            entityConnect={entityConnect}
+          />
+        ) : (entity === 'accessPoints') ? (
+          <Datatable3 
             title={title}
             entity={entityTable}
             tableTitle={tableTitle}
