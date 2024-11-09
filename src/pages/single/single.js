@@ -5,15 +5,17 @@ import Datatable1 from "../../components/datatable1/Datatable1";
 import Datatable2 from "../../components/datatable2/Datatable2";
 import Datatable3 from "../../components/datatable3/Datatable3";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getDoc, doc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { AuthContext } from "../../context/AuthContext"; // Assuming you have an AuthContext providing logged-in user info
 
 const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign, entityConnect }) => {
   const { id } = useParams();
+  const { currentUser } = useContext(AuthContext); // Accessing logged-in user data
   const [data, setData] = useState(null);
   const [statusSummary, setStatusSummary] = useState({ "On-Time": 0, Late: 0, Absent: 0 });
   const [attendanceDates, setAttendanceDates] = useState([]);
@@ -49,99 +51,162 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
       }
     };
 
-    // Fetch associated classes for users or dates for classes
-    const fetchClassOrDateOptions = async () => {
-      if (entity === "users") {
-        // Fetch associated classes for the user
-        const userClassesQuery = query(
-          collection(db, "userClasses"),
-          where("userID", "==", id)
-        );
-        const userClassesSnapshot = await getDocs(userClassesQuery);
+    const fetchClassOptions = async () => {
+      try {
+        // Fetch user role from Firestore
+        const userRoleDoc = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
+        const userRoleData = userRoleDoc.docs[0]?.data();
 
-        const classes = await Promise.all(
-          userClassesSnapshot.docs.map(async (docSnap) => {
-            const { classID } = docSnap.data();
-            const classDoc = await getDoc(doc(db, "classes", classID));
-            return classDoc.exists() ? { id: classID, userClassId: docSnap.id, ...classDoc.data() } : null;
-          })
-        );
+        if (!userRoleData) {
+          console.error("No role data found for the logged-in user.");
+          return;
+        }
 
-        setClassOptions(classes.filter((c) => c !== null));
-      } else if (entity === "classes") {
-        // Fetch unique attendance dates for classes
-        const attendanceQuery = query(
-          collection(db, "attendRecord"),
-          where("classId", "==", id)
-        );
-        const attendanceSnapshot = await getDocs(attendanceQuery);
+        if (userRoleData.role === "Admin") {
+          // For Admin, fetch all classes associated with the selected user
+          const userClassesQuery = query(collection(db, "userClasses"), where("userID", "==", id));
+          const userClassesSnapshot = await getDocs(userClassesQuery);
 
-        const uniqueDates = new Set();
-        attendanceSnapshot.forEach((docSnap) => {
-          const timeIn = docSnap.data().timeIn?.toDate();
-          if (timeIn) {
-            uniqueDates.add(new Date(timeIn.setHours(0, 0, 0, 0))); // Normalize to start of day
-          }
-        });
+          const fetchedClasses = await Promise.all(
+            userClassesSnapshot.docs.map(async (docSnap) => {
+              const { classID } = docSnap.data();
+              const classDocRef = doc(db, "classes", classID);
+              const classDocSnapshot = await getDoc(classDocRef);
 
-        setAttendanceDates([...uniqueDates]);
+              if (classDocSnapshot.exists()) {
+                return {
+                  id: classID,
+                  userClassId: docSnap.id,
+                  ...classDocSnapshot.data(),
+                };
+              } else {
+                console.error(`Class with ID ${classID} does not exist`);
+                return null;
+              }
+            })
+          );
+
+          setClassOptions(fetchedClasses.filter((classItem) => classItem !== null));
+          console.log("Fetched Admin Classes Data:", fetchedClasses);
+        } else if (userRoleData.role === "Faculty") {
+          // For Faculty, fetch only mutual classes between logged-in faculty and selected user
+          const facultyClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
+          const facultyClassesSnapshot = await getDocs(facultyClassesQuery);
+          const facultyClassIDs = facultyClassesSnapshot.docs.map((doc) => doc.data().classID);
+
+          const selectedUserClassesQuery = query(collection(db, "userClasses"), where("userID", "==", id));
+          const selectedUserClassesSnapshot = await getDocs(selectedUserClassesQuery);
+          const mutualClassIDs = selectedUserClassesSnapshot.docs
+            .map((doc) => doc.data().classID)
+            .filter((classID) => facultyClassIDs.includes(classID));
+
+          const fetchedMutualClasses = await Promise.all(
+            mutualClassIDs.map(async (classID) => {
+              const classDocRef = doc(db, "classes", classID);
+              const classDocSnapshot = await getDoc(classDocRef);
+
+              if (classDocSnapshot.exists()) {
+                return {
+                  id: classID,
+                  userClassId: selectedUserClassesSnapshot.docs.find((doc) => doc.data().classID === classID)?.id,
+                  ...classDocSnapshot.data(),
+                };
+              } else {
+                console.error(`Class with ID ${classID} does not exist`);
+                return null;
+              }
+            })
+          );
+
+          setClassOptions(fetchedMutualClasses.filter((classItem) => classItem !== null));
+          console.log("Fetched Mutual Classes Data:", fetchedMutualClasses);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setClassOptions([]); // Clear options if there was an error
       }
     };
 
     fetchData();
-    fetchClassOrDateOptions();
-  }, [id, entity]);
+    fetchClassOptions();
+  }, [id, currentUser.uid]);
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
       if (!id) return;
-
+  
       try {
-        // Filter attendance records based on selected class or date
         let attendanceQuery;
+        const counts = { "On-Time": 0, Late: 0, Absent: 0 };
+  
         if (entity === "users" && selectedClass) {
+          // For users entity, filter by selected class if provided
           attendanceQuery = query(
             collection(db, "attendRecord"),
             where("userId", "==", id),
             where("classId", "==", selectedClass)
           );
         } else if (entity === "classes" && selectedDate) {
+          // For classes entity, filter by selected date
           const startDate = new Date(selectedDate);
           const endDate = new Date(selectedDate);
           endDate.setDate(endDate.getDate() + 1);
+  
           attendanceQuery = query(
             collection(db, "attendRecord"),
             where("classId", "==", id),
             where("timeIn", ">=", startDate),
             where("timeIn", "<", endDate)
           );
-        } else {
+        } else if (entity === "users") {
+          // Default case for users entity: apply mutual class filtering if "Faculty"
+          const classIdsToInclude = classOptions.map((classItem) => classItem.id);
+          
           attendanceQuery = query(
             collection(db, "attendRecord"),
-            where(entity === "users" ? "userId" : "classId", "==", id)
+            where("userId", "==", id),
+            where("classId", "in", classIdsToInclude)
+          );
+        } else if (entity === "classes") {
+          // Default case for classes entity: fetch all attendance records for the class
+          attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where("classId", "==", id)
           );
         }
-
+  
         const attendanceSnapshot = await getDocs(attendanceQuery);
-        const counts = { "On-Time": 0, Late: 0, Absent: 0 };
-
+  
         attendanceSnapshot.forEach((doc) => {
           const { status } = doc.data();
           if (counts[status] !== undefined) {
             counts[status] += 1;
           }
         });
-
+  
         setStatusSummary(counts);
+  
+        // For the `classes` entity, gather all dates with attendance records for highlighting
+        if (entity === "classes" && !selectedDate) {
+          const uniqueDates = new Set();
+  
+          attendanceSnapshot.forEach((docSnap) => {
+            const timeIn = docSnap.data().timeIn?.toDate();
+            if (timeIn) {
+              uniqueDates.add(new Date(timeIn.setHours(0, 0, 0, 0)).getTime()); // Normalize to start of day
+            }
+          });
+  
+          setAttendanceDates([...uniqueDates].map((timestamp) => new Date(timestamp))); // Convert back to date objects
+        }
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
     };
-
+  
     fetchAttendanceData();
-  }, [id, entity, selectedClass, selectedDate]);
-
-  // Determine the title based on the entity
+  }, [id, entity, selectedClass, selectedDate, classOptions]);
+  
   let title;
   if (entity === "users") {
     title = `${data?.lastName || ""}, ${data?.firstName || ""}`;
@@ -236,7 +301,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             {entity === "classes" && (
               <DatePicker
                 selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                onChange={(date) => setSelectedDate(date)} // Update selected date to trigger useEffect
                 highlightDates={attendanceDates}
                 placeholderText="Select a date"
                 dateFormat="MMMM d, yyyy"

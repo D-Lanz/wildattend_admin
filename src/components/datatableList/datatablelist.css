@@ -7,10 +7,12 @@
   margin: 10px auto; /* Center align with spacing */
   background-color: #ffffff; /* White background for contrast */
   border-radius: 8px; /* Rounded corners */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* Prevents content overflow */
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
 }
 
 /* Inner container to make the DataGrid content scrollable */

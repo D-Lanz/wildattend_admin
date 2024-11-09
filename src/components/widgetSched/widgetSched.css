@@ -1,107 +1,111 @@
+/* Container for the widget */
 .widgetSched {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-around;
-  padding: 10px;
-  background-color: maroon;
+  padding: 20px;
   color: gold;
-  border-radius: 10px;
-  box-shadow: 10px 10px 16px -4px rgba(128, 0, 0, 0.48);
-  gap: 10px;
+  border-radius: 12px;
+  gap: 20px; /* Space between class items */
+  margin-top: 20px;
 }
 
+/* Individual class card styling */
 .classItemS {
-  flex: 1 1 calc(25% - 20px);
+  flex: 1 1 calc(45% - 20px); /* Two cards per row, adjusts based on screen */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  padding: 15px;
+  background-color: #600000; /* Slightly lighter maroon for the cards */
+  border-radius: 10px;
+  color: gold;
   box-sizing: border-box;
+  transition: transform 0.2s;
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
 }
 
-.leftwS, .rightwS {
+.classItemS:hover {
+  transform: scale(1.03); /* Slight scale-up on hover */
+}
+
+/* Left section for image */
+.leftwS {
+  margin-right: 15px;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
 }
 
 .classImageCircle {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
   border-radius: 50%; /* Makes the image circular */
+  border: 2px solid gold; /* Gold border for contrast */
+}
+
+/* Right section for class details */
+.rightwS {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .wtitleS {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 18px;
+  color: gold;
+  margin-bottom: 5px;
 }
 
 .counter {
   font-size: 14px;
+  color: lightyellow;
 }
 
 .ongoingTag {
   font-weight: bold;
-  color: green;
   font-size: 14px;
   margin-top: 5px;
 }
 
+/* Status color based on ongoing status */
+.ongoingTag.ongoing {
+  color: limegreen; /* Green for "Ongoing" */
+}
+
+.ongoingTag.notOngoing {
+  color: red; /* Red for "Not Ongoing" */
+}
+
+/* Link styling for "View Schedule" and "View Details" */
 .linkwS {
-  width: max-content;
-  font-size: 12px;
-  border-bottom: 1px solid gold;
-  text-decoration: none;
+  font-size: 14px;
   color: gold;
-  margin-top: 5px;
+  text-decoration: none;
+  margin-top: 8px;
+  border-bottom: 1px solid gold;
+  transition: color 0.3s, border-color 0.3s;
 }
 
 .linkwS:hover {
   color: white;
+  border-color: white;
 }
 
-.ongoingTag {
-  font-weight: bold;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.ongoingTag {
-  color: green; /* Change color based on ongoing status */
-}
-
-.ongoingTag:not(.ongoing) {
-  color: red; /* Color for "Not Ongoing" */
-}
-
+/* Filter section styling */
 .filterSection2 {
-  position: relative;
-  top: -170px;
-  left: -20px;
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  gap: 10px; /* Add some space between dropdown and textbox */
+  gap: 10px;
+  margin: 0 20px 20px 20px;
 }
 
 .filterSection2 .MuiFormControl-root {
-  min-width: 200px; /* Set a specific width for the dropdown */
+  min-width: 180px;
 }
 
 .filterSection2 .MuiTextField-root {
-  flex: 1; /* Allow the textbox to take the remaining space */
-  max-width: 1000px; /* Limit the maximum width of the textbox */
-}
-
-.widgetSched{
-  /* margin-top: 0px;
-  margin-left: -25px; */
-  position: relative;
-  top: -200px;
-  left: -20px;
-  margin-bottom: -160px;
+  flex: 1;
+  max-width: 500px;
 }

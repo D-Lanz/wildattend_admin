@@ -1,53 +1,74 @@
-.widget{
+/* Main widget container */
+.widget {
   display: flex;
-  justify-content: space-around;
-  flex: 2;
-  padding: 10px;
-  background-color: maroon;
+  justify-content: space-between; /* Space between left and right sections */
+  align-items: center;
+  padding: 15px 20px; /* More padding for better spacing */
+  background-color: #8B0000; /* Darker maroon for contrast */
   color: gold;
-  border-radius: 10px;
-  height: 100px;
-  width: 10px;
-  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
-  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
-  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  border-radius: 12px;
+  width: 100%; /* Full width, responsive */
+  max-width: 400px; /* Set a max-width to prevent it from expanding too large */
+  height: 120px; /* Fixed height */
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3); /* Softer shadow for depth */
+  transition: transform 0.2s; /* Subtle scale effect */
+  margin: 10px;
 }
 
-.leftw,.rightw{
+.widget:hover {
+  transform: scale(1.02); /* Slightly enlarges on hover */
+}
+
+/* Left and right sections */
+.leftw,
+.rightw {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.wtitle{
+/* Title styling */
+.wtitle {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
+  color: gold;
+  margin-bottom: 5px;
 }
 
-.counter{
-  font-size: 40px;
+/* Counter styling */
+.counter {
+  font-size: 36px; /* Adjusted font size for better fit */
   font-weight: 300;
+  color: #FFD700; /* Slightly lighter gold */
 }
 
-.linkw{
+/* Link styling */
+.linkw {
   width: max-content;
-  font-size: 12px;
+  font-size: 14px;
   border-bottom: 1px solid gold;
+  text-decoration: none;
+  color: gold;
+  margin-top: 8px;
+  transition: color 0.3s, border-color 0.3s;
 }
 
-.iconw{
+.linkw:hover {
+  color: white;
+  border-color: white;
+}
+
+/* Icon styling */
+.iconw {
   font-size: 18px;
-  padding: 5px;
+  padding: 6px;
   background-color: gold;
-  color: maroon;
+  color: #8B0000; /* Darker maroon for contrast */
   border-radius: 5px;
   align-self: flex-end;
+  transition: background-color 0.3s;
 }
 
-.linkw{
-  text-decoration: none;
-}
-
-.linkw:hover{
-  color: white;
+.iconw:hover {
+  background-color: #FFD700; /* Slightly lighter gold on hover */
 }
