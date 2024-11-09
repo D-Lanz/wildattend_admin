@@ -1,30 +1,30 @@
 import "./single.css";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
-import Chart from "../../components/chart/Chart";
 import Datatable1 from "../../components/datatable1/Datatable1";
 import Datatable2 from "../../components/datatable2/Datatable2";
 import Datatable3 from "../../components/datatable3/Datatable3";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { format } from 'date-fns';
 import { useEffect, useState } from "react";
-import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
-import { getDoc, doc, collection, query, where, getDocs } from "firebase/firestore"; // Import getDocs
-import { db } from "../../firebase"; // Import db from firebase
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getDoc, doc, collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign, entityConnect }) => {
-  const { id } = useParams(); // User's document ID
+  const { id } = useParams();
   const [data, setData] = useState(null);
-  const location = useLocation();
-
-  const { rowData } = location.state || {};
+  const [statusSummary, setStatusSummary] = useState({ "On-Time": 0, Late: 0, Absent: 0 });
+  const [attendanceDates, setAttendanceDates] = useState([]);
+  const [classOptions, setClassOptions] = useState([]);
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedClassUserClassId, setSelectedClassUserClassId] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
   const navigate = useNavigate();
-  const [attendanceData, setAttendanceData] = useState([]); // For storing attendance records
-  const [classesData, setClassesData] = useState([]); // For storing classes information
-  const [selectedClassID, setSelectedClassID] = useState(""); // For selected class ID
 
   const handleBack = () => {
-    navigate(-1); // Navigate back to the last page
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -38,138 +38,119 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             fetchedData = docSnap.data();
           }
         }
-  
+
         if (fetchedData) {
           setData(fetchedData);
         } else {
           console.log(`No such document found for ${entity} with ID:`, id);
         }
       } catch (error) {
-        console.error('Error fetching document:', error);
+        console.error("Error fetching document:", error);
       }
     };
-  
-    // Fetch attendance records based on the user ID
-    const fetchAttendanceData = async () => {
-      if (!id) return;
-  
-      try {
-        const q = query(collection(db, "attendRecords"), where("userID", "==", id));
-        const querySnapshot = await getDocs(q);
-        const attendance = {};
-  
-        querySnapshot.forEach((doc) => {
-          const record = doc.data();
-          const classID = record.classID;
-          const status = record.status; // "On-Time", "Late", "Absent"
-  
-          if (!attendance[classID]) {
-            attendance[classID] = { "On-Time": 0, "Late": 0, "Absent": 0 };
+
+    // Fetch associated classes for users or dates for classes
+    const fetchClassOrDateOptions = async () => {
+      if (entity === "users") {
+        // Fetch associated classes for the user
+        const userClassesQuery = query(
+          collection(db, "userClasses"),
+          where("userID", "==", id)
+        );
+        const userClassesSnapshot = await getDocs(userClassesQuery);
+
+        const classes = await Promise.all(
+          userClassesSnapshot.docs.map(async (docSnap) => {
+            const { classID } = docSnap.data();
+            const classDoc = await getDoc(doc(db, "classes", classID));
+            return classDoc.exists() ? { id: classID, userClassId: docSnap.id, ...classDoc.data() } : null;
+          })
+        );
+
+        setClassOptions(classes.filter((c) => c !== null));
+      } else if (entity === "classes") {
+        // Fetch unique attendance dates for classes
+        const attendanceQuery = query(
+          collection(db, "attendRecord"),
+          where("classId", "==", id)
+        );
+        const attendanceSnapshot = await getDocs(attendanceQuery);
+
+        const uniqueDates = new Set();
+        attendanceSnapshot.forEach((docSnap) => {
+          const timeIn = docSnap.data().timeIn?.toDate();
+          if (timeIn) {
+            uniqueDates.add(new Date(timeIn.setHours(0, 0, 0, 0))); // Normalize to start of day
           }
-  
-          attendance[classID][status] += 1;
         });
-  
-        console.log("Fetched attendance records:", attendance); // Add this log to see the attendance data
-  
-        // Convert attendance object to an array and store classID data
-        const attendanceArray = Object.entries(attendance).map(([classID, statusCounts]) => ({
-          classID,
-          ...statusCounts,
-        }));
-  
-        console.log("Attendance array for dropdown:", attendanceArray); // Add this log to see the formatted array
-  
-        // Ensure unique classIDs are stored in the state
-        setAttendanceData(attendanceArray);
-        if (attendanceArray.length > 0) {
-          setSelectedClassID(attendanceArray[0].classID); // Set default selection to first class
-        }
-      } catch (error) {
-        console.error("Error fetching attendance data:", error);
+
+        setAttendanceDates([...uniqueDates]);
       }
     };
-  
+
     fetchData();
-    fetchAttendanceData();
-  }, [id, entity]);  
+    fetchClassOrDateOptions();
+  }, [id, entity]);
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
       if (!id) return;
 
       try {
-        // Fetch attendance records
-        const attendanceQuery = query(collection(db, "attendRecords"), where("userID", "==", id));
-        const attendanceSnapshot = await getDocs(attendanceQuery);
-        const attendance = {};
-
-        attendanceSnapshot.forEach((doc) => {
-          const record = doc.data();
-          const classID = record.classID;
-          const timeIn = record.timeIn?.toDate(); // Convert Firestore timestamp to JS Date
-
-          if (!attendance[classID]) {
-            attendance[classID] = [];
-          }
-
-          attendance[classID].push({
-            status: record.status, // "On-Time", "Late", "Absent"
-            timeIn: format(timeIn, 'MM/dd/yy') // Format date
-          });
-        });
-
-        console.log("Fetched attendance records:", attendance);
-
-        const attendanceArray = Object.entries(attendance).map(([classID, records]) => ({
-          classID,
-          records,
-        }));
-
-        setAttendanceData(attendanceArray);
-        if (attendanceArray.length > 0) {
-          setSelectedClassID(attendanceArray[0].classID);
+        // Filter attendance records based on selected class or date
+        let attendanceQuery;
+        if (entity === "users" && selectedClass) {
+          attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where("userId", "==", id),
+            where("classId", "==", selectedClass)
+          );
+        } else if (entity === "classes" && selectedDate) {
+          const startDate = new Date(selectedDate);
+          const endDate = new Date(selectedDate);
+          endDate.setDate(endDate.getDate() + 1);
+          attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where("classId", "==", id),
+            where("timeIn", ">=", startDate),
+            where("timeIn", "<", endDate)
+          );
+        } else {
+          attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where(entity === "users" ? "userId" : "classId", "==", id)
+          );
         }
 
-        // Now fetch class details based on attendance
-        const classIDs = attendanceArray.map(item => item.classID);
-        const classDataPromises = classIDs.map(classID => getDoc(doc(db, "classes", classID)));
+        const attendanceSnapshot = await getDocs(attendanceQuery);
+        const counts = { "On-Time": 0, Late: 0, Absent: 0 };
 
-        const classDocs = await Promise.all(classDataPromises);
-        const classesDetails = classDocs.map(doc => {
-          if (doc.exists()) {
-            const classData = doc.data();
-            return {
-              classID: doc.id,
-              classCode: classData.classCode,
-              classSec: classData.classSec,
-              classType: classData.classType,
-            };
+        attendanceSnapshot.forEach((doc) => {
+          const { status } = doc.data();
+          if (counts[status] !== undefined) {
+            counts[status] += 1;
           }
-          return null;
-        }).filter(item => item !== null); // Filter out null entries
+        });
 
-        console.log("Fetched classes details:", classesDetails);
-        setClassesData(classesDetails);
-
+        setStatusSummary(counts);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
     };
 
     fetchAttendanceData();
-  }, [id]);
+  }, [id, entity, selectedClass, selectedDate]);
 
   // Determine the title based on the entity
   let title;
-  if (entity === 'users') {
-    title = `${data?.lastName || ''}, ${data?.firstName || ''}`;
-  } else if (entity === 'classes') {
-    title = `${data?.classDesc || ''} - ${data?.classType || ''}`;
-  } else if (entity === 'rooms') {
-    title = `${data?.building || ''}${data?.roomNum || ''}`;
-  } else if (entity === 'accessPoints') {
-    title = data?.macAddress || '';
+  if (entity === "users") {
+    title = `${data?.lastName || ""}, ${data?.firstName || ""}`;
+  } else if (entity === "classes") {
+    title = `${data?.classDesc || ""} - ${data?.classType || ""}`;
+  } else if (entity === "rooms") {
+    title = `${data?.building || ""}${data?.roomNum || ""}`;
+  } else if (entity === "accessPoints") {
+    title = data?.macAddress || "";
   }
 
   return (
@@ -183,7 +164,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               <ArrowBackIcon onClick={handleBack} className="backButton" />
               <div className="editButtonWrapper">
                 <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
-                {entity === 'classes' && (
+                {entity === "classes" && (
                   <Link to={`/schedule/${id}`} className="editButtons">Attendance</Link>
                 )}
               </div>
@@ -206,19 +187,15 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
                     <span className="itemKeys">{dataS.headerName}:</span>
                     <span className="itemValues">
                       {data && data[dataS.field] ? (
-                        dataS.field === "days" ? (
-                          Object.entries(data[dataS.field])
-                            .reverse() // Reverse the array of days
-                            .map(([day, checked], index, array) => (
-                              <span key={day} className="itemValues">
-                                {checked && `${day}${index !== array.length - 1 ? ', ' : ''}`}
-                              </span>
-                            ))
+                        typeof data[dataS.field] === "object" && dataS.field === "days" ? (
+                          Object.keys(data[dataS.field])
+                            .filter(day => data[dataS.field][day])
+                            .join(", ")
                         ) : (
                           data[dataS.field]
                         )
                       ) : (
-                        "Loading..." // or any other placeholder
+                        "Loading..."
                       )}
                     </span>
                   </div>
@@ -226,49 +203,84 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
               </div>
             </div>
           </div>
-          {/* {(entity === 'classes' || entity === 'users') && (
-            <div className="rights">
-              <Chart
-                aspect={3 / 1}
-                title="Attendance"
-                // Removed dynamic data and function props for static chart
+
+          <div className="rights">
+            <h2>Status Summary</h2>
+            {entity === "users" && (
+              <>
+                <select
+                  onChange={(e) => {
+                    const selected = classOptions.find(c => c.id === e.target.value);
+                    setSelectedClass(e.target.value);
+                    setSelectedClassUserClassId(selected ? selected.userClassId : "");
+                  }}
+                  value={selectedClass}
+                >
+                  <option value="">Select Class</option>
+                  {classOptions.map((classItem) => (
+                    <option key={classItem.id} value={classItem.id}>
+                      {classItem.classDesc || "Class"} - {classItem.classCode || "Code"}
+                    </option>
+                  ))}
+                </select>
+                {selectedClassUserClassId && (
+                  <button
+                    className="connectButton"
+                    onClick={() => navigate(`/userClasses/${selectedClassUserClassId}`)}
+                  >
+                    View
+                  </button>
+                )}
+              </>
+            )}
+            {entity === "classes" && (
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                highlightDates={attendanceDates}
+                placeholderText="Select a date"
+                dateFormat="MMMM d, yyyy"
+                inline
               />
-            </div>
-          )} */}
+            )}
+            <p>On-Time: {statusSummary["On-Time"]}</p>
+            <p>Late: {statusSummary.Late}</p>
+            <p>Absent: {statusSummary.Absent}</p>
+          </div>
         </div>
 
         <div className="bottom">
-        {(entity === 'users' || entity === 'classes') ? (
-          <Datatable1
-            title={title}
-            entity={entityTable}
-            tableTitle={tableTitle}
-            entityColumns={entityColumns}
-            id={id}
-            entityAssign={entityAssign}
-            entityConnect={entityConnect}
-          />
-        ) : (entity === 'accessPoints') ? (
-          <Datatable3 
-            title={title}
-            entity={entityTable}
-            tableTitle={tableTitle}
-            entityColumns={entityColumns}
-            id={id}
-            entityAssign={entityAssign}
-            entityConnect={entityConnect}
-          />
-        ) : (
-          <Datatable2
-            title={title}
-            entity={entityTable}
-            tableTitle={tableTitle}
-            entityColumns={entityColumns}
-            id={id}
-            entityAssign={entityAssign}
-            entityConnect={entityConnect}
-          />
-        )}
+          {(entity === "users" || entity === "classes") ? (
+            <Datatable1
+              title={title}
+              entity={entityTable}
+              tableTitle={tableTitle}
+              entityColumns={entityColumns}
+              id={id}
+              entityAssign={entityAssign}
+              entityConnect={entityConnect}
+            />
+          ) : entity === "accessPoints" ? (
+            <Datatable3 
+              title={title}
+              entity={entityTable}
+              tableTitle={tableTitle}
+              entityColumns={entityColumns}
+              id={id}
+              entityAssign={entityAssign}
+              entityConnect={entityConnect}
+            />
+          ) : (
+            <Datatable2
+              title={title}
+              entity={entityTable}
+              tableTitle={tableTitle}
+              entityColumns={entityColumns}
+              id={id}
+              entityAssign={entityAssign}
+              entityConnect={entityConnect}
+            />
+          )}
         </div>
       </div>
     </div>

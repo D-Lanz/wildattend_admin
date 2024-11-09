@@ -1,54 +1,98 @@
-.datatable1{
-  height: 500px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  min-height: 200px;
+/* Container for the datatable1 */
+.datatable1 {
+  flex: 1 1 100%;
+  width: 100%; /* Full width of the parent container */
+  max-width: 1355px; /* Maximum width to prevent it from growing too large */
+  height: 500px; /* Increase height to fit content and footer */
+  padding: 20px;
+  margin: 10px auto; /* Center align and add margin for spacing */
+  background-color: #ffffff; /* White background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
 }
 
-.cellWithImg{
+/* Inner container to make the DataGrid content scrollable */
+.datatable1 .MuiDataGrid-root {
+  flex: 1 1 auto; /* Allow the grid to expand to available space */
+  overflow-y: auto; /* Enable vertical scrolling for the grid content */
+  background-color: #ffffff;
+}
+
+/* Ensure pagination footer is visible */
+.datatable1 .MuiDataGrid-footerContainer {
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  padding-top: 8px; /* Space above the footer */
+  background-color: #ffffff;
+}
+
+/* Styling for cells containing images */
+.cellWithImg {
   display: flex;
   align-items: center;
 }
 
-.cellImg{
+.cellImg {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 20px;
+  margin-right: 10px; /* Slightly smaller margin for compact look */
 }
 
+/* Styling for cells with roles */
 .cellWithRole {
   padding: 5px;
   border-radius: 5px;
 }
 
-.cellAction{
+/* Action cell layout */
+.cellAction {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px; /* Slightly smaller gap for compact look */
 }
 
-.viewButton{
-  padding: 2px 5px;
+/* View button styling */
+.viewButton {
+  padding: 4px 8px;
   border-radius: 5px;
   background-color: gold;
   color: maroon;
+  font-weight: bold;
   cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
 }
 
-.removeButton{
-  padding: 2px 5px;
+.viewButton:hover {
+  background-color: #ffdd00; /* Darker gold on hover */
+}
+
+/* Remove button styling */
+.removeButton {
+  padding: 4px 8px;
   border-radius: 5px;
   background-color: maroon;
   color: gold;
+  font-weight: bold;
   cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
 }
 
-.datatable1Title{
+.removeButton:hover {
+  background-color: #800000; /* Darker maroon on hover */
+}
+
+/* Title styling for datatable1 */
+.datatable1Title {
   width: 100%;
-  font-size: 24;
+  font-size: 24px;
   color: maroon;
   margin-bottom: 10px;
   display: flex;
@@ -56,12 +100,19 @@
   justify-content: space-between;
 }
 
-.linkdt{
+/* Link styling for assigning classes */
+.linkdt {
   text-decoration: none;
   color: maroon;
   border: 1px solid maroon;
   border-radius: 5px;
-  font-weight: 400;
-  padding: 5px;
+  font-weight: 500;
+  padding: 6px 12px;
   cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.linkdt:hover {
+  background-color: maroon;
+  color: gold;
 }

@@ -40,9 +40,9 @@ export const classColumns = [
 ];
 
 export const userClassColumns = [
-  { field: 'status', headerName: 'Status', width: 100, },
-  { field: 'timeIn', headerName: 'Time In', width: 420, },
-  { field: 'timeOut', headerName: 'Time Out', width: 420, },
+  { field: 'status', headerName: 'Status', width: 150, },
+  { field: 'timeIn', headerName: 'Time In', width: 300, },
+  { field: 'timeOut', headerName: 'Time Out', width: 300, },
 ];
 
 export const roomColumns = [

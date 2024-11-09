@@ -1,51 +1,97 @@
-.datatable{
-  height: 550px;
+/* Responsive width and fixed height for datatable */
+.datatable {
+  width: 100%; /* Full width of the parent container */
+  max-width: 1350px; /* Maximum width to prevent it from growing too large */
+  height: 600px; /* Fixed height */
   padding: 20px;
+  margin: 10px auto; /* Center align with spacing */
+  background-color: #ffffff; /* White background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents content overflow */
 }
 
-.cellWithImg{
+/* Inner container to make the DataGrid content scrollable */
+.datatable .MuiDataGrid-root {
+  flex: 1; /* Fill remaining space within fixed container */
+  overflow-y: auto; /* Enable vertical scrolling for the grid content */
+  background-color: #ffffff;
+  max-height: calc(100% - 50px); /* Adjust height to keep the footer visible */
+}
+
+/* Ensure pagination footer is visible and stays fixed at the bottom */
+.datatable .MuiDataGrid-footerContainer {
+  height: 55px; /* Fixed height for footer */
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0; /* Border for separation */
+}
+
+/* Styling for cells containing images */
+.cellWithImg {
   display: flex;
   align-items: center;
 }
 
-.cellImg{
+.cellImg {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 20px;
+  margin-right: 10px; /* Slightly smaller margin for compact look */
 }
 
+/* Styling for cells with roles */
 .cellWithRole {
   padding: 5px;
   border-radius: 5px;
 }
 
-.cellAction{
+/* Action cell layout */
+.cellAction {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px; /* Slightly smaller gap for compact look */
 }
 
-.viewButton{
-  padding: 2px 5px;
+/* View button styling */
+.viewButton {
+  padding: 4px 8px;
   border-radius: 5px;
   background-color: gold;
   color: maroon;
+  font-weight: bold;
   cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
 }
 
-.deleteButton{
-  padding: 2px 5px;
+.viewButton:hover {
+  background-color: #ffdd00; /* Darker gold on hover */
+}
+
+/* Delete button styling */
+.deleteButton {
+  padding: 4px 8px;
   border-radius: 5px;
   background-color: maroon;
   color: gold;
+  font-weight: bold;
   cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
 }
 
-.datatableTitle{
+.deleteButton:hover {
+  background-color: #800000; /* Darker maroon on hover */
+}
+
+/* Title styling for datatable */
+.datatableTitle {
   width: 100%;
-  font-size: 24;
+  font-size: 24px;
   color: maroon;
   margin-bottom: 10px;
   display: flex;
@@ -53,16 +99,24 @@
   justify-content: space-between;
 }
 
-.linkdt{
+/* Link styling */
+.linkdt {
   text-decoration: none;
   color: maroon;
   border: 1px solid maroon;
   border-radius: 5px;
-  font-weight: 400;
-  padding: 5px;
+  font-weight: 500;
+  padding: 6px 12px;
   cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
 }
 
+.linkdt:hover {
+  background-color: maroon;
+  color: gold;
+}
+
+/* Filter section styling */
 .filterSection {
   display: flex;
   align-items: center;
