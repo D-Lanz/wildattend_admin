@@ -7,15 +7,15 @@ import Datatable3 from "../../components/datatable3/Datatable3";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getDoc, doc, collection, query, where, getDocs } from "firebase/firestore";
+import { getDoc, doc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { AuthContext } from "../../context/AuthContext"; // Assuming you have an AuthContext providing logged-in user info
+import { AuthContext } from "../../context/AuthContext";
 
 const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, entityAssign, entityConnect }) => {
   const { id } = useParams();
-  const { currentUser } = useContext(AuthContext); // Accessing logged-in user data
+  const { currentUser } = useContext(AuthContext); 
   const [data, setData] = useState(null);
   const [statusSummary, setStatusSummary] = useState({ "On-Time": 0, Late: 0, Absent: 0 });
   const [attendanceDates, setAttendanceDates] = useState([]);
@@ -27,6 +27,11 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const getScheduledDays = (days) => {
+    const weekdays = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+    return Object.keys(days).filter((day) => days[day] === true).map((day) => weekdays[day]);
   };
 
   useEffect(() => {
@@ -44,7 +49,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
         if (fetchedData) {
           setData(fetchedData);
         } else {
-          console.log(`No such document found for ${entity} with ID:`, id);
+          console.log(`No document found for ${entity} with ID:`, id);
         }
       } catch (error) {
         console.error("Error fetching document:", error);
@@ -53,7 +58,6 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
 
     const fetchClassOptions = async () => {
       try {
-        // Fetch user role from Firestore
         const userRoleDoc = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
         const userRoleData = userRoleDoc.docs[0]?.data();
 
@@ -63,7 +67,6 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
         }
 
         if (userRoleData.role === "Admin") {
-          // For Admin, fetch all classes associated with the selected user
           const userClassesQuery = query(collection(db, "userClasses"), where("userID", "==", id));
           const userClassesSnapshot = await getDocs(userClassesQuery);
 
@@ -87,9 +90,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
           );
 
           setClassOptions(fetchedClasses.filter((classItem) => classItem !== null));
-          console.log("Fetched Admin Classes Data:", fetchedClasses);
         } else if (userRoleData.role === "Faculty") {
-          // For Faculty, fetch only mutual classes between logged-in faculty and selected user
           const facultyClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
           const facultyClassesSnapshot = await getDocs(facultyClassesQuery);
           const facultyClassIDs = facultyClassesSnapshot.docs.map((doc) => doc.data().classID);
@@ -119,11 +120,10 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
           );
 
           setClassOptions(fetchedMutualClasses.filter((classItem) => classItem !== null));
-          console.log("Fetched Mutual Classes Data:", fetchedMutualClasses);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        setClassOptions([]); // Clear options if there was an error
+        setClassOptions([]);
       }
     };
 
@@ -134,79 +134,91 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
   useEffect(() => {
     const fetchAttendanceData = async () => {
       if (!id) return;
-  
+
       try {
         let attendanceQuery;
         const counts = { "On-Time": 0, Late: 0, Absent: 0 };
-  
+        let expectedAttendanceDays = [];
+
         if (entity === "users" && selectedClass) {
-          // For users entity, filter by selected class if provided
           attendanceQuery = query(
             collection(db, "attendRecord"),
             where("userId", "==", id),
             where("classId", "==", selectedClass)
           );
+
+          const classDoc = await getDoc(doc(db, "classes", selectedClass));
+          if (classDoc.exists()) {
+            const { days, startTime, endTime } = classDoc.data();
+            expectedAttendanceDays = getScheduledDays(days);
+          }
+        } else if (entity === "users" && !selectedClass) {
+          const classIdsToInclude = classOptions.map((classItem) => classItem.id);
+          attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where("userId", "==", id),
+            where("classId", "in", classIdsToInclude)
+          );
+
+          for (const classItem of classOptions) {
+            const { days, startTime, endTime } = classItem;
+            expectedAttendanceDays = [
+              ...expectedAttendanceDays,
+              ...getScheduledDays(days),
+            ];
+          }
         } else if (entity === "classes" && selectedDate) {
-          // For classes entity, filter by selected date
           const startDate = new Date(selectedDate);
-          const endDate = new Date(selectedDate);
-          endDate.setDate(endDate.getDate() + 1);
-  
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + 1);
+
           attendanceQuery = query(
             collection(db, "attendRecord"),
             where("classId", "==", id),
             where("timeIn", ">=", startDate),
             where("timeIn", "<", endDate)
           );
-        } else if (entity === "users") {
-          // Default case for users entity: apply mutual class filtering if "Faculty"
-          const classIdsToInclude = classOptions.map((classItem) => classItem.id);
-          
-          attendanceQuery = query(
-            collection(db, "attendRecord"),
-            where("userId", "==", id),
-            where("classId", "in", classIdsToInclude)
-          );
         } else if (entity === "classes") {
-          // Default case for classes entity: fetch all attendance records for the class
           attendanceQuery = query(
             collection(db, "attendRecord"),
             where("classId", "==", id)
           );
         }
-  
+
         const attendanceSnapshot = await getDocs(attendanceQuery);
-  
+
         attendanceSnapshot.forEach((doc) => {
           const { status } = doc.data();
           if (counts[status] !== undefined) {
             counts[status] += 1;
           }
         });
-  
-        setStatusSummary(counts);
-  
-        // For the `classes` entity, gather all dates with attendance records for highlighting
-        if (entity === "classes" && !selectedDate) {
-          const uniqueDates = new Set();
-  
-          attendanceSnapshot.forEach((docSnap) => {
-            const timeIn = docSnap.data().timeIn?.toDate();
-            if (timeIn) {
-              uniqueDates.add(new Date(timeIn.setHours(0, 0, 0, 0)).getTime()); // Normalize to start of day
-            }
+
+        if ((entity === "users" && !selectedClass) || (entity === "users" && selectedClass)) {
+          const today = new Date();
+          expectedAttendanceDays.forEach((weekday) => {
+            const absenceDate = new Date(today);
+            absenceDate.setDate(today.getDate() + ((7 + weekday - today.getDay()) % 7));
+
+            const hasAttendanceRecord = attendanceSnapshot.docs.some(
+              (doc) =>
+                doc.data().timeIn?.toDate().toDateString() === absenceDate.toDateString()
+            );
+
+            if (!hasAttendanceRecord) counts["Absent"] += 1;
           });
-  
-          setAttendanceDates([...uniqueDates].map((timestamp) => new Date(timestamp))); // Convert back to date objects
         }
+
+        setStatusSummary(counts);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
     };
-  
+
     fetchAttendanceData();
   }, [id, entity, selectedClass, selectedDate, classOptions]);
-  
+
   let title;
   if (entity === "users") {
     title = `${data?.lastName || ""}, ${data?.firstName || ""}`;
@@ -301,7 +313,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             {entity === "classes" && (
               <DatePicker
                 selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)} // Update selected date to trigger useEffect
+                onChange={(date) => setSelectedDate(date)}
                 highlightDates={attendanceDates}
                 placeholderText="Select a date"
                 dateFormat="MMMM d, yyyy"
