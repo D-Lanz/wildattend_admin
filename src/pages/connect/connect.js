@@ -47,29 +47,47 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("Starting data fetch for userClasses ID:", id); // Initial log
       try {
         if (id) {
           const userClassRef = doc(db, "userClasses", id);
           const userClassDocSnap = await getDoc(userClassRef);
-
+  
           if (userClassDocSnap.exists()) {
+            console.log("userClass document found:", userClassDocSnap.data());
             const userClassDoc = userClassDocSnap.data();
             const userID = userClassDoc.userID;
             const classID = userClassDoc.classID;
-
+  
             const userDocSnap = await getDoc(doc(db, "users", userID));
             const classDocSnap = await getDoc(doc(db, "classes", classID));
-            if (userDocSnap.exists()) setUserData(userDocSnap.data());
-            if (classDocSnap.exists()) setClassData(classDocSnap.data());
-
+  
+            if (userDocSnap.exists()) {
+              console.log("User data fetched:", userDocSnap.data());
+              setUserData(userDocSnap.data());
+            } else {
+              console.warn("No user data found for userID:", userID);
+            }
+  
+            if (classDocSnap.exists()) {
+              console.log("Class data fetched:", classDocSnap.data());
+              setClassData(classDocSnap.data());
+            } else {
+              console.warn("No class data found for classID:", classID);
+            }
+  
             const classData = classDocSnap.data();
             const { days, startTime, endTime } = classData;
             const classStartDate = new Date(userClassDoc.enrollDate?.toDate());
             const currentDate = new Date();
-
+  
+            console.log("Class schedule days:", days);
+            console.log("Enrollment start date:", classStartDate);
+  
             // Calculate expected attendance dates
             const expectedDates = getScheduledDates(days, classStartDate, currentDate);
-
+            console.log("Expected attendance dates calculated:", expectedDates);
+  
             const attendRecordQuery = query(
               collection(db, "attendRecord"),
               where("userId", "==", userID),
@@ -77,53 +95,81 @@ const Connect = ({ userColumns, classColumns, entityColumns, entityTable, tableT
               orderBy("timeIn", "desc")
             );
             const attendRecordSnapshot = await getDocs(attendRecordQuery);
-
+            console.log("Attendance records fetched:", attendRecordSnapshot.docs.length);
+  
             // Map attendance records by date string
             const attendanceByDate = new Map();
             attendRecordSnapshot.docs.forEach((doc) => {
               const data = doc.data();
               const dateKey = data.timeIn?.toDate().toDateString();
+              console.log(`Record for ${dateKey}:`, data);
               attendanceByDate.set(dateKey, {
                 id: doc.id,
-                timeIn: data.timeIn ? formatDateTime(data.timeIn.toDate()) : "N/A",
-                timeOut: data.timeOut ? formatDateTime(data.timeOut.toDate()) : "N/A",
+                timeIn: data.timeIn ? data.timeIn.toDate() : null,
+                timeOut: data.timeOut ? data.timeOut.toDate() : null,
                 status: data.status,
                 date: data.timeIn ? data.timeIn.toDate() : dateKey,
               });
             });
-
+  
             // Populate records including absences
             const records = expectedDates.map((date) => {
               const dateString = date.toDateString();
-              return (
-                attendanceByDate.get(dateString) || {
+  
+              // Calculate class's start and end time for the current date
+              const classStartDateTime = new Date(date);
+              const [startHours, startMinutes] = startTime.split(":").map(Number);
+              classStartDateTime.setHours(startHours, startMinutes, 0, 0);
+  
+              const classEndDateTime = new Date(date);
+              const [endHours, endMinutes] = endTime.split(":").map(Number);
+              classEndDateTime.setHours(endHours, endMinutes, 0, 0);
+  
+              const record = attendanceByDate.get(dateString);
+  
+              if (record) {
+                const timeIn = record.timeIn;
+                if (timeIn && timeIn <= classEndDateTime) {
+                  record.status = "On-Time";
+                } else {
+                  record.status = "Late";
+                }
+              } else if (currentDate >= classEndDateTime) {
+                // Mark as "Absent" only if the current time is past the class's end time
+                return {
                   id: dateString,
                   timeIn: "N/A",
                   timeOut: "N/A",
                   status: "Absent",
                   date: date, // Store as a Date object for sorting
-                }
-              );
-            });
-
+                };
+              }
+  
+              return record || null;
+            }).filter(record => record !== null); // Remove null values
+  
             setAttendRecords(records);
-
+  
             // Calculate the counts for each status
             const counts = records.reduce((acc, record) => {
               const statusKey = record.status === "Present" ? "On-Time" : record.status;
               acc[statusKey] = (acc[statusKey] || 0) + 1;
               return acc;
             }, { "On-Time": 0, Late: 0, Absent: 0 });
+  
+            console.log("Final status counts:", counts);
             setStatusCounts(counts);
+          } else {
+            console.warn("No userClasses document found for ID:", id);
           }
         }
       } catch (error) {
         console.error("Error fetching document:", error);
       }
     };
-
+  
     fetchData();
-  }, [id]);
+  }, [id]);  
 
   const handleBack = () => {
     navigate(-1);
