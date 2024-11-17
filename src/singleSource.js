@@ -19,6 +19,7 @@ export const classSingle = [
   { field: 'classSec', headerName: 'Section'},
   // { field: 'instructor', headerName: 'Instructor'},
   { field: 'classRoom', headerName: 'Classroom'},
+  { field: 'ip_address', headerName: 'IP Address'},
   { field: 'semester', headerName: 'Semester'},
   { field: 'schoolYear', headerName: 'School Year'},
   { field: 'days', headerName: 'Days'},

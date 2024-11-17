@@ -116,6 +116,12 @@ export const classInputs= [
     type:"dropdown", // Change the type to "dropdown"
     options: ["First", "Second", "Midyear"], // Add options for the dropdown
   },
+  {
+    id: "ip_address",
+    label:"IP Adress",
+    type:"text",
+    placeholder: "IP4v.",
+  },
 ]
 
 export const roomInputs = [
