@@ -27,6 +27,7 @@ import Schedule from './pages/schedule/schedule';
 import AdminProfile from './pages/admin_profile/admin_profile';
 import AttendRecord from './pages/attendRecord/attendRecord';
 import PageNotFound from './pages/pageNotFound/pageNotFound';
+import FacultyAttendance from './pages/facultyAttendance/facultyAttendance';
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -242,7 +243,8 @@ function App() {
             <Route path=":id" element={<RequireAuth><AttendRecord /></RequireAuth>} />
           </Route>  
           <Route path="profile" element={<RequireAuth><AdminProfile /></RequireAuth>}/>
-          
+          <Route path="facultyAttendance" element={<RequireAuth><FacultyAttendance /></RequireAuth>}/>
+
           {/* Redirect to login for any unknown paths */}
           <Route path="*" element={<RequireAuth><PageNotFound/></RequireAuth>} />
         </Routes>

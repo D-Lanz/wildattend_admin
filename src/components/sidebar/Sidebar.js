@@ -13,6 +13,7 @@ import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import LogoutIcon from '@mui/icons-material/Logout';
 import RoomIcon from '@mui/icons-material/Room';
 import RouterIcon from '@mui/icons-material/Router';
+import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
 import { Link } from "react-router-dom";
 
 const Sidebar = () => {
@@ -123,9 +124,19 @@ const Sidebar = () => {
           <Link to="/schedule" style={{ textDecoration: "none" }}>
             <li>
               <ReceiptLongIcon className="icon" />
-              <span>Attendance Records</span>
+              <span>Class Attendance</span>
             </li>
           </Link>
+          {role === 'Admin' && (
+            <>
+              <Link to="/facultyAttendance" style={{ textDecoration: "none" }}>
+                <li>
+                  <SwitchAccountIcon className="icon" />
+                  <span>Faculty Attendance</span>
+                </li>
+              </Link>
+            </>
+          )}
           <p className="title">LISTS</p>
           <Link to="/users" style={{ textDecoration: 'none' }}>
             <li>

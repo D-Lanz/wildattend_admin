@@ -1,0 +1,123 @@
+.home {
+  display: flex;
+  justify-content: flex-start;  /* Aligns items to the start */
+  align-items: stretch;         /* Makes items stretch to fill the height */
+  height: 100vh;                /* Makes the container take the full viewport height */
+}
+
+.homeContainer {
+  background: linear-gradient(to bottom, #FFFFFF, #CEA108);
+  flex: 6;
+  display: flex;                /* Enables Flexbox for child elements */
+  flex-direction: column;       /* Stack children vertically */
+  justify-content: flex-start;  /* Aligns children to the top */
+}
+
+.contentContainer {
+  display: flex;                /* Enables Flexbox for centering */
+  justify-content: center;      /* Centers content horizontally */
+  align-items: center;          /* Centers content vertically */
+  height: 100%;                 /* Takes the full height of the parent */
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+/* Responsive width and fixed height for datatable */
+.datatable {
+  width: 100%; /* Full width of the parent container */
+  max-width: 1350px; /* Maximum width to prevent it from growing too large */
+  height: 600px; /* Fixed height */
+  padding: 20px;
+  margin: 10px auto; /* Center align with spacing */
+  background-color: #ffffff; /* White background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents content overflow */
+  -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+}
+
+/* Inner container to make the DataGrid content scrollable */
+.datatable .MuiDataGrid-root {
+  flex: 1; /* Fill remaining space within fixed container */
+  overflow-y: auto; /* Enable vertical scrolling for the grid content */
+  background-color: #ffffff;
+  max-height: calc(100% - 50px); /* Adjust height to keep the footer visible */
+}
+
+/* Ensure pagination footer is visible and stays fixed at the bottom */
+.datatable .MuiDataGrid-footerContainer {
+  height: 55px; /* Fixed height for footer */
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0; /* Border for separation */
+}
+
+/* Styling the Date Picker container */
+.filterSection .react-datepicker-wrapper {
+  display: inline-block;
+  width: auto; /* Adjust to content width */
+  margin-left: 20px; /* Add some spacing from other filters */
+}
+
+/* Date Picker input field */
+.filterSection .react-datepicker__input-container input {
+  width: 200px; /* Fixed width for consistency */
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #495057;
+  background-color: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus state for the Date Picker input */
+.filterSection .react-datepicker__input-container input:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 4px rgba(128, 128, 128, 0.2);
+}
+
+/* Styling the Date Picker dropdown */
+.filterSection .react-datepicker {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight the selected date */
+.filterSection .react-datepicker__day--selected {
+  background-color: #cea108;
+  color: #fff;
+}
+
+/* Hover effect for dates */
+.filterSection .react-datepicker__day:hover {
+  background-color: #ffebc5;
+  color: #333;
+}
+
+/* Styling navigation buttons in the Date Picker */
+.filterSection .react-datepicker__navigation {
+  border: none;
+  background-color: #cea108;
+  color: #fff;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.filterSection .react-datepicker__navigation:hover {
+  background-color: #e4b607;
+}
