@@ -6,25 +6,26 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from "react";
-import { TextField } from "@mui/material";
+import { TextField, Button } from "@mui/material";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { format, addDays } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
-import AttendancePieChart from "../../components/attendancePieChart/attendancePieChart";
+import ClassAttendanceExportModal from "./classAttendanceExport";
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [date, setDate] = useState(today);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);  
-  const [attendanceData, setAttendanceData] = useState([]);
+  const [attendanceData, setAttendanceData] = useState({ faculty: [], students: [] });
   const [classDetails, setClassDetails] = useState(null); 
   const [userCount, setUserCount] = useState(0); 
   const [studentCount, setStudentCount] = useState(0);
   const [facultyCount, setFacultyCount] = useState(0);
   const { id } = useParams(); 
   const navigate = useNavigate();
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false); // Modal state
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -82,113 +83,68 @@ const AttendRecord = () => {
     
     const fetchAttendanceData = async () => {
       try {
-        // 1. Fetch all user IDs (students and faculty) enrolled in the class
-        const userClassesRef = collection(db, "userClasses");
-        const userClassesQuery = query(userClassesRef, where("classId", "==", id));
-        const userClassesSnapshot = await getDocs(userClassesQuery);
-    
-        console.log("userClassesSnapshot size:", userClassesSnapshot.size);
-        userClassesSnapshot.docs.forEach((doc) => console.log("userClasses doc:", doc.data()));
-    
-        const allUserIds = userClassesSnapshot.docs.map(doc => doc.data().userId); // All enrolled user IDs
-        console.log("All enrolled user IDs:", allUserIds);
-    
-        // 2. Fetch attendance records for those who have timed in
-        const attendanceRef = collection(db, "attendRecord");
-        const attendanceQuery = query(attendanceRef, where("classId", "==", id));
-        const attendanceSnapshot = await getDocs(attendanceQuery);
-    
-        const attendanceRecords = {
-          faculty: [],
-          students: [],
-        };
-    
-        const userIdsWithAttendance = attendanceSnapshot.docs.map(doc => doc.data().userId); // Users with attendance records
-        const userIdsWithoutAttendance = allUserIds.filter(userId => !userIdsWithAttendance.includes(userId)); // Users without attendance
-    
-        console.log("User IDs with attendance records:", userIdsWithAttendance);
-        console.log("User IDs without attendance records:", userIdsWithoutAttendance);
-    
-        // 3. Fetch user details for users with attendance records
-        const usersPromisesWithAttendance = userIdsWithAttendance.map(userId => getDoc(doc(db, "users", userId)));
-        const usersSnapshotsWithAttendance = await Promise.all(usersPromisesWithAttendance);
-    
-        const usersMapWithAttendance = {};
-        usersSnapshotsWithAttendance.forEach(userDoc => {
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            usersMapWithAttendance[userDoc.id] = {
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              role: userData.role,
+        const userClassesSnapshot = await getDocs(
+          query(collection(db, "userClasses"), where("classID", "==", id))
+        );
+
+        const allUserIds = userClassesSnapshot.docs.map((doc) => doc.data().userID);
+
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        const allUsers = usersSnapshot.docs.map((doc) => ({
+          userId: doc.id,
+          ...doc.data(),
+        }));
+
+        const enrolledUsers = allUsers.filter((user) => allUserIds.includes(user.userId));
+
+        const attendanceSnapshot = await getDocs(
+          query(collection(db, "attendRecord"), where("classId", "==", id))
+        );
+
+        const attendanceMap = attendanceSnapshot.docs.reduce((acc, doc) => {
+          const data = doc.data();
+          const timeInDate = data.timeIn ? data.timeIn.toDate() : null;
+          const formattedDate = timeInDate ? format(timeInDate, "yyyy-MM-dd") : null;
+
+          if (formattedDate === date) {
+            acc[data.userId] = {
+              timeIn: data.timeIn ? format(data.timeIn.toDate(), "hh:mm a") : "--",
+              timeOut: data.timeOut ? format(data.timeOut.toDate(), "hh:mm a") : "--",
+              status: data.status || "Absent",
             };
           }
-        });
-    
-        // 4. Process attendance records for those who have timed in
-        attendanceSnapshot.forEach(doc => {
-          const attendanceData = doc.data();
-          const userId = attendanceData.userId;
-          const userData = usersMapWithAttendance[userId];
-    
-          const timeInDate = attendanceData.timeIn ? attendanceData.timeIn.toDate() : null;
-          const formattedTimeInDate = timeInDate ? format(timeInDate, 'yyyy-MM-dd') : null;
-    
-          if (formattedTimeInDate === date) {
-            const record = {
-              id: doc.id,
-              userId: userId,
-              firstName: userData ? userData.firstName : "--",
-              lastName: userData ? userData.lastName : "--",
-              role: userData ? userData.role : "--",
-              timeIn: attendanceData.timeIn ? format(attendanceData.timeIn.toDate(), 'hh:mm a') : "--",
-              timeOut: attendanceData.timeOut ? format(attendanceData.timeOut.toDate(), 'hh:mm a') : "--",
-              status: attendanceData.status || "Absent",
-            };
-    
-            if (userData && userData.role === "Faculty") {
-              attendanceRecords.faculty.push(record);
-            } else if (userData && userData.role === "Student") {
-              attendanceRecords.students.push(record);
-            }
+          return acc;
+        }, {});
+
+        const faculty = [];
+        const students = [];
+
+        enrolledUsers.forEach((user) => {
+          const attendance = attendanceMap[user.userId] || {
+            timeIn: "--",
+            timeOut: "--",
+            status: "Absent",
+          };
+
+          const record = {
+            id: user.userId,
+            lastName: user.lastName || "--",
+            firstName: user.firstName || "--",
+            timeIn: attendance.timeIn,
+            timeOut: attendance.timeOut,
+            status: attendance.status,
+          };
+
+          if (user.role === "Faculty") {
+            faculty.push(record);
+          } else if (user.role === "Student") {
+            students.push(record);
           }
         });
-    
-        console.log("Attendance records after processing timed-in users:", attendanceRecords.students);
-    
-        // 5. Fetch user details for users without attendance records (from userClasses)
-        if (userIdsWithoutAttendance.length > 0) {
-          const usersPromisesWithoutAttendance = userIdsWithoutAttendance.map(userId => getDoc(doc(db, "users", userId)));
-          const usersSnapshotsWithoutAttendance = await Promise.all(usersPromisesWithoutAttendance);
-    
-          usersSnapshotsWithoutAttendance.forEach(userDoc => {
-            if (userDoc.exists()) {
-              const userData = userDoc.data();
-              const record = {
-                id: userDoc.id, // No attendRecord ID, so using user ID here
-                userId: userDoc.id,
-                firstName: userData.firstName || "--",
-                lastName: userData.lastName || "--",
-                role: userData.role || "--",
-                timeIn: "--", // No timeIn (haven't timed in yet)
-                timeOut: "--", // No timeOut
-                status: "Absent", // Default to Absent for those without attendance records
-              };
-    
-              if (userData.role === "Faculty") {
-                attendanceRecords.faculty.push(record);
-              } else if (userData.role === "Student") {
-                attendanceRecords.students.push(record); // Ensure students are pushed to the array
-              }
-            }
-          });
-    
-          console.log("Attendance records after adding users without attendance:", attendanceRecords.students);
-        }
-    
-        // 6. Update state with attendance records
-        setAttendanceData(attendanceRecords); // This should now include students with and without attendRecords
-        console.log("Final attendance data set:", attendanceRecords);
+
+        setAttendanceData({ faculty, students });
+        setFacultyCount(faculty.length);
+        setStudentCount(students.length);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
@@ -310,12 +266,6 @@ const AttendRecord = () => {
     }
   };
   
-
-
-
-  
-
-
   const columns = [
     { field: 'lastName', headerName: 'Last Name', width: 150 },
     { field: 'firstName', headerName: 'First Name', width: 150 },
@@ -386,45 +336,14 @@ const AttendRecord = () => {
                 <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('selected')}/>
               </div>
               <hr/>
-              {/* Render the pie chart with static data
-              <AttendancePieChart data={attendanceChartData} /> */}
-            </div>
-
-            {/* HAS START AND END DATE */}
-            <div className="dateFilter">
-              <p>Selected Date Range</p>
-              {/* New date range selectors */}
-              <div className="dateRangeContainer">
-                <TextField
-                  id="startDate"
-                  label="Start Date"
-                  type="date"
-                  value={startDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleStartDateChange}
-                />
-                <TextField
-                  id="endDate"
-                  label="End Date"
-                  type="date"
-                  value={endDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleEndDateChange}
-                />
-                <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('range')}/>
-              </div>
-
-
-              {/* Export buttons */}
-              <div className="exportButtons">
-                <button className="exportButton2" onClick={() => exportAttendance('all')}>
-                  Export Attendance for All Class Days
-                </button>
-              </div>
+              <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => setIsExportModalOpen(true)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  More Export Options
+                </Button>
             </div>
 
           </div>
@@ -454,6 +373,13 @@ const AttendRecord = () => {
 
         </div>
       </div>
+      <ClassAttendanceExportModal
+        open={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        attendanceData={attendanceData || { faculty: [], students: [] }}
+        classDetails={classDetails}
+      />
+
     </div>
   );
 };

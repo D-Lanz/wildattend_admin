@@ -53,10 +53,11 @@
 }
 
 .dataTable {
-  height: 600px; /* Adjust height as needed */
+  height: 500px; /* Adjust height as needed */
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 800px;
 }
 
 .dataTable2{
@@ -64,6 +65,7 @@
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 800px;
 }
 
 .classImage {
