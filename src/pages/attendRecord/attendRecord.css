@@ -50,7 +50,7 @@
 }
 
 .dataTable {
-  height: 350px; /* Adjust height as needed */
+  height: 540px; /* Adjust height as needed */
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -174,4 +174,34 @@
 .iconButton:hover {
   background-color: gold; /* Gold background on hover */
   color: maroon; /* Maroon icon color on hover */
+}
+
+.react-calendar {
+  width: 100px; /* Adjust width */
+  font-size: 0.85rem; /* Reduce font size */
+}
+
+.react-calendar__navigation {
+  height: 30px; /* Reduce height of the navigation bar */
+}
+
+.react-calendar__tile {
+  padding: px; /* Reduce padding for calendar tiles */
+}
+
+.react-calendar__month-view__weekdays {
+  font-size: 0.75rem; /* Smaller font size for weekday labels */
+}
+
+.react-calendar__month-view__days__day {
+  border-radius: 5px; /* Rounded corners for the day tiles */
+}
+
+.react-calendar__tile--active {
+  background-color: #ffde59 !important; /* Ensure active date stands out */
+  color: #000 !important; /* Ensure text is readable */
+}
+
+.react-calendar__tile--now {
+  background-color: #ffeedf !important; /* Different highlight for today */
 }

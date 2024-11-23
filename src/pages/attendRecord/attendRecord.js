@@ -1,3 +1,4 @@
+import 'react-calendar/dist/Calendar.css';
 import "./attendRecord.css";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
@@ -14,10 +15,12 @@ import { db } from "../../firebase";
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
 import ClassAttendanceExportModal from "./classAttendanceExport";
+import ReactCalendar from "react-calendar";
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [date, setDate] = useState(today);
+  const [highlightedDays, setHighlightedDays] = useState([]);
   const [attendanceData, setAttendanceData] = useState({ faculty: [], students: [] });
   const [classDetails, setClassDetails] = useState(null); 
   const [selectedFacultyFilter, setSelectedFacultyFilter] = useState("All");
@@ -29,7 +32,6 @@ const AttendRecord = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { id } = useParams(); 
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -160,6 +162,33 @@ const AttendRecord = () => {
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  useEffect(() => {
+    if (classDetails?.days) {
+      const daysMapping = {
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6,
+        Sunday: 0,
+      };
+
+      // Map classDetails.days to indices used by ReactCalendar (0=Sunday, 1=Monday, etc.)
+      const activeDays = Object.keys(classDetails.days)
+        .filter((day) => classDetails.days[day])
+        .map((day) => daysMapping[day]);
+
+      setHighlightedDays(activeDays);
+    }
+  }, [classDetails]);
+
+  // Function to determine if a date should be highlighted
+  const isHighlighted = (date) => {
+    if (!highlightedDays.length) return false;
+    return highlightedDays.includes(date.getDay());
   };
 
   const handleDateChange = (event) => {
@@ -327,7 +356,20 @@ const AttendRecord = () => {
                   <h2>{classDetails.classCode} - {classDetails.classSec} ({classDetails.schoolYear} {classDetails.semester} Sem)</h2>
                   <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)} ({classDetails.classType})</p>
                   <p>{classDetails.Ongoing ? "Ongoing" : "Not Ongoing"}</p>
-                  {/* Can you add the map of classDetails.days? where days={Monday: true, Tuesday: true, Wednesday: false} */}
+                  <p>
+                    <strong>Days:</strong>{" "}
+                    {classDetails.days
+                      ? Object.keys(classDetails.days)
+                          .filter((day) => classDetails.days[day])
+                          .join(", ")
+                      : "Not specified"}
+                  </p>
+                  <div
+                    className="customButton"
+                    onClick={() => navigate(`/classes/${id}`)}
+                  >
+                    View Class Details
+                  </div>
                 </>
               ) : (
                 <p>Loading class details...</p>
@@ -337,18 +379,23 @@ const AttendRecord = () => {
             {/* ONLY HAS ONE DATE */}
             <div className="dateFilter">
               {/* Existing date selector */}
-              <p>Select Date</p>
+              <p>Select Date - {format(new Date(date), 'MM/dd/yyyy')}</p>
               <div className="selectedContainer">
-                <TextField
-                  id="date"
-                  label="Select Date"
-                  type="date"
-                  value={date}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleDateChange}
-                />
+              <ReactCalendar
+                onChange={(value) => setDate(format(value, "yyyy-MM-dd"))}
+                tileClassName={({ date, view }) =>
+                  view === "month" && isHighlighted(date) ? "highlight" : null
+                }
+                value={new Date(date)}
+              />
+              <style>
+                {`
+                  .highlight {
+                    background-color: #ffde59;
+                    border-radius: 50%;
+                  }
+                `}
+              </style>
                 <FileDownloadIcon className="iconButton" onClick={() => exportAttendance('selected')}/>
               </div>
               <hr/>
