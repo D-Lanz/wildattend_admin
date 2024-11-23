@@ -28,7 +28,8 @@
 
 .rightColumn {
   flex: 2;
-  padding: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .classDetails {
@@ -48,24 +49,20 @@
   gap: 10px; /* Space between elements */
 }
 
-.dateFilter h2{
-
-}
-
 .dataTable {
-  height: 500px; /* Adjust height as needed */
+  height: 350px; /* Adjust height as needed */
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 800px;
+  width: 892px;
 }
 
 .dataTable2{
-  height: 220px; /* Adjust height as needed */
+  height: 215px; /* Adjust height as needed */
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 800px;
+  width: 892px;
 }
 
 .classImage {
@@ -128,4 +125,53 @@
   display: flex;
   gap: 16px; /* Adds space between the two fields */
   align-items: center; /* Vertically aligns them in the center */
+}
+
+.flexRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px; 
+  margin-top: 10px; 
+  width: 890px;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.customButton {
+  background-color: maroon; 
+  color: gold;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px; /* Slightly rounded corners */
+  font-size: 14px; /* Adjust font size */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover transition */
+}
+
+.customButton:hover {
+  background-color: gold; /* Gold background on hover */
+  color: maroon; /* Maroon text on hover */
+}
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: maroon; /* Maroon background */
+  color: gold; /* Gold icon color */
+  width: 40px; /* Set a fixed width */
+  height: 40px; /* Set a fixed height */
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-width: 40px; 
+  padding: 8px;
+}
+
+.iconButton:hover {
+  background-color: gold; /* Gold background on hover */
+  color: maroon; /* Maroon icon color on hover */
 }

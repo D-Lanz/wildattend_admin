@@ -3,29 +3,33 @@ import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PersonIcon from '@mui/icons-material/Person';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from "react";
-import { TextField, Button } from "@mui/material";
+import { TextField, div } from "@mui/material";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
 import ClassAttendanceExportModal from "./classAttendanceExport";
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [date, setDate] = useState(today);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);  
   const [attendanceData, setAttendanceData] = useState({ faculty: [], students: [] });
   const [classDetails, setClassDetails] = useState(null); 
-  const [userCount, setUserCount] = useState(0); 
-  const [studentCount, setStudentCount] = useState(0);
-  const [facultyCount, setFacultyCount] = useState(0);
+  const [selectedFacultyFilter, setSelectedFacultyFilter] = useState("All");
+  const [selectedStudentFilter, setSelectedStudentFilter] = useState("All");
+  const [facultyCounts, setFacultyCounts] = useState({ all: 0, onTime: 0, late: 0, absent: 0 });
+  const [studentCounts, setStudentCounts] = useState({ all: 0, onTime: 0, late: 0, absent: 0 });
+  const [filteredFaculty, setFilteredFaculty] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const { id } = useParams(); 
   const navigate = useNavigate();
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false); // Modal state
+
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -46,41 +50,6 @@ const AttendRecord = () => {
       }
     };
 
-    const fetchUserCounts = async () => {
-      try {
-        let studentCount = 0;
-        let facultyCount = 0;
-    
-        const userClassesRef = collection(db, "userClasses");
-        const userClassesQuery = query(userClassesRef, where("classID", "==", id));
-        const userClassesSnapshot = await getDocs(userClassesQuery);
-    
-        const userIds = userClassesSnapshot.docs.map(doc => doc.data().userID);
-    
-        const usersRef = collection(db, "users");
-        const usersSnapshot = await getDocs(usersRef);
-    
-        usersSnapshot.forEach(doc => {
-          const userData = doc.data();
-          const userID = doc.id;
-    
-          if (userIds.includes(userID)) {
-            if (userData.role === "Student") {
-              studentCount++;
-            } else if (userData.role === "Faculty") {
-              facultyCount++;
-            }
-          }
-        });
-    
-        setUserCount(userClassesSnapshot.size);
-        setStudentCount(studentCount);
-        setFacultyCount(facultyCount);
-      } catch (error) {
-        console.error("Error fetching user counts:", error);
-      }
-    };
-    
     const fetchAttendanceData = async () => {
       try {
         const userClassesSnapshot = await getDocs(
@@ -151,9 +120,43 @@ const AttendRecord = () => {
     };
     
     fetchClassDetails();
-    fetchUserCounts();
     fetchAttendanceData(); 
   }, [id, date]);
+
+  useEffect(() => {
+    const calculateCounts = (data) => {
+      const counts = { all: data.length, onTime: 0, late: 0, absent: 0 };
+      data.forEach((row) => {
+        if (row.status === "On-Time") counts.onTime++;
+        else if (row.status === "Late") counts.late++;
+        else if (row.status === "Absent") counts.absent++;
+      });
+      return counts;
+    };
+  
+    setFacultyCounts(calculateCounts(attendanceData.faculty));
+    setStudentCounts(calculateCounts(attendanceData.students));
+    setFilteredFaculty(attendanceData.faculty);
+    setFilteredStudents(attendanceData.students);
+  }, [attendanceData]);
+  
+  const handleFacultyFilter = (status) => {
+    setSelectedFacultyFilter(status); // Update selected filter
+    if (status === "All") {
+      setFilteredFaculty(attendanceData.faculty);
+    } else {
+      setFilteredFaculty(attendanceData.faculty.filter((row) => row.status === status));
+    }
+  };
+  
+  const handleStudentFilter = (status) => {
+    setSelectedStudentFilter(status); // Update selected filter
+    if (status === "All") {
+      setFilteredStudents(attendanceData.students);
+    } else {
+      setFilteredStudents(attendanceData.students.filter((row) => row.status === status));
+    }
+  };  
 
   const handleBack = () => {
     navigate(-1);
@@ -161,15 +164,6 @@ const AttendRecord = () => {
 
   const handleDateChange = (event) => {
     setDate(event.target.value);
-  };
-
-  // New handle functions for the date range
-  const handleStartDateChange = (event) => {
-    setStartDate(event.target.value);
-  };
-
-  const handleEndDateChange = (event) => {
-    setEndDate(event.target.value);
   };
 
   const exportAttendance = async (exportType) => {
@@ -192,9 +186,9 @@ const AttendRecord = () => {
         // Export for selected date
         exportData = [...attendanceData.students, ...attendanceData.faculty].map((user) => ({
           User: `${user.lastName}, ${user.firstName}`,
-          Status: user.status,
           TimeIn: user.timeIn || 'N/A',
           TimeOut: user.timeOut || 'N/A',
+          Status: user.status,
         }));
       } else if (exportType === 'all') {
         // Fetch all attendance records for the specified class
@@ -271,25 +265,50 @@ const AttendRecord = () => {
     { field: 'firstName', headerName: 'First Name', width: 150 },
     { field: 'timeIn', headerName: 'Time In', width: 150 },
     { field: 'timeOut', headerName: 'Time Out', width: 150 },
-    { field: 'status', headerName: 'Status', width: 150 },
+    { field: 'status', headerName: 'Status', width: 130 },
+    {
+      field: 'details',
+      headerName: 'Actions',
+      width:120,
+      renderCell: (params) => (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="iconButton" onClick={() => navigate(`/users/${params.row.id}`)}>
+            <PersonIcon />
+          </div>
+          <div className="iconButton" 
+            onClick={async () => {
+              try {
+                const userClassesRef = collection(db, "userClasses");
+                const userClassQuery = query(
+                  userClassesRef,
+                  where("classID", "==", id), // Current classID
+                  where("userID", "==", params.row.id) // userID from the row
+                );
+                const userClassSnapshot = await getDocs(userClassQuery);
+  
+                if (!userClassSnapshot.empty) {
+                  const userClassID = userClassSnapshot.docs[0].id; // Get the ID of the first matching document
+                  navigate(`/userClasses/${userClassID}`);
+                } else {
+                  console.error("No matching userClass document found!");
+                }
+              } catch (error) {
+                console.error("Error fetching userClassID:", error);
+              }
+            }}
+          > <FolderSharedIcon /> </div>
+        </div>
+      ),
+    },
   ];
 
   const formatTime = (time) => {
     if (!time) return "";
-    
     const [hours, minutes] = time.split(':');
     const hours12 = hours % 12 || 12; 
     const ampm = hours < 12 ? 'AM' : 'PM';
-    
     return `${hours12}:${minutes} ${ampm}`;
   };
-
-    // Static data for demonstration purposes
-    const attendanceChartData = [
-      { name: 'On-Time', value: 8 },
-      { name: 'Late', value: 2 },
-      { name: 'Absent', value: 5 },
-    ];
 
   return (
     <div className="main">
@@ -308,10 +327,7 @@ const AttendRecord = () => {
                   <h2>{classDetails.classCode} - {classDetails.classSec} ({classDetails.schoolYear} {classDetails.semester} Sem)</h2>
                   <p>{formatTime(classDetails.startTime)} - {formatTime(classDetails.endTime)} ({classDetails.classType})</p>
                   <p>{classDetails.Ongoing ? "Ongoing" : "Not Ongoing"}</p>
-                  {/* <hr/>
-                  <p>User Count: {userCount}</p>
-                  <p>Students: {studentCount}</p>
-                  <p>Faculty: {facultyCount}</p> */}
+                  {/* Can you add the map of classDetails.days? where days={Monday: true, Tuesday: true, Wednesday: false} */}
                 </>
               ) : (
                 <p>Loading class details...</p>
@@ -333,44 +349,87 @@ const AttendRecord = () => {
                   }}
                   onChange={handleDateChange}
                 />
-                <FileDownloadIcon className="exportButton1" onClick={() => exportAttendance('selected')}/>
+                <FileDownloadIcon className="iconButton" onClick={() => exportAttendance('selected')}/>
               </div>
               <hr/>
-              <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => setIsExportModalOpen(true)}
-                  style={{ marginLeft: "10px" }}
-                >
-                  More Export Options
-                </Button>
+              <div className="customButton" onClick={() => setIsExportModalOpen(true)}> More Export Options </div>
             </div>
 
           </div>
 
           <div className="rightColumn">
-            <h2>Faculty ({facultyCount})</h2>
-            <div className="dataTable2">
-              <DataGrid
-                rows={attendanceData.faculty || []}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5, 10, 20]}
-                disableSelectionOnClick
-              />
+            <div className="flexRow">
+              <h3>
+                Faculty - {selectedFacultyFilter} (
+                {selectedFacultyFilter === "All"
+                  ? facultyCounts.all
+                  : selectedFacultyFilter === "On-Time"
+                  ? facultyCounts.onTime
+                  : selectedFacultyFilter === "Late"
+                  ? facultyCounts.late
+                  : facultyCounts.absent}
+                )
+              </h3>
+              <div className="filterButtons">
+                <div className="customButton" variant={selectedFacultyFilter === "All" ? "contained" : "outlined"} onClick={() => handleFacultyFilter("All")}>
+                  All
+                </div>
+                <div className="customButton" variant={selectedFacultyFilter === "On-Time" ? "contained" : "outlined"} onClick={() => handleFacultyFilter("On-Time")}>
+                  On-Time
+                </div>
+                <div className="customButton" variant={selectedFacultyFilter === "Late" ? "contained" : "outlined"} onClick={() => handleFacultyFilter("Late")}>
+                  Late
+                </div>
+                <div className="customButton" variant={selectedFacultyFilter === "Absent" ? "contained" : "outlined"} onClick={() => handleFacultyFilter("Absent")}>
+                  Absent
+                </div>
+              </div>
             </div>
-            <h2>Students ({studentCount})</h2>
+            <div className="dataTable2">
+            <DataGrid
+              rows={filteredFaculty || []}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5, 10, 20]}
+              disableSelectionOnClick
+            />
+
+            </div>
+            <div className="flexRow">
+              <h3>
+                Students - {selectedStudentFilter} (
+                {selectedStudentFilter === "All" ? studentCounts.all
+                  : selectedStudentFilter === "On-Time" ? studentCounts.onTime
+                  : selectedStudentFilter === "Late" ? studentCounts.late
+                  : studentCounts.absent}
+                )
+              </h3>
+              <div className="filterButtons">
+                <div className="customButton" variant={selectedStudentFilter === "All" ? "contained" : "outlined"} onClick={() => handleStudentFilter("All")}>
+                  All
+                </div>
+                <div className="customButton" variant={selectedStudentFilter === "On-Time" ? "contained" : "outlined"} onClick={() => handleStudentFilter("On-Time")}>
+                  On-Time
+                </div>
+                <div className="customButton" variant={selectedStudentFilter === "Late" ? "contained" : "outlined"} onClick={() => handleStudentFilter("Late")}>
+                  Late
+                </div>
+                <div className="customButton" variant={selectedStudentFilter === "Absent" ? "contained" : "outlined"} onClick={() => handleStudentFilter("Absent")}>
+                  Absent
+                </div>
+              </div>
+            </div>
+
             <div className="dataTable">
-              <DataGrid
-                rows={attendanceData.students || []}
-                columns={columns}
-                pageSize={5}
-                rowsPerPageOptions={[5, 10, 20]}
-                disableSelectionOnClick
-              />
+            <DataGrid
+              rows={filteredStudents || []}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5, 10, 20]}
+              disableSelectionOnClick
+            />
             </div>
           </div>
-
         </div>
       </div>
       <ClassAttendanceExportModal
@@ -379,7 +438,6 @@ const AttendRecord = () => {
         attendanceData={attendanceData || { faculty: [], students: [] }}
         classDetails={classDetails}
       />
-
     </div>
   );
 };
