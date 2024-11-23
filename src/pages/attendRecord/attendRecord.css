@@ -50,7 +50,7 @@
 }
 
 .dataTable {
-  height: 540px; /* Adjust height as needed */
+  height: 455px; /* Adjust height as needed */
   background-color: #FFF;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -177,7 +177,7 @@
 }
 
 .react-calendar {
-  width: 100px; /* Adjust width */
+  width: 300px; /* Adjust width */
   font-size: 0.85rem; /* Reduce font size */
 }
 
@@ -186,7 +186,7 @@
 }
 
 .react-calendar__tile {
-  padding: px; /* Reduce padding for calendar tiles */
+  padding: 10px; /* Reduce padding for calendar tiles */
 }
 
 .react-calendar__month-view__weekdays {

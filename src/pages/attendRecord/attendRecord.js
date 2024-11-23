@@ -2,6 +2,7 @@ import 'react-calendar/dist/Calendar.css';
 import "./attendRecord.css";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
+import ClassAttendanceExportModal from "./classAttendanceExport";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PersonIcon from '@mui/icons-material/Person';
@@ -9,18 +10,18 @@ import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
 import { useState, useEffect } from "react";
-import { TextField, div } from "@mui/material";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
-import { format } from 'date-fns';
 import * as XLSX from 'xlsx'; // Import xlsx library
-import ClassAttendanceExportModal from "./classAttendanceExport";
 import ReactCalendar from "react-calendar";
+import { format, parse } from "date-fns"; // Ensure this is imported
 
 const AttendRecord = () => {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [date, setDate] = useState(today);
   const [highlightedDays, setHighlightedDays] = useState([]);
+  const [disabledDays, setDisabledDays] = useState([]);
+  const [classStartDate, setClassStartDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState({ faculty: [], students: [] });
   const [classDetails, setClassDetails] = useState(null); 
   const [selectedFacultyFilter, setSelectedFacultyFilter] = useState("All");
@@ -57,26 +58,26 @@ const AttendRecord = () => {
         const userClassesSnapshot = await getDocs(
           query(collection(db, "userClasses"), where("classID", "==", id))
         );
-
+    
         const allUserIds = userClassesSnapshot.docs.map((doc) => doc.data().userID);
-
+    
         const usersSnapshot = await getDocs(collection(db, "users"));
         const allUsers = usersSnapshot.docs.map((doc) => ({
           userId: doc.id,
           ...doc.data(),
         }));
-
+    
         const enrolledUsers = allUsers.filter((user) => allUserIds.includes(user.userId));
-
+    
         const attendanceSnapshot = await getDocs(
           query(collection(db, "attendRecord"), where("classId", "==", id))
         );
-
+    
         const attendanceMap = attendanceSnapshot.docs.reduce((acc, doc) => {
           const data = doc.data();
           const timeInDate = data.timeIn ? data.timeIn.toDate() : null;
           const formattedDate = timeInDate ? format(timeInDate, "yyyy-MM-dd") : null;
-
+    
           if (formattedDate === date) {
             acc[data.userId] = {
               timeIn: data.timeIn ? format(data.timeIn.toDate(), "hh:mm a") : "--",
@@ -86,17 +87,23 @@ const AttendRecord = () => {
           }
           return acc;
         }, {});
-
+    
         const faculty = [];
         const students = [];
-
+    
+        // Get the day of the selected date
+        const selectedDay = format(new Date(date), "EEEE"); // e.g., "Monday"
+    
+        // Check if the selected day has classes
+        const isClassDay = classDetails?.days?.[selectedDay] || false;
+    
         enrolledUsers.forEach((user) => {
           const attendance = attendanceMap[user.userId] || {
             timeIn: "--",
             timeOut: "--",
-            status: "Absent",
+            status: isClassDay ? "Absent" : "N/A", // Use "N/A" if not a class day
           };
-
+    
           const record = {
             id: user.userId,
             lastName: user.lastName || "--",
@@ -105,22 +112,22 @@ const AttendRecord = () => {
             timeOut: attendance.timeOut,
             status: attendance.status,
           };
-
+    
           if (user.role === "Faculty") {
             faculty.push(record);
           } else if (user.role === "Student") {
             students.push(record);
           }
         });
-
+    
         setAttendanceData({ faculty, students });
-        setFacultyCount(faculty.length);
-        setStudentCount(students.length);
+        setFacultyCounts(faculty.length);
+        setStudentCounts(students.length);
       } catch (error) {
         console.error("Error fetching attendance data:", error);
       }
-    };
-    
+    };    
+
     fetchClassDetails();
     fetchAttendanceData(); 
   }, [id, date]);
@@ -165,30 +172,37 @@ const AttendRecord = () => {
   };
 
   useEffect(() => {
+    if (classDetails?.timeStamp) {
+      // Parse the `timeStamp` into a Date object
+      const parsedTimeStamp = new Date(classDetails.timeStamp);
+      setClassStartDate(parsedTimeStamp);
+    }
+
     if (classDetails?.days) {
       const daysMapping = {
+        Sunday: 0,
         Monday: 1,
         Tuesday: 2,
         Wednesday: 3,
         Thursday: 4,
         Friday: 5,
         Saturday: 6,
-        Sunday: 0,
       };
 
-      // Map classDetails.days to indices used by ReactCalendar (0=Sunday, 1=Monday, etc.)
-      const activeDays = Object.keys(classDetails.days)
-        .filter((day) => classDetails.days[day])
-        .map((day) => daysMapping[day]);
+      const activeDays = Object.keys(daysMapping).filter(
+        (day) => classDetails.days[day]
+      ).map((day) => daysMapping[day]);
 
       setHighlightedDays(activeDays);
     }
   }, [classDetails]);
 
-  // Function to determine if a date should be highlighted
-  const isHighlighted = (date) => {
-    if (!highlightedDays.length) return false;
-    return highlightedDays.includes(date.getDay());
+  const isHighlighted = (date) => highlightedDays.includes(date.getDay());
+  const isDisabled = (date) => {
+    // Disable days not in `classDetails.days` or before `classStartDate`
+    const isBeforeStartDate = classStartDate && date < classStartDate;
+    const isInactiveDay = !highlightedDays.includes(date.getDay());
+    return isBeforeStartDate || isInactiveDay;
   };
 
   const handleDateChange = (event) => {
@@ -379,26 +393,32 @@ const AttendRecord = () => {
             {/* ONLY HAS ONE DATE */}
             <div className="dateFilter">
               {/* Existing date selector */}
-              <p>Select Date - {format(new Date(date), 'MM/dd/yyyy')}</p>
+              <strong>Select Date - {format(new Date(date), 'MM/dd/yyyy')}</strong>
               <div className="selectedContainer">
-              <ReactCalendar
-                onChange={(value) => setDate(format(value, "yyyy-MM-dd"))}
-                tileClassName={({ date, view }) =>
-                  view === "month" && isHighlighted(date) ? "highlight" : null
-                }
-                value={new Date(date)}
-              />
-              <style>
-                {`
-                  .highlight {
-                    background-color: #ffde59;
-                    border-radius: 50%;
-                  }
-                `}
-              </style>
+                {classDetails?.timeStamp ? (
+                  <ReactCalendar
+                    onChange={(value) => setDate(format(value, "yyyy-MM-dd"))}
+                    tileClassName={({ date, view }) =>
+                      view === "month" && isHighlighted(date) ? "highlight" : null
+                    }
+                    tileDisabled={({ date, view }) =>
+                      view === "month" && isDisabled(date) // Disable inactive days and days before class start
+                    }
+                    value={new Date(date)}
+                  />
+                ) : (
+                  <p>Loading calendar...</p>
+                )}
+                <style>
+                  {`
+                    .highlight {
+                      background-color: #ffde59;
+                      border-radius: 50%;
+                    }
+                  `}
+                </style>
                 <FileDownloadIcon className="iconButton" onClick={() => exportAttendance('selected')}/>
               </div>
-              <hr/>
               <div className="customButton" onClick={() => setIsExportModalOpen(true)}> More Export Options </div>
             </div>
 
