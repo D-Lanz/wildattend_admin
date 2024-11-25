@@ -16,8 +16,6 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false); // New state for the modal
   
-  console.log(entity)
-
   useEffect(() => {
     const fetchData = async () => {
       let queryField, queryValue;

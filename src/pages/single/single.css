@@ -132,3 +132,20 @@
 .rights p {
   margin: 5px 0;
 }
+
+.customButton {
+  background-color: maroon; 
+  color: gold;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px; /* Slightly rounded corners */
+  font-size: 14px; /* Adjust font size */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover transition */
+}
+
+.customButton:hover {
+  background-color: gold; /* Gold background on hover */
+  color: maroon; /* Maroon text on hover */
+}

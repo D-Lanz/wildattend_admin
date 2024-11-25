@@ -2,9 +2,9 @@
 .datatable1 {
   flex: 1 1 100%;
   width: 100%; /* Full width of the parent container */
-  max-width: 1355px; /* Maximum width to prevent it from growing too large */
-  height: 500px; /* Increase height to fit content and footer */
-  padding: 20px;
+  max-width: 1360px; /* Maximum width to prevent it from growing too large */
+  height: 390px; /* Increase height to fit content and footer */
+  padding: 15px;
   margin: 10px auto; /* Center align and add margin for spacing */
   background-color: #ffffff; /* White background for contrast */
   border-radius: 8px; /* Rounded corners */

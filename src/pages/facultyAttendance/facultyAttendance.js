@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { FormControl, InputLabel, Select, MenuItem, TextField, Button } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, TextField} from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import FacultyAttendanceExport from "./facultyAttendanceExport";
@@ -270,31 +270,15 @@ const FacultyAttendance = () => {
                   dateFormat="MMMM d, yyyy"
                 />
               )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={applyFilter}
-                style={{ marginLeft: "20px" }}
-              >
+              <div className="customButton" onClick={applyFilter}>
                 Apply
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={clearFilter}
-                style={{ marginLeft: "10px" }}
-              >
+              </div>
+              <div className="customButton" onClick={clearFilter}>
                 Clear
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setIsExportModalOpen(true)}
-                style={{ marginBottom: "20px" }}
-              >
+              </div>
+              <div className="customButton" onClick={() => setIsExportModalOpen(true)}>
                 Export
-              </Button>
-
+              </div>
             </div>
 
             <div style={{ height: 500, width: "100%" }}>
