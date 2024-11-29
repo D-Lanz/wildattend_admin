@@ -82,14 +82,17 @@ const New = ({ inputs, title, entityType }) => {
     try {
       let collectionName;
       let newData = { ...data };
-      let classRef;
   
+      // If no image was uploaded, set the default image
+      if (!newData.img) {
+        newData.img = "https://static.vecteezy.com/system/resources/previews/033/176/717/non_2x/online-course-icon-vector.jpg";
+      }
+  
+      let classRef;
       switch (entityType) {
         case "user":
           collectionName = "users";
-          // Creating the user with email and password
           const res = await createUserWithEmailAndPassword(auth, newData.email, newData.password);
-          // Adding user to the Firestore with auto-generated ID
           await setDoc(doc(db, collectionName, res.user.uid), {
             ...newData,
             timeStamp: serverTimestamp(),
@@ -98,42 +101,24 @@ const New = ({ inputs, title, entityType }) => {
         case "class":
           collectionName = "classes";
           newData = { ...newData, Ongoing: false };
-          // Using addDoc to create a new class with an auto-generated ID
           classRef = await addDoc(collection(db, collectionName), {
             ...newData,
             timeStamp: serverTimestamp(),
           });
-          
-          // Create a userClasses document for the creator
-          const userID = auth.currentUser.uid; // Get current user ID (creator)
+          const userID = auth.currentUser.uid;
           await addDoc(collection(db, "userClasses"), {
             userID: userID,
-            classID: classRef.id, // Reference to the newly created class
+            classID: classRef.id,
             enrollDate: serverTimestamp(),
           });
           break;
-        case "room":
-          collectionName = "rooms";
-          await addDoc(collection(db, collectionName), {
-            ...newData,
-            timeStamp: serverTimestamp(),
-          });
-          break;
-        case "accessPoint":
-          collectionName = "accessPoints";
-          await addDoc(collection(db, collectionName), {
-            ...newData,
-            timeStamp: serverTimestamp(),
-          });
-          break;
-        default:
-          throw new Error("Invalid entityType");
+        // Handle other cases...
       }
   
       setShowSuccessModal(true);
     } catch (err) {
-      setErrorMessage(err.message); // Set the error message
-      setShowErrorModal(true); // Show the error modal
+      setErrorMessage(err.message);
+      setShowErrorModal(true);
       console.log(err);
     }
   };
@@ -176,22 +161,22 @@ const New = ({ inputs, title, entityType }) => {
           )}
           <div className="rightn">
             <form className="formn" onSubmit={handleAdd}>
-            <div className="formInput">
-              {entityType !== "accessPoint" && entityType !== "room" && (
-                <>
-                  <label className="labeln" htmlFor="file">
-                    Image: <DriveFolderUploadIcon className="iconn" />
-                  </label>
-                  <input
-                    className="inputn"
-                    onChange={(e) => setFile(e.target.files[0])}
-                    type="file"
-                    id="file"
-                    style={{ display: "none" }}
-                  />
-                </>
-              )}
-            </div>
+              <div className="formInput">
+                {entityType !== "accessPoint" && entityType !== "room" && (
+                  <>
+                    <label className="labeln" htmlFor="file">
+                      Image: <DriveFolderUploadIcon className="iconn" />
+                    </label>
+                    <input
+                      className="inputn"
+                      onChange={(e) => setFile(e.target.files[0])}
+                      type="file"
+                      id="file"
+                      style={{ display: "none" }}
+                    />
+                  </>
+                )}
+              </div>
 
               {inputs.map((input) => (
                 <div className="formInput" key={input.id}>
@@ -219,7 +204,7 @@ const New = ({ inputs, title, entityType }) => {
                           <input
                             type="radio"
                             id={input.id}
-                            name={input.id} // All radio buttons need the same name to be grouped
+                            name={input.id}
                             value={option}
                             onChange={handleInput}
                             required
@@ -257,7 +242,7 @@ const New = ({ inputs, title, entityType }) => {
                       placeholder={input.placeholder}
                       pattern={input.pattern}
                       onChange={handleInput}
-                      required
+                      required={input.id !== "ip_address"} // Only skip `required` for `ip_address`
                     />
                   )}
                 </div>

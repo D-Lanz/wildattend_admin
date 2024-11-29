@@ -315,9 +315,9 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             <div className="navWrapper">
               <ArrowBackIcon onClick={handleBack} className="backButton" />
               <div className="editButtonWrapper">
-                <Link to={`/${entity}/${id}/edit`} className="editButtons">Edit</Link>
+                <Link to={`/${entity}/${id}/edit`} className="customButton">Edit</Link>
                 {entity === "classes" && (
-                  <Link to={`/schedule/${id}`} className="editButtons">Attendance</Link>
+                  <Link to={`/schedule/${id}`} className="customButton">Attendance</Link>
                 )}
               </div>
             </div>
@@ -356,47 +356,40 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
             </div>
           </div>
 
-          <div className="rights">
-            <h2>Status Summary</h2>
-            {entity === "users" && (
-              <>
-                <select
-                  onChange={(e) => {
-                    const selected = classOptions.find(c => c.id === e.target.value);
-                    setSelectedClass(e.target.value === "all" ? "" : e.target.value); // Set to "" for "all"
-                    setSelectedClassUserClassId(selected ? selected.userClassId : "");
-                  }}
-                  value={selectedClass || "all"} // Use "all" when no specific class is selected
-                >
-                  <option value="all">Overall Attendance</option>
-                  {classOptions.map((classItem) => (
-                    <option key={classItem.id} value={classItem.id}>
-                      {classItem.classDesc || "Class"} - {classItem.classCode || "Code"}
-                    </option>
-                  ))}
-                </select>
+          {entity === "users" && (
+            <div className="rights">
+              <h2>Status Summary</h2>
+              <select
+                onChange={(e) => {
+                  const selected = classOptions.find((c) => c.id === e.target.value);
+                  setSelectedClass(e.target.value === "all" ? "" : e.target.value); // Set to "" for "all"
+                  setSelectedClassUserClassId(selected ? selected.userClassId : "");
+                }}
+                value={selectedClass || "all"} // Use "all" when no specific class is selected
+              >
+                <option value="all">Overall Attendance</option>
+                {classOptions.map((classItem) => (
+                  <option key={classItem.id} value={classItem.id}>
+                    {classItem.classDesc || "Class"} - {classItem.classCode || "Code"}
+                  </option>
+                ))}
+              </select>
 
-                {selectedClassUserClassId && (
-                  <div className="customButton" onClick={() => navigate(`/userClasses/${selectedClassUserClassId}`)}>
-                    View
-                  </div>
-                )}
-              </>
-            )}
-            {entity === "classes" && (
-              <DatePicker
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
-                highlightDates={attendanceDates}
-                placeholderText="Select a date"
-                dateFormat="MMMM d, yyyy"
-                inline
-              />
-            )}
-            <p>On-Time: {statusSummary["On-Time"]}</p>
-            <p>Late: {statusSummary.Late}</p>
-            <p>Absent: {statusSummary.Absent}</p>
-          </div>
+              {selectedClassUserClassId && (
+                <div
+                  className="customButton"
+                  onClick={() => navigate(`/userClasses/${selectedClassUserClassId}`)}
+                >
+                  View
+                </div>
+              )}
+
+              <p>On-Time: {statusSummary["On-Time"]}</p>
+              <p>Late: {statusSummary.Late}</p>
+              <p>Absent: {statusSummary.Absent}</p>
+            </div>
+          )}
+
         </div>
 
         <div className="bottom">

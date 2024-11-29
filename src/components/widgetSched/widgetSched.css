@@ -8,11 +8,11 @@
   border-radius: 12px;
   gap: 20px; /* Space between class items */
   margin-top: 20px;
+  
 }
 
-/* Individual class card styling */
 .classItemS {
-  flex: 1 1 calc(45% - 20px); /* Two cards per row, adjusts based on screen */
+  flex: 1 1 calc(33.33% - 20px); /* Three cards per row */
   display: flex;
   padding: 15px;
   background-color: #600000; /* Slightly lighter maroon for the cards */
@@ -23,6 +23,8 @@
   -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
   -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
   box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  width: auto; /* Remove the fixed width to allow flexbox to manage width */
+  min-width: calc(33.33% - 20px); /* Ensures cards do not shrink below a certain width */
 }
 
 .classItemS:hover {

@@ -23,6 +23,9 @@ const Sidebar = () => {
   const [idNum, setIdNum] = useState(''); // State for user's idNum
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [profileImg, setProfileImg] = useState('https://cdn-icons-png.flaticon.com/512/201/201818.png'); // Default profile image
+  const [currentTime, setCurrentTime] = useState(""); // State for current time
+  const [currentDate, setCurrentDate] = useState(""); // State for current date
 
   // Fetch user data from Firestore
   useEffect(() => {
@@ -40,6 +43,9 @@ const Sidebar = () => {
           setLastname(userData.lastName); // Fetch and set the last name
           setFirstname(userData.firstName); // Fetch and set the first name
           setIdNum(userData.idNum); // Fetch and set the ID number
+        if (userData.img) {
+          setProfileImg(userData.img); // Fetch and set the profile image
+        }
         } else {
           console.log('No such document!');
         }
@@ -57,6 +63,24 @@ const Sidebar = () => {
     // Cleanup the listener on component unmount
     return () => unsubscribe();
   }, []);
+
+  // Update current date and time
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+      const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+
+      setCurrentTime(now.toLocaleTimeString('en-US', timeOptions)); // Update time
+      setCurrentDate(now.toLocaleDateString('en-US', dateOptions)); // Update date
+    };
+
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
+
 
   // Show the logout confirmation modal
   const handleLogoutClick = () => {
@@ -96,6 +120,21 @@ const Sidebar = () => {
         </Link>
       </div>
       
+      <br/>
+      {/* Profile Picture */}
+      <div className="profile-picture">
+        {loading ? (
+          <div className="loading-placeholder-circle"></div>
+        ) : (
+          <img
+            src={profileImg}
+            alt="Profile"
+            className="profile-img-circle"
+          />
+        )}
+      </div>
+  
+      {/* User Info */}
       {/* Display the user’s name, idNum, and role with loading placeholders */}
       <div className="user-info">
         {loading ? (
@@ -150,25 +189,7 @@ const Sidebar = () => {
               <span>Manage Classes</span>
             </li>
           </Link>
-          
-          {/* Conditionally render the Manage Rooms and Access Points links based on the role */}
-          {role === 'Admin' && (
-            <>
-            <p className="title">MANAGE</p>
-              <Link to="/rooms" style={{ textDecoration: "none" }}>
-                <li>
-                  <RoomIcon className="icon" />
-                  <span>Manage Rooms</span>
-                </li>
-              </Link>
-              <Link to="/accessPoints" style={{ textDecoration: "none" }}>
-                <li>
-                  <RouterIcon className="icon" />
-                  <span>Manage Access Points</span>
-                </li>
-              </Link>
-            </>
-          )}
+        
           <p className="title">USER</p>
           <Link to="/profile" style={{ textDecoration: 'none' }}>
             <li>
@@ -182,7 +203,23 @@ const Sidebar = () => {
           </li>
         </ul>
       </div>
-
+      
+      {/* Current Date and Time */}
+      <div className="current-datetime">
+        {loading ? (
+          <>
+            <span className="time">00:00AM/PM</span><br/>
+            <span className="date">MTWTHF, MM/DD/YYYY</span>
+          </>
+        ) : (
+          <>
+            <span className="time">{currentTime}</span>
+            <span className="date">{currentDate}</span>
+          </>
+        )}
+      </div>
+  
+      {/* Logout Confirmation Modal */}
       {isLogoutModalOpen && (
         <LogoutConfirmation
           onConfirm={handleLogoutConfirm}

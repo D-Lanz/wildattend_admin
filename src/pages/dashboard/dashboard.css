@@ -20,3 +20,19 @@
   margin-right: 20px;
   margin-bottom: -20px;
 }
+
+
+/* Centered and bold greeting text */
+.greeting p{
+  font-size: 50px; /* Slightly larger font size */
+  font-weight: bold; /* Bold text */
+  text-align: center; /* Center the text horizontally */
+  color: maroon;
+  margin-bottom: 20px; /* Add some space below the greeting */
+}
+
+.search-bar-container{
+  background-color: white;
+  margin-left: 50px;
+  margin-right: 50px;
+}

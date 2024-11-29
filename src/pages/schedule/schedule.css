@@ -25,3 +25,15 @@
   margin-top: 20px;
 }
 
+.schedTitle{
+  font-size: 50px; /* Slightly larger font size */
+  font-weight: bold; /* Bold text */
+  text-align: center; /* Center the text horizontally */
+  color: maroon;
+}
+
+.currentWeekday{  
+  font-size: 30px; /* Slightly larger font size */
+  text-align: center; /* Center the text horizontally */
+  color: maroon;
+  margin-bottom: 20px; /* Add some space below the greeting */}

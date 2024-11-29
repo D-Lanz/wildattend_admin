@@ -14,8 +14,6 @@ import { Link } from 'react-router-dom';
 const Widget = ({ type }) => {
   const [userAmount, setUserAmount] = useState(0);
   const [classAmount, setClassAmount] = useState(0);
-  const [roomAmount, setRoomAmount] = useState(0);
-  const [accessPtAmount, setAccessPtAmount] = useState(0);
 
   const fetchUserCount = async () => {
     try {
@@ -61,29 +59,9 @@ const Widget = ({ type }) => {
     }
   };
 
-  const fetchRoomCount = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "rooms"));
-      setRoomAmount(snapshot.size);
-    } catch (error) {
-      console.error("Error fetching room count:", error);
-    }
-  };
-
-  const fetchAccessPtCount = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "accessPoints"));
-      setAccessPtAmount(snapshot.size);
-    } catch (error) {
-      console.error("Error fetching access point count:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchRoomCount();
-    fetchUserCount();
     fetchClassCount();
-    fetchAccessPtCount();
+    fetchUserCount();
   }, []); // Run once on component mount
 
   let data;
@@ -125,28 +103,17 @@ const Widget = ({ type }) => {
         amount: classAmount,
       };
       break;
-    case "room":
-      data = {
-        title: "ROOMS",
-        linkph: "See all rooms",
-        link: "/rooms",
-        icon: (<RoomIcon className="iconw" />),
-        amount: roomAmount,
-      };
-      break;
-    case "accesspt":
-      data = {
-        title: "ACCESS POINTS",
-        linkph: "See all access points",
-        link: "/accessPoints",
-        icon: (<RssFeedIcon className="iconw" />),
-        amount: accessPtAmount,
-      };
-      break;
     default:
+      data = {
+        title: "UNKNOWN",
+        linkph: "See details",
+        link: "/",
+        icon: (<RssFeedIcon className="iconw" />),
+        amount: 0,
+      };
       break;
   }
-
+  
   return (
     <div className="widget">
       <div className="leftw">

@@ -74,7 +74,7 @@ span{
 }
 
 .logo-image {
-  width: 100px; /* Adjust size as needed */
+  width: 80px; /* Adjust size as needed */
   height: auto;
   margin-right: 10px; /* Space between logo and text */
 }
@@ -88,3 +88,81 @@ span{
 .user-info span{
   color: maroon;
 }
+
+.profile-picture {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.profile-img-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
+}
+
+.current-datetime {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.current-datetime .time {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.current-datetime .date {
+  font-size: 16px;
+}
+
+.current-datetime span{
+  color: maroon;
+}
+
+/* Loading placeholder styled like the li element */
+.loading-placeholder-li {
+  animation: shimmer 1.2s infinite;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  cursor: pointer;
+  background-color: maroon;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F8C400;
+  margin-left: 10px;
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+
+/* Placeholder for circular profile picture */
+.loading-placeholder-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #800000 25%, #FFD700 50%, #800000 75%);
+  background-size: 200% 200%;
+  animation: shimmer 1.2s infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFD700; /* Gold text */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+

@@ -112,7 +112,7 @@ function App() {
                 <RequireAuth>
                   <Single entitySingle={classSingle} entity="classes"
                     // INSIDE CLASSES, THEIR DATA TABLE SHOWS THEIR LIST OF USERS INVOLVED
-                    entityTable="users" entityAssign="classes" tableTitle="List of Students Enrolled" entityColumns={userColumns} 
+                    entityTable="users" entityAssign="classes" tableTitle="List of Users Enrolled" entityColumns={userColumns} 
                   />
                 </RequireAuth>
                 }
@@ -152,89 +152,6 @@ function App() {
                 }
               />
 
-            </Route>
-
-            {/* route for "rooms" entity*/}
-            <Route path="rooms">
-
-              {/* VIEW LIST OF ROOMS DATATABLE */}
-              <Route index element={
-                <RequireAuth>
-                  <List title="List of Rooms" entity="rooms" tableTitle="Add New Room" entityColumns={roomColumns}/>
-                </RequireAuth>
-              } />
-
-              {/* VIEW SINGLE ROOM */}
-              <Route path=":id" element={
-                <RequireAuth>
-                  <Single entitySingle={roomSingle} entity="rooms"
-                      // INSIDE ROOMS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
-                      entityAssign="rooms" entityTable="classes" entityConnect="classRooms" tableTitle="Classes" entityColumns={classColumns}/>
-                </RequireAuth>
-                } />
-
-              {/* route for editing room entity*/}
-              <Route path=":id/edit" element={
-                  <RequireAuth>
-                    <Edit inputs={roomInputs} title="Edit Room" entityType="room"/>
-                  </RequireAuth>
-                }
-              />
-
-              {/* INSIDE SELECTING, ROOMS HAVE CLASSES */}
-              <Route path=":id/select" element={
-                  <RequireAuth>
-                    <SelectListClassRooms entity="classes" tableTitle="Add Class to Room" entityColumns={classColumns}/>
-                  </RequireAuth>
-                }
-              />
-
-              <Route path="new" element={
-                <RequireAuth>
-                  <New inputs={roomInputs} title="Add New Room" entityType="room" />
-                </RequireAuth>
-                } />
-            </Route>
-
-            {/* route for "accessPoints" entity*/}
-            <Route path="accessPoints">
-
-              {/* VIEW LIST OF ROOMS DATATABLE */}
-              <Route index element={ <RequireAuth>
-                  <List title="List of Access Points" entity="accessPoints" tableTitle="Add New Access Point" entityColumns={accessPointColumns}/>
-                </RequireAuth>
-              } />
-
-              {/* VIEW SINGLE ROOM */}
-              <Route path=":id" element={
-                <RequireAuth>
-                  <Single entitySingle={accessPointSingle} entity="accessPoints"
-                      // INSIDE ACCESS POINTS, THEIR DATA TABLE SHOWS THEIR ROOMS INVOLVED
-                      entityAssign="accessPoints" entityTable="rooms" entityConnect="roomAccessPoints" tableTitle="Assign to a Room" entityColumns={roomColumns}/>
-                </RequireAuth>
-                } />
-
-              {/* route for editing room entity*/}
-              <Route path=":id/edit" element={
-                  <RequireAuth>
-                    <Edit inputs={accessPointInputs} title="Edit Access Point" entityType="accessPoint"/>
-                  </RequireAuth>
-                }
-              />
-
-              <Route path="new" element={
-                <RequireAuth>
-                  <New inputs={accessPointInputs} title="Add New Access Point" entityType="accessPoint" />
-                </RequireAuth>
-              } />
-
-              {/* INSIDE SELECTING, ACCESSPOINTS ARE ADDED INTO A ROOM */}
-              <Route path=":id/select" element={
-                  <RequireAuth>
-                    <SelectListAccessPointRooms entity="rooms" tableTitle="Assign AP to a Room" entityColumns={roomColumns}/>
-                  </RequireAuth>
-                }
-              />
             </Route>
 
           {/* Route for attendance records */}

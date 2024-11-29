@@ -9,6 +9,15 @@ import FacultyTimeTable from "../../components/facultyTimeTable/facultyTimeTable
 import DateTimeWidget from "../../components/dateTimeWidget/dateTimeWidget";
 
 const Schedule = () => {
+  const [currentWeekday, setCurrentWeekday] = useState("");
+
+  useEffect(() => {
+    // Get the current weekday
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const today = new Date();
+    setCurrentWeekday(days[today.getDay()]);
+  }, []);
+
   return (
     <div className="sched">
       <Sidebar />
@@ -17,19 +26,17 @@ const Schedule = () => {
 
         {/* CLASSES DEPENDE SA WEEKDAY */}
         <div>
-          <h2 style={{marginLeft: '10px'}}>Today's Classes</h2>
-          <div className="datime">
-            <DateTimeWidget/>
-          </div>
-          
-          
+          <p className="schedTitle">Today's Classes</p>
+          <p className="currentWeekday">{currentWeekday}</p>
           <div className="widgets">
             <WidgetSched />
           </div>
+          {/* Display Current Weekday */}
+          
         </div>
-        
-        {/* RECENT TIME INS OF A FACULTY MEMBER
-        <div className="tableSched">
+
+        {/* RECENT TIME INS OF A FACULTY MEMBER */}
+        {/* <div className="tableSched">
           <FacultyTimeTable />
         </div> */}
       </div>
