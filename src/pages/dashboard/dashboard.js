@@ -7,7 +7,6 @@ import { db } from "../../firebase"; // Firebase db import
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Widget from "../../components/widget/widget";
-import DateTimeWidget from "../../components/dateTimeWidget/dateTimeWidget";
 import "./dashboard.css";
 
 const Dashboard = () => {

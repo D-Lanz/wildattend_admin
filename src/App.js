@@ -11,16 +11,14 @@ import Edit from './pages/edit/edit';
 import Connect from './pages/connect/connect';
 
 // FOR INPUTS IN NEW.JS & EDIT.JS
-import { userInputs, classInputs, roomInputs, accessPointInputs } from './formSource';
+import { userInputs, classInputs } from './formSource';
 // FOR LIST.JS
-import { classColumns, userColumns, userClassColumns, roomColumns, accessPointColumns } from './datatablesource';
+import { classColumns, userColumns, userClassColumns, classConnectColumns, userConnectColumns } from './datatablesource';
 // FOR SINGLE.JS DETAILS
-import { classSingle, userSingle, roomSingle, accessPointSingle } from './singleSource';
+import { classSingle, userSingle } from './singleSource';
 
 //RELATIOJNALS
 import SelectListUserClasses from './pages/selectList_UserClasses/selectList_UserClasses';
-import SelectListClassRooms from './pages/selectList_ClassRooms/selectList_ClassRooms';
-import SelectListAccessPointRooms from './pages/selectList_AccessPointRooms/selectList_AccessPointRooms';
 
 //OTHER TABS
 import Schedule from './pages/schedule/schedule';
@@ -82,7 +80,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectListUserClasses entity="classes" tableTitle="Assign User to a Class" entityColumns={classColumns}/>
+                    <SelectListUserClasses entity="classes" tableTitle="Assign User to a Class" entityColumns={classConnectColumns} entitySingle={userSingle}/>
                   </RequireAuth>
                 }
               />
@@ -129,7 +127,7 @@ function App() {
               {/* INSIDE SELECTING, USERS ARE ADDED INTO A CLASS */}
               <Route path=":id/select" element={
                   <RequireAuth>
-                    <SelectListUserClasses entity="users" tableTitle="Add User to a Class" entityColumns={userColumns}/>
+                    <SelectListUserClasses entity="users" tableTitle="Add User to a Class" entityColumns={userConnectColumns} entitySingle={classSingle}/>
                   </RequireAuth>
                 }
               />

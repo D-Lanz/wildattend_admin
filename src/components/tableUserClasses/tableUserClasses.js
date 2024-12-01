@@ -2,10 +2,12 @@ import "./tableUserClasses.css";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, getDoc, doc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase";
 import { FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
+import UserClassesConfirm from "./userClassesConfirm";
+import UserClassesModal from "./userClassesModal";
 
 const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   const navigate = useNavigate();
@@ -13,6 +15,21 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   const [selectedColumn, setSelectedColumn] = useState("");
   const [filterText, setFilterText] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Modal states
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isUserClassesModalOpen, setIsUserClassesModalOpen] = useState(false);
+
+  const [confirmData, setConfirmData] = useState({});
+  const [modalData, setModalData] = useState({
+    userIdNum: "",
+    classCode: "",
+    classSec: "",
+    classType: "",
+    semester: "",
+    schoolYear: "",
+    userClassId: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,68 +95,112 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
     fetchData();
   }, [entity, window.location.pathname]);
 
+
+  const handleAdd = async (params) => {
+    try {
+      const parts = window.location.pathname.split("/");
+      const entityId = parts[parts.length - 2];
+
+      let userId, classId;
+      let userData = {};
+      let classData = {};
+
+      console.log("Entity ID for Add:", entityId);
+
+      if (window.location.pathname.startsWith("/users/")) {
+        userId = entityId;
+        classId = params.row.id;
+
+        console.log("Fetching class details...");
+        const classDoc = await getDoc(doc(db, "classes", classId));
+        classData = classDoc.exists() ? classDoc.data() : {};
+        console.log("Class Data:", classData);
+      } else if (window.location.pathname.startsWith("/classes/")) {
+        classId = entityId;
+        userId = params.row.id;
+
+        console.log("Fetching user details...");
+        const userDoc = await getDoc(doc(db, "users", userId));
+        userData = userDoc.exists() ? userDoc.data() : {};
+        console.log("User Data:", userData);
+      }
+
+      setConfirmData({
+        userId,
+        classId,
+        firstName: userData.firstName || params.row.firstName || "N/A",
+        lastName: userData.lastName || params.row.lastName || "N/A",
+        classCode: classData.classCode || params.row.classCode || "N/A",
+        classSec: classData.classSec || params.row.classSec || "N/A",
+        classType: classData.classType || params.row.classType || "N/A",
+        semester: classData.semester || params.row.semester || "N/A",
+        schoolYear: classData.schoolYear || params.row.schoolYear || "N/A",
+      });
+
+      console.log("Confirm Data:", confirmData);
+
+      setIsConfirmModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching details:", error);
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      const { userId, classId, idNum, classCode, classSec, classType, semester, schoolYear } = confirmData;
+
+      console.log("Confirming Enrollment with Data:", confirmData);
+
+      // Add to Firestore
+      const userClassRef = await addDoc(collection(db, "userClasses"), {
+        classID: classId,
+        userID: userId,
+        enrollDate: new Date(),
+        attendance: [],
+      });
+
+      console.log("User-Class Relationship Added with ID:", userClassRef.id);
+
+      setModalData({
+        userIdNum: idNum,
+        classCode,
+        classSec,
+        classType,
+        semester,
+        schoolYear,
+        userClassId: userClassRef.id,
+      });
+
+      setIsConfirmModalOpen(false); // Close the confirm modal
+      setIsUserClassesModalOpen(true); // Open the success modal
+    } catch (error) {
+      console.error("Error enrolling user to class:", error);
+    }
+  };
+
+  const handleUserClassesModalClose = () => {
+    console.log("Closing User Classes Modal");
+    setIsUserClassesModalOpen(false);
+    fetchData(); // Refresh the table
+  };
+
   const handleColumnChange = (event) => {
     setSelectedColumn(event.target.value);
-    setFilterText(""); // Clear filter text when changing the column
+    setFilterText("");
+    console.log("Selected Column:", event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setFilterText(event.target.value);
+    console.log("Filter Text:", event.target.value);
   };
 
   const filteredData = data.filter((row) => {
-    // If no column is selected, return all data
     if (!selectedColumn) return true;
-
-    // Normalize the filter text for case-insensitivity
     const normalizedFilterText = filterText.toLowerCase();
     const cellValue = String(row[selectedColumn]).toLowerCase();
-
-    // Check if the cell value starts with the filter text
     return cellValue.startsWith(normalizedFilterText);
   });
-
-  const handleAdd = async (params) => {
-    try {
-      let userID, classID, targetField;
-
-      const parts = window.location.pathname.split("/");
-      const entityId = parts[parts.length - 2];
-
-      if (window.location.pathname.startsWith("/users/")) {
-        userID = entityId;
-        classID = params.row.id;
-        targetField = "classID";
-      } else if (window.location.pathname.startsWith("/classes/")) {
-        classID = entityId;
-        userID = params.row.id;
-        targetField = "userID";
-      } else {
-        console.error("Invalid URL path:", window.location.pathname);
-        return;
-      }
-
-      if (!userID || !classID) {
-        console.error("User ID or class ID is undefined");
-        return;
-      }
-
-      const enrollDate = new Date();
-
-      const userClassRef = await addDoc(collection(db, "userClasses"), {
-        classID: classID,
-        userID: userID,
-        enrollDate: enrollDate,
-        attendance: []
-      });
-
-      console.log("New userClass document added with ID: ", userClassRef.id);
-
-      navigate(`/userClasses/${userClassRef.id}`, { state: { rowData: { id: params.row[targetField] } } });
-    } catch (error) {
-      console.error("Error adding user class document:", error);
-    }
-  };
 
   const actionColumn = [
     {
@@ -159,8 +220,30 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   ];
 
   return (
-    <div className="tableUserClasses">
-      <div className="tableUserClassesTitle">{tableTitle}</div>
+    <div className="datatableUC">
+      <div className="datatableTitle">{tableTitle}</div>
+
+      {/* Confirmation Modal */}
+      <UserClassesConfirm
+        isOpen={isConfirmModalOpen}
+        onConfirm={handleConfirm}
+        onCancel={() => setIsConfirmModalOpen(false)}
+        firstName={confirmData.firstName}
+        lastName={confirmData.lastName}
+        classCode={confirmData.classCode}
+        classSec={confirmData.classSec}
+        classType={confirmData.classType}
+        semester={confirmData.semester}
+        schoolYear={confirmData.schoolYear}
+      />
+
+      {/* Success Modal */}
+      <UserClassesModal
+        isOpen={isUserClassesModalOpen}
+        onClose={handleUserClassesModalClose}
+        {...modalData}
+      />
+
       <div className="filterSection">
         <FormControl variant="outlined">
           <InputLabel>Filter by</InputLabel>
@@ -178,12 +261,12 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
           variant="outlined"
           value={filterText}
           onChange={handleFilterChange}
-          style={{ flex: 1, maxWidth: '500px', marginLeft: '20px' }}
+          style={{ flex: 1, maxWidth: "500px", marginLeft: "20px" }}
         />
       </div>
 
       {loading ? (
-        <div>Loading...</div> // Show loading indicator or placeholder
+        <div>Loading...</div>
       ) : (
         <DataGrid
           disableFiltersSelector
@@ -191,7 +274,7 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
           disableDensitySelector
           rows={filteredData}
           columns={[...entityColumns, ...actionColumn]}
-          pagination={false} // Disable pagination
+          pagination={false}
           slots={{ toolbar: GridToolbar }}
         />
       )}

@@ -3,10 +3,7 @@ import "./schedule.css";
 
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
-import SearchBar from "../../components/searchBar/SearchBar";
 import WidgetSched from "../../components/widgetSched/widgetSched";
-import FacultyTimeTable from "../../components/facultyTimeTable/facultyTimeTable";
-import DateTimeWidget from "../../components/dateTimeWidget/dateTimeWidget";
 
 const Schedule = () => {
   const [currentWeekday, setCurrentWeekday] = useState("");

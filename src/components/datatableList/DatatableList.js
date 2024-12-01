@@ -281,7 +281,7 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
   ];
 
   return (
-    <div className="datatable">
+    <div className="datatableL">
       <div className="datatableTitle">
         {tableTitle}
         <Link to={`/${entity}/new`} style={{ textDecoration: "none" }} className="linkdt">
@@ -337,8 +337,6 @@ const DatatableList = ({ entity, tableTitle, entityColumns }) => {
           actionType="delete"
           entityName={
             entity === "classes" ? "Class" :
-            entity === "rooms" ? "Room" :
-            entity === "accessPoints" ? "Access Point" :
             entity === "users" ? "User" :
             "Unknown"
           }    

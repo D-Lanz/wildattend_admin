@@ -264,9 +264,15 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
       <div className="datatable1Title">
         {tableTitle}
         {/* MODIFY THIS ASSIGN BUTTON */}
-        <Link to={`/${entityAssign}/${id}/select`} style={{ textDecoration: "none" }} className="linkdt">
-          Assign
+        <Link
+          to={`/${entityAssign}/${id}/select`}
+          style={{ textDecoration: "none" }}
+          className="linkdt"
+          state={{ entityId: id, entitySingle: entity }} // Pass both `id` and `entitySingle`
+        >
+          Enroll
         </Link>
+
         
         {/* Check if the current path is /classes/ and render a button for the modal */}
         {location.pathname.startsWith('/classes/') && (

@@ -3,7 +3,7 @@ import logo from "./logo.png"; // Import the logo image
 import React, { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
 import { doc, getDoc } from 'firebase/firestore'; // Firestore functions
-import { db } from "../../firebase"; // Import db and storage from firebase
+import { db, auth } from "../../firebase"; // Import db and storage from firebase
 import LogoutConfirmation from './LogoutConfirmation'; 
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -191,12 +191,14 @@ const Sidebar = () => {
           </Link>
         
           <p className="title">USER</p>
-          <Link to="/profile" style={{ textDecoration: 'none' }}>
-            <li>
-              <ContactEmergencyIcon className="icon" />
-              <span>My Profile</span>
-            </li>
-          </Link>
+          {auth.currentUser && (
+            <Link to={`/users/${auth.currentUser.uid}`} style={{ textDecoration: 'none' }}>
+              <li>
+                <ContactEmergencyIcon className="icon" />
+                <span>My Profile</span>
+              </li>
+            </Link>
+          )}
           <li onClick={handleLogoutClick}>
             <LogoutIcon className="icon" />
             <span>Logout</span>
@@ -213,7 +215,7 @@ const Sidebar = () => {
           </>
         ) : (
           <>
-            <span className="time">{currentTime}</span>
+            <span className="time">{currentTime}</span><br/>
             <span className="date">{currentDate}</span>
           </>
         )}

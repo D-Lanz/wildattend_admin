@@ -17,7 +17,6 @@ const List = ({title, entity, tableTitle, entityColumns}) => {
         <Sidebar/>
         <div className="listContainer">
           <Navbar/>
-          <ArrowBackIcon onClick={handleBack} className="backButton" />
           <DatatableList 
             title={title}
             entity={entity}

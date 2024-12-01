@@ -9,7 +9,6 @@ import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getDoc, doc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AuthContext } from "../../context/AuthContext";
 

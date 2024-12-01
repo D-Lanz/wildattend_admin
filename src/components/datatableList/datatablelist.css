@@ -1,10 +1,10 @@
 /* Responsive width and fixed height for datatable */
-.datatable {
+.datatableL {
   width: 100%; /* Full width of the parent container */
-  max-width: 1350px; /* Maximum width to prevent it from growing too large */
-  height: 600px; /* Fixed height */
+  max-width: 1220px; /* Maximum width to prevent it from growing too large */
+  height: 700px; /* Fixed height */
   padding: 20px;
-  margin: 10px auto; /* Center align with spacing */
+  margin: 30px auto; /* Center align with spacing */
   background-color: #ffffff; /* White background for contrast */
   border-radius: 8px; /* Rounded corners */
   display: flex;
@@ -13,6 +13,7 @@
   -webkit-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
   -moz-box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
   box-shadow: 10px 10px 16px -4px rgba(128,0,0,0.48);
+  margin-top: 50px;
 }
 
 /* Inner container to make the DataGrid content scrollable */
