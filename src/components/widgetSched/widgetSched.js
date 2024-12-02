@@ -145,7 +145,7 @@ const Widget2 = () => {
       </div>
       <div className="widgetSched">
         {filteredClasses.length === 0 ? (
-          <div>No classes for today.</div>
+          <div className="noClass">No classes for today.</div>
         ) : (
           filteredClasses.map((classItem) => (
             <div key={classItem.id} className="classItemS">

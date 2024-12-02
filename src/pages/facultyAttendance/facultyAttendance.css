@@ -26,9 +26,9 @@ h1 {
 
 /* Responsive width and fixed height for datatable */
 .datatable {
-  width: 100%; /* Full width of the parent container */
-  max-width: 1350px; /* Maximum width to prevent it from growing too large */
-  height: 600px; /* Fixed height */
+  width: 1218px; 
+  max-width: 1350px; 
+  height: 625px; /* Fixed height */
   padding: 20px;
   margin: 10px auto; /* Center align with spacing */
   background-color: #ffffff; /* White background for contrast */
@@ -159,4 +159,15 @@ h1 {
   width: 50%;
   max-width: 600px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0);
+}
+
+/* Title styling for datatable */
+.faTitle {
+  width: 100%;
+  font-size: 24px;
+  color: maroon;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

@@ -14,6 +14,17 @@
   padding: 20px;
   display: flex;
   gap: 20px;
+  margin-left: 45px;
+  margin-right: 45px;
+  margin-top: 5px;
+  width: 1300px;
+}
+
+.bottom{
+  margin-left: 70px;
+  margin-right: 50px;
+  margin-top: -15px;
+  width: 1270px;
 }
 
 .lefts{

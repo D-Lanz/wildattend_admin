@@ -41,10 +41,10 @@ const UserClassesModal = ({ isOpen, onClose, userId, classCode, classSec, classT
       <div className="container">
         <div className="dialog">
           <h2>Success!</h2>
-          <p>
+          {/* <p>
             <strong>{userName}</strong> has been successfully enrolled to 
             <strong> {classCode}-{classSec} ({classType})</strong>.
-          </p>
+          </p> */}
         </div>
         <div className="button">
           <button onClick={onClose}>

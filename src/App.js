@@ -13,7 +13,7 @@ import Connect from './pages/connect/connect';
 // FOR INPUTS IN NEW.JS & EDIT.JS
 import { userInputs, classInputs } from './formSource';
 // FOR LIST.JS
-import { classColumns, userColumns, userClassColumns, classConnectColumns, userConnectColumns } from './datatablesource';
+import { classColumns, userColumns, userClassColumns, classConnectColumns, userConnectColumns, userSingleColumns, classSingleColumns } from './datatablesource';
 // FOR SINGLE.JS DETAILS
 import { classSingle, userSingle } from './singleSource';
 
@@ -64,7 +64,7 @@ function App() {
                   <RequireAuth>
                     <Single entitySingle={userSingle} entity="users"
                       // INSIDE USERS, THEIR DATA TABLE SHOWS THEIR CLASSES INVOLVED
-                      entityAssign="users" entityTable="classes" entityConnect="userClasses" tableTitle="Assign to a Class" entityColumns={classColumns}/>
+                      entityAssign="users" entityTable="classes" entityConnect="userClasses" tableTitle="Assign to a Class" entityColumns={classSingleColumns}/>
                   </RequireAuth>
                 }
               />
@@ -110,7 +110,7 @@ function App() {
                 <RequireAuth>
                   <Single entitySingle={classSingle} entity="classes"
                     // INSIDE CLASSES, THEIR DATA TABLE SHOWS THEIR LIST OF USERS INVOLVED
-                    entityTable="users" entityAssign="classes" tableTitle="List of Users Enrolled" entityColumns={userColumns} 
+                    entityTable="users" entityAssign="classes" tableTitle="List of Users Enrolled" entityColumns={userSingleColumns} 
                   />
                 </RequireAuth>
                 }

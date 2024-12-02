@@ -320,7 +320,7 @@ const Single = ({ entitySingle, entity, entityTable, tableTitle, entityColumns, 
                 )}
               </div>
             </div>
-            <h1 className="titles">Information</h1>
+            {/* <h1 className="titles">Information</h1> */}
             <div className="items">
               {data && data.img ? (
                 <img src={data.img} className="itemImgs" alt="Item" />

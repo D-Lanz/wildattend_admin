@@ -30,13 +30,12 @@ export const classColumns = [
       );
     },
   },
-  { field: 'classDesc', headerName: 'Class Description', width: 380, },
+  { field: 'classDesc', headerName: 'Class Description', width: 330, },
   { field: 'classType', headerName: 'Type', width: 100, },
   { field: 'classSec', headerName: 'Section', width: 130, },
-  // { field: 'instructor', headerName: 'Instructor', width: 150, },
-  { field: 'classRoom', headerName: 'Classroom', width: 130, },
-  { field: 'semester', headerName: 'Semester', width: 130, },
-  { field: 'schoolYear', headerName: 'School Year', width: 130, },
+  { field: 'classRoom', headerName: 'Classroom', width: 100, },
+  { field: 'semester', headerName: 'Semester', width: 100, },
+  { field: 'schoolYear', headerName: 'School Year', width: 100, },
 ];
 
 export const userClassColumns = [
@@ -98,4 +97,43 @@ export const userConnectColumns = [
   { field: 'firstName', headerName: 'First Name', width: 150, },
   { field: 'department', headerName: 'Department', width: 150, },
   { field: 'role', headerName: 'Role', width: 150, },
+];
+
+export const userSingleColumns = [
+  { field: 'idNum', headerName: 'ID Number', width: 150, },
+    {
+      field: 'img', headerName: '', width: 50, renderCell:(params)=>{
+        return(
+          <div className="cellWithImg">
+            <img className="cellImg" src={params.row.img} alt="avatar" style={{marginTop:10}}/>
+            {/* {params.row.lastName}, {params.row.firstName} */}
+          </div>
+        );
+    },
+  },
+  { field: 'lastName', headerName: 'Last Name', width: 150, },
+  { field: 'firstName', headerName: 'First Name', width: 150, },
+  { field: 'email', headerName: 'School Email', width: 250, },
+  { field: 'department', headerName: 'Department', width: 150, },
+  { field: 'role', headerName: 'Role', width: 150, },
+];
+
+export const classSingleColumns = [
+  { field: 'classCode', headerName: 'ClassCode', width: 130, },
+  {
+    field: 'img', headerName: '', width: 50, renderCell:(params)=>{
+      return(
+        <div className="cellWithImg">
+          <img className="cellImg" src={params.row.img} alt="avatar" style={{marginTop:10}}/>
+          {/* {params.row.classDesc} */}
+        </div>
+      );
+    },
+  },
+  { field: 'classDesc', headerName: 'Class Description', width: 380, },
+  { field: 'classType', headerName: 'Type', width: 100, },
+  { field: 'classSec', headerName: 'Section', width: 130, },
+  { field: 'classRoom', headerName: 'Classroom', width: 100, },
+  { field: 'semester', headerName: 'Semester', width: 100, },
+  { field: 'schoolYear', headerName: 'School Year', width: 100, },
 ];

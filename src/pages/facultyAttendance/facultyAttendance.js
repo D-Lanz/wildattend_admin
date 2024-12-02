@@ -216,7 +216,10 @@ const FacultyAttendance = () => {
         <div className="contentContainer">
           <div className="datatable">
             <div className="datatableTitle">
-              <h1>Faculty Attendance</h1>
+              Faculty Attendance
+              <div style={{ textDecoration: "none" }} className="linkdt" onClick={() => setIsExportModalOpen(true)}>
+                Export
+              </div>
             </div>
             {/* FILTERING and SEARCHING */}
             <div className="filterSection">
@@ -275,9 +278,6 @@ const FacultyAttendance = () => {
               </div>
               <div className="customButton" onClick={clearFilter}>
                 Clear
-              </div>
-              <div className="customButton" onClick={() => setIsExportModalOpen(true)}>
-                Export
               </div>
             </div>
 
