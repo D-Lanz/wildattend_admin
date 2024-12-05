@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box } from "@mui/material";
+import { Modal, Box, TextField, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
@@ -8,6 +8,8 @@ import { db } from "../../firebase";
 const ClassAttendanceExportModal = ({ open, onClose, attendanceData, classDetails }) => {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState(null); // State for start date filter
+  const [endDate, setEndDate] = useState(null); // State for end date filter
 
   const getScheduledDates = (days, startDate, endDate) => {
     const dayMap = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
@@ -62,145 +64,170 @@ const ClassAttendanceExportModal = ({ open, onClose, attendanceData, classDetail
     });
   };
 
-  useEffect(() => {
-    const calculateSummary = async () => {
-      if (!classDetails) {
-        console.warn("classDetails is missing or null.");
-        setLoading(false);
+  const calculateSummary = async () => {
+    if (!classDetails) {
+      console.warn("classDetails is missing or null.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const counts = {};
+    const currentDate = new Date();
+
+    const fetchUserDetails = async (userId) => {
+      try {
+        const userDoc = await getDocs(
+          query(collection(db, "users"), where("__name__", "==", userId))
+        );
+        if (!userDoc.empty) {
+          const userData = userDoc.docs[0].data();
+          return {
+            lastName: userData.lastName || "Unknown",
+            firstName: userData.firstName || "Unknown",
+            role: userData.role || "Unknown",
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching user details for userID:", userId, error);
+      }
+      return { lastName: "Unknown", firstName: "Unknown", role: "Unknown" };
+    };
+
+    const processClass = async (classItemId, classItemData) => {
+      const { days, startTime, endTime } = classItemData;
+
+      if (!classItemId || !days || !startTime || !endTime) {
+        console.error("Invalid classItem or missing required fields:", {
+          classItemId,
+          days,
+          startTime,
+          endTime,
+        });
         return;
       }
 
-      setLoading(true);
-      const counts = {};
-      const currentDate = new Date();
+      try {
+        const userClassQuery = query(
+          collection(db, "userClasses"),
+          where("classID", "==", classItemId)
+        );
+        const userClassSnapshot = await getDocs(userClassQuery);
 
-      const fetchUserDetails = async (userId) => {
-        try {
-          const userDoc = await getDocs(
-            query(collection(db, "users"), where("__name__", "==", userId))
-          );
-          if (!userDoc.empty) {
-            const userData = userDoc.docs[0].data();
-            return {
-              lastName: userData.lastName || "Unknown",
-              firstName: userData.firstName || "Unknown",
-              role: userData.role || "Unknown",
-            };
+        for (const docSnap of userClassSnapshot.docs) {
+          const userClassData = docSnap.data();
+          const userId = userClassData.userID;
+          const enrollDate = userClassData.enrollDate?.toDate();
+
+          if (!userId || !enrollDate) {
+            console.warn("Missing userID or enrollDate for userClassData:", userClassData);
+            continue;
           }
-        } catch (error) {
-          console.error("Error fetching user details for userID:", userId, error);
-        }
-        return { lastName: "Unknown", firstName: "Unknown", role: "Unknown" };
-      };
 
-      const processClass = async (classItemId, classItemData) => {
-        const { days, startTime, endTime } = classItemData;
+          const classStartDate = new Date(enrollDate);
+          const filterStartDate = startDate ? new Date(startDate) : classStartDate;
+          const filterEndDate = endDate ? new Date(endDate) : currentDate;
+          const expectedDates = getScheduledDates(days, filterStartDate, filterEndDate);
 
-        if (!classItemId || !days || !startTime || !endTime) {
-          console.error("Invalid classItem or missing required fields:", {
-            classItemId,
-            days,
-            startTime,
-            endTime,
-          });
-          return;
-        }
-
-        try {
-          const userClassQuery = query(
-            collection(db, "userClasses"),
-            where("classID", "==", classItemId)
+          const attendanceQuery = query(
+            collection(db, "attendRecord"),
+            where("userId", "==", userId),
+            where("classId", "==", classItemId),
+            orderBy("timeIn", "desc")
           );
-          const userClassSnapshot = await getDocs(userClassQuery);
+          const attendanceSnapshot = await getDocs(attendanceQuery);
 
-          for (const docSnap of userClassSnapshot.docs) {
-            const userClassData = docSnap.data();
-            const userId = userClassData.userID;
-            const enrollDate = userClassData.enrollDate?.toDate();
+          if (!counts[userId]) {
+            const { lastName, firstName, role } = await fetchUserDetails(userId);
 
-            if (!userId || !enrollDate) {
-              console.warn("Missing userID or enrollDate for userClassData:", userClassData);
+            // Skip users with "Unknown" names
+            if (lastName === "Unknown" || firstName === "Unknown") {
               continue;
             }
 
-            const classStartDate = new Date(enrollDate);
-            const expectedDates = getScheduledDates(days, classStartDate, currentDate);
-
-            const attendanceQuery = query(
-              collection(db, "attendRecord"),
-              where("userId", "==", userId),
-              where("classId", "==", classItemId),
-              orderBy("timeIn", "desc")
-            );
-            const attendanceSnapshot = await getDocs(attendanceQuery);
-
-            if (!counts[userId]) {
-              const { lastName, firstName, role } = await fetchUserDetails(userId);
-
-              // Skip users with "Unknown" names
-              if (lastName === "Unknown" || firstName === "Unknown") {
-                continue;
-              }
-
-              counts[userId] = {
-                idNum: userId,
-                name: `${lastName}, ${firstName}`,
-                role,
-                "On-Time": 0,
-                Late: 0,
-                Absent: 0,
-              };
-            }
-
-            const userCounts = { "On-Time": 0, Late: 0, Absent: 0 };
-            processAttendanceData(expectedDates, attendanceSnapshot, userCounts, startTime, endTime);
-
-            counts[userId]["On-Time"] += userCounts["On-Time"];
-            counts[userId]["Late"] += userCounts["Late"];
-            counts[userId]["Absent"] += userCounts["Absent"];
+            counts[userId] = {
+              idNum: userId,
+              name: `${lastName}, ${firstName}`,
+              role,
+              "On-Time": 0,
+              Late: 0,
+              Absent: 0,
+            };
           }
-        } catch (error) {
-          console.error("Error processing class:", error);
-        }
-      };
 
-      try {
-        if (classDetails === "all") {
-          await Promise.all(
-            attendanceData.map(({ id, ...data }) => processClass(id, data))
-          );
-        } else {
-          const classId = classDetails.id || classDetails.documentId || null;
-          if (!classId) {
-            console.error("Invalid classDetails without an ID:", classDetails);
-            setLoading(false);
-            return;
-          }
-          await processClass(classId, classDetails);
+          const userCounts = { "On-Time": 0, Late: 0, Absent: 0 };
+          processAttendanceData(expectedDates, attendanceSnapshot, userCounts, startTime, endTime);
+
+          counts[userId]["On-Time"] += userCounts["On-Time"];
+          counts[userId]["Late"] += userCounts["Late"];
+          counts[userId]["Absent"] += userCounts["Absent"];
         }
       } catch (error) {
-        console.error("Error calculating summary:", error);
-      } finally {
-        setSummary(
-          Object.values(counts)
-            .filter((user) => user.role !== "Admin") // Exclude Admin users
-            .sort((a, b) => {
-              if (a.role === "Faculty" && b.role !== "Faculty") return -1;
-              if (a.role !== "Faculty" && b.role === "Faculty") return 1;
-              return a.name.localeCompare(b.name);
-            })
-            .map((user, index) => ({ ...user, num: index + 1 })) // Add a numbering column
-        );
-        setLoading(false);
+        console.error("Error processing class:", error);
       }
     };
 
+    try {
+      if (classDetails === "all") {
+        await Promise.all(
+          attendanceData.map(({ id, ...data }) => processClass(id, data))
+        );
+      } else {
+        const classId = classDetails.id || classDetails.documentId || null;
+        if (!classId) {
+          console.error("Invalid classDetails without an ID:", classDetails);
+          setLoading(false);
+          return;
+        }
+        await processClass(classId, classDetails);
+      }
+    } catch (error) {
+      console.error("Error calculating summary:", error);
+    } finally {
+      setSummary(
+        Object.values(counts)
+          .filter((user) => user.role !== "Admin") // Exclude Admin users
+          .sort((a, b) => {
+            if (a.role === "Faculty" && b.role !== "Faculty") return -1;
+            if (a.role !== "Faculty" && b.role === "Faculty") return 1;
+            return a.name.localeCompare(b.name);
+          })
+          .map((user, index) => ({ ...user, num: index + 1 })) // Add a numbering column
+      );
+      setLoading(false);
+    }
+  };
+
+  const applyFilter = () => {
+    calculateSummary();
+  };
+
+  const clearFilter = () => {
+    setStartDate(null);
+    setEndDate(null);
+    calculateSummary();
+  };
+
+  useEffect(() => {
     if (open) {
       calculateSummary();
     }
   }, [open, classDetails]);
 
   const exportToExcel = () => {
+    // Extract class details for the filename
+    const {
+      classCode = "UnknownClass",
+      classSec = "UnknownSec",
+      classType = "UnknownType",
+      semester = "UnknownSemester",
+      schoolYear = "UnknownYear",
+    } = classDetails || {};
+  
+    // Format the filename
+    const fileName = `${classCode}-${classSec}(${classType})_${semester}${schoolYear}_AttendanceSummary.xlsx`;
+  
+    // Prepare the export data
     const exportData = summary.map(({ num, name, "On-Time": onTime, Late: late, Absent: absent }) => ({
       "#": num,
       "Name (lastname, firstname)": name,
@@ -208,14 +235,16 @@ const ClassAttendanceExportModal = ({ open, onClose, attendanceData, classDetail
       "Late": late,
       "Absent": absent,
     }));
-
+  
+    // Create the Excel sheet
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Summary");
-
-    const fileName = `Attendance_Summary.xlsx`;
+  
+    // Export the Excel file with the formatted filename
     XLSX.writeFile(workbook, fileName);
   };
+  
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -237,6 +266,29 @@ const ClassAttendanceExportModal = ({ open, onClose, attendanceData, classDetail
           <div className="customButton" onClick={onClose}>
             Close
           </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate || ""}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate || ""}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <div className="customButton" onClick={applyFilter}>
+            Apply
+          </div>
+          {/* <div className="customButton" onClick={clearFilter}>
+            Clear
+          </div> */}
         </div>
 
         {loading ? (
