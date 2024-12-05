@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { FormControl, InputLabel, Select, MenuItem, TextField} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import FacultyAttendanceExport from "./facultyAttendanceExport";
@@ -80,6 +80,9 @@ const FacultyAttendance = () => {
             };
           });
 
+        // Sort records by date in descending order
+        combinedRecords.sort((a, b) => (b.rawDate || 0) - (a.rawDate || 0));
+
         setAttendanceRecords(combinedRecords);
         setFilteredRecords(combinedRecords); // Initialize filtered records
       } catch (error) {
@@ -90,26 +93,6 @@ const FacultyAttendance = () => {
     };
 
     fetchFacultyAttendance();
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const classesSnapshot = await getDocs(collection(db, "classes"));
-        const classesData = classesSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setClasses(classesData);
-
-        // Other fetch logic
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
   }, []);
 
   // Handle column selection
@@ -125,13 +108,8 @@ const FacultyAttendance = () => {
 
   // Apply filter
   const applyFilter = () => {
-    if (!selectedColumn && !filterDate) {
-      setFilteredRecords(attendanceRecords);
-      return;
-    }
-  
     let filtered = [...attendanceRecords];
-  
+
     // Apply column filter
     if (selectedColumn) {
       if (selectedColumn === "ongoing" && filterText) {
@@ -145,7 +123,7 @@ const FacultyAttendance = () => {
         );
       }
     }
-  
+
     // Apply date filter
     if (filterDate) {
       const selectedDate = new Date(filterDate).setHours(0, 0, 0, 0); // Normalize to midnight
@@ -153,10 +131,13 @@ const FacultyAttendance = () => {
         (record) => record.rawDate && record.rawDate.setHours(0, 0, 0, 0) === selectedDate
       );
     }
-  
+
+    // Sort filtered records by date in descending order
+    filtered.sort((a, b) => (b.rawDate || 0) - (a.rawDate || 0));
+
     setFilteredRecords(filtered);
   };
-  
+
   // Clear filter
   const clearFilter = () => {
     setSelectedColumn("");
@@ -168,18 +149,18 @@ const FacultyAttendance = () => {
   // Define columns for the DataGrid
   const columns = [
     { field: "date", headerName: "Date", width: 150 },
-    { field: "idNum", headerName: "ID Number", width: 150 },
+    { field: "idNum", headerName: "ID Number", width: 100 },
     { field: "name", headerName: "Name", width: 200 },
-    { field: "classInfo", headerName: "Class", width: 300 },
+    { field: "classInfo", headerName: "Class", width: 250 },
     { field: "ongoing", headerName: "Ongoing", width: 100, type: "boolean" },
     {
       field: "status",
       headerName: "Status",
-      width: 120,
+      width: 100,
       renderCell: (params) => {
         let backgroundColor = "";
         let color = "#fff"; // Default text color
-  
+
         if (params.value === "Absent") {
           backgroundColor = "red";
         } else if (params.value === "Late") {
@@ -188,7 +169,7 @@ const FacultyAttendance = () => {
         } else if (params.value === "On-Time") {
           backgroundColor = "green";
         }
-  
+
         return (
           <div
             style={{
@@ -288,11 +269,6 @@ const FacultyAttendance = () => {
                 pageSize={10}
                 loading={loading}
                 components={{ Toolbar: GridToolbar }}
-                initialState={{
-                  sorting: {
-                    sortModel: [{ field: "date", sort: "desc" }],
-                  },
-                }}
                 disableSelectionOnClick
               />
             </div>
@@ -305,8 +281,6 @@ const FacultyAttendance = () => {
         records={attendanceRecords}
         classes={classes} // Pass classes as a prop
       />
-
-
     </div>
   );
 };
