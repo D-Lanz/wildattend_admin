@@ -3,14 +3,21 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
+const path = require('path');
 const app = express();
+
+// Load the service account key
+const serviceAccount = require(path.join(__dirname, 'config', 'serviceAccountKey.json'));
+
+// Initialize Firebase Admin SDK with the service account credentials
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const db = admin.firestore();
 
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(bodyParser.json());
-
-admin.initializeApp(); // Initialize Firebase
-
-const db = admin.firestore();
 
 // Helper function to get today's weekday name
 const getWeekdayName = () => {
@@ -73,12 +80,13 @@ const markAbsences = async () => {
   }
 };
 
-// Schedule the task to run daily at midnight (or any preferred time)
+// Schedule the task to run daily at midnight
 cron.schedule('0 0 * * *', () => {
   console.log('Running daily absence check...');
   markAbsences();
 });
 
+// Endpoint to delete a user
 app.post('/deleteUser', async (req, res) => {
   const { userId } = req.body;
 
@@ -91,6 +99,7 @@ app.post('/deleteUser', async (req, res) => {
   }
 });
 
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

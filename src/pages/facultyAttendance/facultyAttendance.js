@@ -62,6 +62,7 @@ const FacultyAttendance = () => {
               rawDate: record.timeIn?.toDate() || null, // Store raw date for filtering
               idNum: faculty.idNum || "N/A",
               name: `${faculty.lastName || "N/A"}, ${faculty.firstName || "N/A"}`,
+              department: faculty.department || "N/A", // New Department Column
               classInfo: classFormatted,
               ongoing: associatedClass ? associatedClass.ongoing || false : false,
               status: record.status || "N/A",
@@ -151,6 +152,7 @@ const FacultyAttendance = () => {
     { field: "date", headerName: "Date", width: 150 },
     { field: "idNum", headerName: "ID Number", width: 100 },
     { field: "name", headerName: "Name", width: 200 },
+    { field: "department", headerName: "Department", width: 150 }, // New Department Column
     { field: "classInfo", headerName: "Class", width: 250 },
     { field: "ongoing", headerName: "Ongoing", width: 100, type: "boolean" },
     {
@@ -198,7 +200,11 @@ const FacultyAttendance = () => {
           <div className="datatable">
             <div className="datatableTitle">
               Faculty Attendance
-              <div style={{ textDecoration: "none" }} className="linkdt" onClick={() => setIsExportModalOpen(true)}>
+              <div
+                style={{ textDecoration: "none" }}
+                className="linkdt"
+                onClick={() => setIsExportModalOpen(true)}
+              >
                 Export
               </div>
             </div>

@@ -3,10 +3,10 @@ import Sidebar from "../../components/sidebar/Sidebar";
 import Navbar from "../../components/navbar/Navbar";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddModal from '../../components/CRUDmodals/AddModal';
+import AddModal from "../../components/CRUDmodals/AddModal";
 import SuccessModal from "../../components/CRUDmodals/SuccessModal";
 import ErrorModal from "../../components/CRUDmodals/ErrorModal";
-import { Visibility, VisibilityOff } from "@mui/icons-material"; // Add this for the eye icon
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase";
@@ -24,13 +24,13 @@ const New = ({ inputs, title, entityType }) => {
   const [perc, setPerc] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false); // State for error modal
-  const [errorMessage, setErrorMessage] = useState(""); // State for error message
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
   const handleBack = () => navigate(-1);
 
   useEffect(() => {
-    // Only upload file if entityType is not "accessPoint" or "room"
     if (file && entityType !== "accessPoint" && entityType !== "room") {
       const uploadFile = () => {
         const name = new Date().getTime() + file.name;
@@ -56,34 +56,66 @@ const New = ({ inputs, title, entityType }) => {
     }
   }, [file, entityType]);
 
-  useEffect(() => {
-    if (entityType === "user") {
-      const email = `${firstName.replace(/\s+/g, '').toLowerCase()}.${lastName.replace(/\s+/g, '').toLowerCase()}@cit.edu`;
-      setData((prevData) => ({ ...prevData, email }));
-    }
-  }, [firstName, lastName, entityType]);
-
   const handleInput = (e) => {
     const { id, value } = e.target;
+
+    if (id === "schoolYear" && !/^\d{0,4}$/.test(value)) {
+      return; // Prevent input if it exceeds 4 digits
+    }
+
     setData((prevData) => ({ ...prevData, [id]: value }));
 
-    if (id === "firstName") setFirstName(value);
+    if (id === "firstName") {
+      setFirstName(value);
+      const generatedEmail = `${value.replace(/\s+/g, "").toLowerCase()}.${lastName.replace(/\s+/g, "").toLowerCase()}@cit.edu`;
+      setData((prevData) => ({ ...prevData, email: generatedEmail }));
+    }
+
     if (id === "lastName") {
       setLastName(value);
+      const generatedEmail = `${firstName.replace(/\s+/g, "").toLowerCase()}.${value.replace(/\s+/g, "").toLowerCase()}@cit.edu`;
       const generatedPassword = `${value.toLowerCase()}.123456CITU`;
       setPassword(generatedPassword);
-      setData((prevData) => ({ ...prevData, password: generatedPassword }));
+      setData((prevData) => ({
+        ...prevData,
+        email: generatedEmail,
+        password: generatedPassword,
+      }));
+    }
+  };
+
+  const validateInputs = () => {
+    for (const input of inputs) {
+      if (input.id !== "ip_address" && !data[input.id]) {
+        setErrorMessage(`The field "${input.label}" is required.`);
+        return false;
+      }
+      if (input.id === "schoolYear" && data[input.id].length > 4) {
+        setErrorMessage("School Year must be exactly 4 digits.");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleAddClick = (e) => {
+    e.preventDefault();
+
+    if (validateInputs()) {
+      setShowAddModal(true);
+    } else {
+      setShowErrorModal(true);
     }
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
   
+    const currentUser = auth.currentUser; // Save the current admin user
     try {
       let collectionName;
       let newData = { ...data };
   
-      // If no image was uploaded, set the default image
       if (!newData.img) {
         newData.img = "https://static.vecteezy.com/system/resources/previews/033/176/717/non_2x/online-course-icon-vector.jpg";
       }
@@ -92,11 +124,20 @@ const New = ({ inputs, title, entityType }) => {
       switch (entityType) {
         case "user":
           collectionName = "users";
+  
+          // Create the new user
           const res = await createUserWithEmailAndPassword(auth, newData.email, newData.password);
+  
+          // Save the new user data in Firestore
           await setDoc(doc(db, collectionName, res.user.uid), {
             ...newData,
             timeStamp: serverTimestamp(),
           });
+  
+          // Reauthenticate the current admin user
+          if (currentUser) {
+            await auth.updateCurrentUser(currentUser);
+          }
           break;
         case "class":
           collectionName = "classes";
@@ -112,7 +153,6 @@ const New = ({ inputs, title, entityType }) => {
             enrollDate: serverTimestamp(),
           });
           break;
-        // Handle other cases...
       }
   
       setShowSuccessModal(true);
@@ -134,11 +174,6 @@ const New = ({ inputs, title, entityType }) => {
 
   const togglePasswordVisibility = () => setShowPassword((prevShowPassword) => !prevShowPassword);
 
-  const handleAddClick = (e) => {
-    e.preventDefault();
-    setShowAddModal(true);
-  };
-
   return (
     <div className="new">
       <Sidebar />
@@ -150,14 +185,12 @@ const New = ({ inputs, title, entityType }) => {
         </div>
         <div className="bottomn">
           {entityType !== "accessPoint" && entityType !== "room" && (
-            <>
-              <div className="leftn">
-                <img
-                  src={file ? URL.createObjectURL(file) : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"}
-                  className="newImg"
-                />
-              </div>
-            </>
+            <div className="leftn">
+              <img
+                src={file ? URL.createObjectURL(file) : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/300px-No_image_available.svg.png"}
+                className="newImg"
+              />
+            </div>
           )}
           <div className="rightn">
             <form className="formn" onSubmit={handleAdd}>
@@ -242,7 +275,7 @@ const New = ({ inputs, title, entityType }) => {
                       placeholder={input.placeholder}
                       pattern={input.pattern}
                       onChange={handleInput}
-                      required={input.id !== "ip_address"} // Only skip `required` for `ip_address`
+                      required={input.id !== "ip_address"}
                     />
                   )}
                 </div>
@@ -284,7 +317,6 @@ const New = ({ inputs, title, entityType }) => {
               onClose={() => setShowErrorModal(false)}
             />
           )}
-
         </div>
       </div>
     </div>
