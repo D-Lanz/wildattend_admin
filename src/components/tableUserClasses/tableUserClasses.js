@@ -31,70 +31,65 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
     userClassId: "",
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
+  const fetchData = async () => {
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
 
-        // Fetch the role of the current user
-        const userSnapshot = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
-        const userRole = userSnapshot.docs[0]?.data()?.role;
+      // Fetch the role of the current user
+      const userSnapshot = await getDocs(query(collection(db, "users"), where("__name__", "==", currentUser.uid)));
+      const userRole = userSnapshot.docs[0]?.data()?.role;
 
-        const parts = window.location.pathname.split("/");
-        const entityId = parts[parts.length - 2];
+      const parts = window.location.pathname.split("/");
+      const entityId = parts[parts.length - 2];
 
-        // Fetch userClasses to check existing associations
-        const userClassesSnapshot = await getDocs(collection(db, "userClasses"));
+      // Fetch userClasses to check existing associations
+      const userClassesSnapshot = await getDocs(collection(db, "userClasses"));
 
-        const associatedIDs = userClassesSnapshot.docs
-          .filter(doc => window.location.pathname.startsWith("/users/") ?
-            doc.data().userID === entityId :
-            doc.data().classID === entityId
-          )
-          .map(doc => window.location.pathname.startsWith("/users/") ?
-            doc.data().classID :
-            doc.data().userID
-          );
+      const associatedIDs = userClassesSnapshot.docs
+        .filter(doc =>
+          window.location.pathname.startsWith("/users/") ? doc.data().userID === entityId : doc.data().classID === entityId
+        )
+        .map(doc => (window.location.pathname.startsWith("/users/") ? doc.data().classID : doc.data().userID));
 
-        let fetchedData = [];
-        
-        if (window.location.pathname.startsWith("/users/")) {
-          if (userRole === "Admin") {
-            // Admin: Show all classes except those already associated
-            const entitySnapshot = await getDocs(collection(db, "classes"));
-            fetchedData = entitySnapshot.docs
-              .filter(doc => !associatedIDs.includes(doc.id))
-              .map(doc => ({ id: doc.id, ...doc.data() }));
-          } else if (userRole === "Faculty") {
-            // Faculty: Show only classes handled by the faculty
-            const facultyClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
-            const facultyClassesSnapshot = await getDocs(facultyClassesQuery);
-            const facultyClassIDs = facultyClassesSnapshot.docs.map(doc => doc.data().classID);
+      let fetchedData = [];
 
-            const entitySnapshot = await getDocs(collection(db, "classes"));
-            fetchedData = entitySnapshot.docs
-              .filter(doc => facultyClassIDs.includes(doc.id) && !associatedIDs.includes(doc.id))
-              .map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-        } else if (window.location.pathname.startsWith("/classes/")) {
-          // If URL starts with /classes/, show all users except those already enrolled
-          const entitySnapshot = await getDocs(collection(db, "users"));
+      if (window.location.pathname.startsWith("/users/")) {
+        if (userRole === "Admin") {
+          // Admin: Show all classes except those already associated
+          const entitySnapshot = await getDocs(collection(db, "classes"));
           fetchedData = entitySnapshot.docs
             .filter(doc => !associatedIDs.includes(doc.id))
             .map(doc => ({ id: doc.id, ...doc.data() }));
+        } else if (userRole === "Faculty") {
+          // Faculty: Show only classes handled by the faculty
+          const facultyClassesQuery = query(collection(db, "userClasses"), where("userID", "==", currentUser.uid));
+          const facultyClassesSnapshot = await getDocs(facultyClassesQuery);
+          const facultyClassIDs = facultyClassesSnapshot.docs.map(doc => doc.data().classID);
+
+          const entitySnapshot = await getDocs(collection(db, "classes"));
+          fetchedData = entitySnapshot.docs
+            .filter(doc => facultyClassIDs.includes(doc.id) && !associatedIDs.includes(doc.id))
+            .map(doc => ({ id: doc.id, ...doc.data() }));
         }
-
-        setData(fetchedData);
-        setLoading(false); // Set loading to false after data is fetched
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } else if (window.location.pathname.startsWith("/classes/")) {
+        // If URL starts with /classes/, show all users except those already enrolled
+        const entitySnapshot = await getDocs(collection(db, "users"));
+        fetchedData = entitySnapshot.docs
+          .filter(doc => !associatedIDs.includes(doc.id))
+          .map(doc => ({ id: doc.id, ...doc.data() }));
       }
-    };
 
+      setData(fetchedData);
+      setLoading(false); // Set loading to false after data is fetched
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [entity, window.location.pathname]);
-
 
   const handleAdd = async (params) => {
     try {
@@ -105,24 +100,18 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
       let userData = {};
       let classData = {};
 
-      console.log("Entity ID for Add:", entityId);
-
       if (window.location.pathname.startsWith("/users/")) {
         userId = entityId;
         classId = params.row.id;
 
-        console.log("Fetching class details...");
         const classDoc = await getDoc(doc(db, "classes", classId));
         classData = classDoc.exists() ? classDoc.data() : {};
-        console.log("Class Data:", classData);
       } else if (window.location.pathname.startsWith("/classes/")) {
         classId = entityId;
         userId = params.row.id;
 
-        console.log("Fetching user details...");
         const userDoc = await getDoc(doc(db, "users", userId));
         userData = userDoc.exists() ? userDoc.data() : {};
-        console.log("User Data:", userData);
       }
 
       setConfirmData({
@@ -137,8 +126,6 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
         schoolYear: classData.schoolYear || params.row.schoolYear || "N/A",
       });
 
-      console.log("Confirm Data:", confirmData);
-
       setIsConfirmModalOpen(true);
     } catch (error) {
       console.error("Error fetching details:", error);
@@ -149,17 +136,12 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
     try {
       const { userId, classId, idNum, classCode, classSec, classType, semester, schoolYear } = confirmData;
 
-      console.log("Confirming Enrollment with Data:", confirmData);
-
-      // Add to Firestore
       const userClassRef = await addDoc(collection(db, "userClasses"), {
         classID: classId,
         userID: userId,
         enrollDate: new Date(),
         attendance: [],
       });
-
-      console.log("User-Class Relationship Added with ID:", userClassRef.id);
 
       setModalData({
         userIdNum: idNum,
@@ -179,7 +161,6 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   };
 
   const handleUserClassesModalClose = () => {
-    console.log("Closing User Classes Modal");
     setIsUserClassesModalOpen(false);
     fetchData(); // Refresh the table
   };
@@ -187,12 +168,10 @@ const TableUserClasses = ({ entity, tableTitle, entityColumns }) => {
   const handleColumnChange = (event) => {
     setSelectedColumn(event.target.value);
     setFilterText("");
-    console.log("Selected Column:", event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setFilterText(event.target.value);
-    console.log("Filter Text:", event.target.value);
   };
 
   const filteredData = data.filter((row) => {

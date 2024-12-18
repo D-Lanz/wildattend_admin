@@ -98,6 +98,8 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
   
         const userClassData = enrollSnapshot.docs[0].data();
         const enrollDate = userClassData.enrollDate?.toDate();
+        const department = userClassData.department || "N/A"; // Fetch Department
+
         if (!days || !enrollDate) continue;
   
         // Align date calculation with single.js
@@ -116,7 +118,18 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
           orderBy("timeIn", "desc")
         );
         const attendanceSnapshot = await getDocs(attendanceQuery);
-  
+
+        if (!counts[userId]) {
+          counts[userId] = {
+            idNum: userId,
+            name: userClassData.userName,
+            department, // Add Department
+            "On-Time": 0,
+            Late: 0,
+            Absent: 0,
+          };
+        }
+
         const userCounts = { "On-Time": 0, Late: 0, Absent: 0 };
         processAttendanceData(expectedDates, attendanceSnapshot, userCounts, startTime, endTime);
   
@@ -146,10 +159,10 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
     }
 
     const summary = filteredRecords.reduce((acc, record) => {
-      const { idNum, name, status } = record;
+      const { idNum, name, status, department } = record;
 
       if (!acc[idNum]) {
-        acc[idNum] = { idNum, name, "On-Time": 0, Late: 0, Absent: 0 };
+        acc[idNum] = { idNum, name, department: department || "N/A", "On-Time": 0, Late: 0, Absent: 0 };
       }
 
       if (["On-Time", "Late", "Absent"].includes(status)) {
@@ -166,9 +179,15 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
     const worksheet = XLSX.utils.json_to_sheet(filteredSummary);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Summary");
-
-    XLSX.writeFile(workbook, "faculty_attendance_summary.xlsx");
+  
+    // Generate a file name based on the selected date range
+    const startDateFormatted = startDate ? new Date(startDate).toISOString().split("T")[0] : "Start";
+    const endDateFormatted = endDate ? new Date(endDate).toISOString().split("T")[0] : "End";
+    const fileName = `faculty_attendance_summary_${startDateFormatted}_to_${endDateFormatted}.xlsx`;
+  
+    XLSX.writeFile(workbook, fileName);
   };
+  
 
   useEffect(() => {
     if (!startDate && !endDate) {
@@ -229,6 +248,7 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
             columns={[
               { field: "idNum", headerName: "ID Number", width: 150 },
               { field: "name", headerName: "Name", width: 200 },
+              { field: "department", headerName: "Department", width: 150 }, // Add Department Column
               { field: "On-Time", headerName: "On-Time", width: 120 },
               { field: "Late", headerName: "Late", width: 120 },
               { field: "Absent", headerName: "Absent", width: 120 },
