@@ -65,50 +65,70 @@ const FacultyAttendanceExport = ({ open, onClose, records, classes }) => {
 
   const calculateOverallSummary = async () => {
     const counts = {};
-
-    for (const classItem of classes) {
-      const { id: classId, days, startTime, endTime } = classItem;
-
-      const userClassQuery = query(
-        collection(db, "userClasses"),
-        where("classID", "==", classId)
-      );
-      const userClassSnapshot = await getDocs(userClassQuery);
-
-      for (const docSnap of userClassSnapshot.docs) {
-        const userClassData = docSnap.data();
-        const userId = userClassData.userID;
+    
+    // Step 1: Fetch all users with the "Faculty" role
+    const facultyQuery = query(collection(db, "users"), where("role", "==", "Faculty"));
+    const facultySnapshot = await getDocs(facultyQuery);
+  
+    const facultyUsers = facultySnapshot.docs.map((doc) => ({
+      idNum: doc.data().idNum,
+      name: doc.data().name,
+      role: doc.data().role,
+    }));
+  
+    for (const faculty of facultyUsers) {
+      const { idNum, name } = faculty;
+  
+      // Ensure every "Faculty" user appears in the summary
+      if (!counts[idNum]) {
+        counts[idNum] = { idNum, name, "On-Time": 0, Late: 0, Absent: 0 };
+      }
+  
+      for (const classItem of classes) {
+        const { id: classId, days, startTime, endTime } = classItem;
+  
+        const enrollQuery = query(
+          collection(db, "userClasses"),
+          where("classID", "==", classId),
+          where("userID", "==", idNum)
+        );
+        const enrollSnapshot = await getDocs(enrollQuery);
+  
+        if (enrollSnapshot.empty) continue;
+  
+        const userClassData = enrollSnapshot.docs[0].data();
         const enrollDate = userClassData.enrollDate?.toDate();
-
         if (!days || !enrollDate) continue;
-
+  
+        // Align date calculation with single.js
         const classStartDate = new Date(enrollDate);
         const currentDate = new Date();
-        const expectedDates = getScheduledDates(days, classStartDate, currentDate);
-
+        const expectedDates = getScheduledDates(
+          days,
+          startDate ? new Date(startDate) : classStartDate,
+          endDate ? new Date(endDate) : currentDate
+        );
+  
         const attendanceQuery = query(
           collection(db, "attendRecord"),
-          where("userId", "==", userId),
+          where("userId", "==", idNum),
           where("classId", "==", classId),
           orderBy("timeIn", "desc")
         );
         const attendanceSnapshot = await getDocs(attendanceQuery);
-
-        if (!counts[userId]) {
-          counts[userId] = { idNum: userId, name: userClassData.userName, "On-Time": 0, Late: 0, Absent: 0 };
-        }
-
+  
         const userCounts = { "On-Time": 0, Late: 0, Absent: 0 };
         processAttendanceData(expectedDates, attendanceSnapshot, userCounts, startTime, endTime);
-
-        counts[userId]["On-Time"] += userCounts["On-Time"];
-        counts[userId]["Late"] += userCounts["Late"];
-        counts[userId]["Absent"] += userCounts["Absent"];
+  
+        counts[idNum]["On-Time"] += userCounts["On-Time"];
+        counts[idNum]["Late"] += userCounts["Late"];
+        counts[idNum]["Absent"] += userCounts["Absent"];
       }
     }
-
+  
     setFilteredSummary(Object.values(counts));
   };
+  
 
   const handleFilter = () => {
     let filteredRecords = [...records];

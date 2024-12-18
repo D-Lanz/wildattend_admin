@@ -66,8 +66,7 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
           }
   
           setData(fetchedData);
-          console.log("Fetched Data:", fetchedData); // Console.log the fetched data
-  
+
         } else if (queryField === "userID") {
           // If we are fetching based on userID
           if (userRoleData.role === "Admin") {
@@ -97,9 +96,7 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
               }
             }
   
-            setData(fetchedData);
-            console.log("Fetched Admin Classes Data:", fetchedData);
-  
+            setData(fetchedData);  
           } else if (userRoleData.role === "Faculty") {
             // For Faculty user, fetch mutual classes with the selected user (Students)
             const mutualClassesRef = collection(db, "userClasses");
@@ -133,7 +130,6 @@ const Datatable1 = ({entity, tableTitle, entityColumns, id, entityAssign}) => {
   
             // Filter out null entries
             setData(fetchedData.filter(item => item !== null));
-            console.log("Fetched Mutual Classes Data:", fetchedData);
           }
         }
       } catch (error) {
